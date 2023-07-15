@@ -1,0 +1,8 @@
+.idea/
+__pycache__
+config.txt
+ApiRest/tmp
+*.log
+backups/
+backup/
+Sheet/
