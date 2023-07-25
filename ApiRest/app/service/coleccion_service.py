@@ -2,23 +2,25 @@ from flask import jsonify
 from app.utils.datos import db
 from app.model.coleccion_model import Coleccion, ColeccionSchema
 from app.model.juego_model import Juego
+from app.model.jugado_model import Jugado
+from app.model.plataforma_model import Plataforma
 
 
 class ColeccionService:
     _coleccion_schema = ColeccionSchema(many=True)
 
     def get_colecciones(self):
-        colecciones = Coleccion.query.all()
+        colecciones = Coleccion.query.join(Coleccion.plataforma).join(Coleccion.juego).order_by(Plataforma.nombre.asc(), Plataforma.corto.asc(), Juego.nombre.asc()).all()
         result = self._coleccion_schema.dump(colecciones)
         return jsonify(result)
 
     def get_colecciones_by_id(self, id):
-        colecciones = Coleccion.query.filter(Coleccion.id == id).all()
+        colecciones = Coleccion.query.filter(Coleccion.id == id).join(Coleccion.plataforma).join(Coleccion.juego).order_by(Plataforma.nombre.asc(), Plataforma.corto.asc(), Juego.nombre.asc()).all()
         result = self._coleccion_schema.dump(colecciones)
         return jsonify(result)
 
     def get_colecciones_by_nombre(self, nombre):
-        colecciones = db.session.query(Coleccion).join(Juego).filter(Juego.nombre.ilike(f'%{nombre}%')).all()
+        colecciones = db.session.query(Coleccion).join(Juego).filter(Juego.nombre.ilike(f'%{nombre}%')).join(Coleccion.plataforma).join(Coleccion.juego).order_by(Plataforma.nombre.asc(), Plataforma.corto.asc(), Juego.nombre.asc()).all()
         result = self._coleccion_schema.dump(colecciones)
         return jsonify(result)
 

@@ -10,7 +10,7 @@ class Juego(db.Model):
     saga = db.Column(db.String(255))
     fecha_salida = db.Column(db.Date)
 
-    def __init__(self, nombre, saga, fecha_salida):
+    def __init__(self, nombre, saga=None, fecha_salida=None):
         self.nombre = nombre
         self.saga = saga
         self.fecha_salida = fecha_salida
@@ -19,3 +19,4 @@ class Juego(db.Model):
 class JuegoSchema(Schema):
     class Meta:
         fields = ('id', 'nombre', 'saga', 'fecha_salida')
+        include_relationships = True
