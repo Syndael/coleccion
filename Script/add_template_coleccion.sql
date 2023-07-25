@@ -8,17 +8,17 @@
 	SELECT * FROM V_COLECCION_POKE ORDER BY id desc
 */
 
-SET @n_juego = 'Harry Potter and the Chamber of Secrets'; SELECT * FROM JUEGO WHERE NOMBRE = @n_juego;
-SET @plata = 'GBC'; SELECT * FROM PLATAFORMA WHERE COALESCE(CORTO, NOMBRE) = @plata;
-SET @d_idioma = 'Español'; SELECT * FROM IDIOMA WHERE DESCRIPCION = @d_idioma;
-SET @d_region = 'EU'; SELECT * FROM REGION WHERE CORTO = @d_region;
-SET @estado_gen = 'Completo'; SELECT * FROM ESTADO WHERE DESCRIPCION = @estado_gen AND TIPO = 0;
+SET @n_juego = 'Punch Club 2: Fast Forward'; SELECT * FROM JUEGO WHERE NOMBRE = @n_juego;
+SET @plata = 'PC'; SELECT * FROM PLATAFORMA WHERE COALESCE(CORTO, NOMBRE) = @plata;
+SET @d_idioma = NULL; SELECT * FROM IDIOMA WHERE DESCRIPCION = @d_idioma;
+SET @d_region = NULL; SELECT * FROM REGION WHERE CORTO = @d_region;
+SET @estado_gen = 'Digital'; SELECT * FROM ESTADO WHERE DESCRIPCION = @estado_gen AND TIPO = 0;
 -- 'Mal' 'Bien' 'Perfecta'
-SET @estado_caja = 'Bien'; SELECT * FROM ESTADO WHERE DESCRIPCION = @estado_caja AND TIPO = 1;
-SET @n_tienda = 'Wallapop'; SELECT * FROM TIENDA WHERE NOMBRE = @n_tienda;
-SET @f_compra = '20230715';
-SET @f_recibo = NULL;
-SET @coste = 36.43;
+SET @estado_caja = 'N/A'; SELECT * FROM ESTADO WHERE DESCRIPCION = @estado_caja AND TIPO = 1;
+SET @n_tienda = 'Steam'; SELECT * FROM TIENDA WHERE NOMBRE = @n_tienda;
+SET @f_compra = '20230719';
+SET @f_recibo = '20230719';
+SET @coste = 19.5;
 SET @notas = NULL;
 
 INSERT INTO COLECCION (

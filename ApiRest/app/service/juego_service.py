@@ -9,19 +9,32 @@ class JuegoService:
     _juegos_schema = JuegoSchema(many=True)
 
     def get_juegos(self):
-        juegos = Juego.query.all()
+        juegos = Juego.query.order_by(Juego.nombre.asc()).all()
         result = self._juegos_schema.dump(juegos)
         return jsonify(result)
 
     def get_juegos_by_nombre(self, nombre):
-        juegos = Juego.query.filter(Juego.nombre.ilike(f'%{nombre}%')).all()
+        juegos = Juego.query.filter(Juego.nombre.ilike(f'%{nombre}%')).order_by(Juego.nombre.asc()).all()
         result = self._juegos_schema.dump(juegos)
         return jsonify(result)
+
+    def get_juegos_by_id(self, id):
+        juego = Juego.query.get(id)
+        if not juego:
+            return jsonify({'message': 'Juego no encontrado'}), 404
+        juego_dict = self._juego_schema.dump(juego)
+        return jsonify(juego_dict), 200
 
 
     def add_juego(self, request):
         data = request.get_json()
-        juego = Juego(data['nombre'], data['saga'], data['fecha_salida'])
+        if 'nombre' not in data:
+            return None
+        juego = Juego(nombre=data['nombre'])
+        if 'saga' in data:
+            juego.saga = data['saga']
+        if 'fecha_salida' in data:
+            juego.fecha_salida = data['fecha_salida']
         db.session.add(juego)
         db.session.commit()
 

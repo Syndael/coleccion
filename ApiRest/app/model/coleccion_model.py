@@ -56,4 +56,5 @@ class ColeccionSchema(Schema):
     tienda = fields.Nested(TiendaSchema)
 
     class Meta:
-        fields = ('id', 'juego_id', 'juego', 'plataforma_id', 'plataforma', 'idioma_id', 'idioma', 'region_id', 'region', 'estado_general_id', 'estado_general', 'estado_caja_id', 'estado_caja', 'fecha_compra', 'fecha_recibo', 'coste', 'tienda_id', 'tienda', 'notas')
+        fields = ('id', 'juego', 'plataforma', 'idioma', 'region', 'estado_general', 'estado_caja', 'fecha_compra', 'fecha_recibo', 'coste', 'tienda', 'notas')
+        include_relationships = True
