@@ -1,0 +1,7 @@
+<div class="menu">
+  <div *ngFor="let item of menuItems" [routerLink]="item.route" [ngClass]="{'selected-background': item.selected}"
+    (click)="onMenuItemClick(item)">
+    <div class="menu-item">{{ item.name }}</div>
+  </div>
+</div>
+<router-outlet></router-outlet>

@@ -1,0 +1,23 @@
+<div class="contenedor-roms">
+    <table class="lista-roms">
+        <tr class="encabezado-roms">
+            <th>Plataforma</th>
+            <th>Juego</th>
+            <th>Nombre ROM</th>
+            <th>Idioma/Región</th>
+            <th>Extension</th>
+            <th>Descarga</th>
+        </tr>
+        <tr class="rom" *ngFor="let rom of roms" routerLink="/rom/{{rom.id}}">
+            <td class="plataforma">{{rom.plataforma?.nombre}}</td>
+            <td class="juego">{{rom.juego?.nombre}}</td>
+            <td class="rom">{{rom.nombre_rom}}</td>
+            <td *ngIf="rom.idioma && rom.region" class="idioma-region">{{rom.idioma.descripcion}} / {{rom.region.descripcion}}</td>
+            <td *ngIf="rom.idioma && !rom.region" class="idioma-region">{{rom.idioma.descripcion}}</td>
+            <td *ngIf="!rom.idioma && rom.region" class="idioma-region">{{rom.region.descripcion}}</td>
+            <td *ngIf="!rom.idioma && !rom.region" class="idioma-region"></td>
+            <td class="extension">{{rom.tipo_rom?.extension}}</td>
+            <td class="descarga">{{rom.fecha_descarga | date: 'dd/MM/yyyy'}}</td>
+        </tr>
+    </table>
+</div>

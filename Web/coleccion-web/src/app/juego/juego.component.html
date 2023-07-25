@@ -1,0 +1,19 @@
+<div class="contenedor-juegos">
+    <div class="crud">
+        <button routerLink="/juego/new">+</button>
+    </div>
+    <table class="lista-juegos">
+        <tr class="encabezado-juegos">
+            <th>Juego</th>
+            <th>Saga</th>
+            <th>Fecha de salida</th>
+            <th>Plataformas</th>
+        </tr>
+        <tr class="juego" *ngFor="let juego of juegos" routerLink="/juego/{{juego.id}}">
+            <td class="nombre">{{juego.nombre}}</td>
+            <td class="saga">{{juego.saga}}</td>
+            <td class="fecha">{{juego.fecha_salida | date: 'dd/MM/yyyy'}}</td>
+            <td class="plataformas"></td>
+        </tr>
+    </table>
+</div>

@@ -1,0 +1,26 @@
+<div class="contenedor-historiales">
+    <table class="lista-historiales">
+        <tr class="encabezado-historiales">
+            <th>Plataforma</th>
+            <th>Juego</th>
+            <th>Estado</th>
+            <th>Porcentaje</th>
+            <th>Horas</th>
+            <th>Completo</th>
+            <th>Notas</th>
+            <th>Inicio</th>
+            <th>Fin</th>
+        </tr>
+        <tr class="historial" *ngFor="let historial of historiales">
+            <td class="plataforma">{{historial.plataforma?.nombre}}</td>
+            <td class="juego">{{historial.juego?.nombre}}</td>
+            <td class="estado">{{historial.estado_jugado?.descripcion}}</td>
+            <td class="porcentaje">{{historial.porcentaje}}%</td>
+            <td class="horas">{{historial.horas | number:'0.0-2'}}</td>
+            <td class="historia_completa">{{historial.historia_completa ? 'Sí' : 'No'}}</td>
+            <td class="notas">{{historial.notas}}</td>
+            <td class="fecha_inicio">{{historial.fecha_inicio | date: 'dd/MM/yyyy'}}</td>
+            <td class="fecha_fin">{{historial.fecha_fin | date: 'dd/MM/yyyy'}}</td>
+        </tr>
+    </table>
+</div>

@@ -1,0 +1,30 @@
+<div class="template" *ngIf="rom">
+    <div class="detalles">
+        <label for="rom-plataforma">Plataforma: </label>
+        <input id="rom-plataforma" *ngIf="rom.plataforma" [(ngModel)]="rom.plataforma.nombre" placeholder="Plataforma" />
+        <br />
+        <label for="rom-juego">Juego: </label>
+        <input id="rom-juego" *ngIf="rom.juego" [(ngModel)]="rom.juego.nombre" placeholder="Juego" />
+        <br />
+        <label for="rom-rom">ROM: </label>
+        <input id="rom-rom" [(ngModel)]="rom.nombre_rom" placeholder="ROM" disabled="true" />
+        <br />
+        <label for="rom-idioma">Idioma: </label>
+        <input id="rom-idioma" *ngIf="rom.idioma" [(ngModel)]="rom.idioma.descripcion" placeholder="Idioma" />
+        <br />
+        <label for="rom-region">Región: </label>
+        <input id="rom-region" *ngIf="rom.region" [(ngModel)]="rom.region.descripcion" placeholder="Región" />
+        <br />
+        <label for="rom-extension">Extensión: </label>
+        <input id="rom-extension" *ngIf="rom.tipo_rom" [(ngModel)]="rom.tipo_rom.extension" placeholder="Extensión" />
+        <br />
+        <label for="rom-descarga">Descarga: </label>
+        <input id="rom-descarga" type="date" [(ngModel)]="rom.fecha_descarga" placeholder="Descarga" />
+        <br />
+        <br />
+        <div class="detalles-botones">
+            <button type="button" (click)="back()">Atrás</button>
+            <button type="button" (click)="save()">Guardar</button>
+        </div>
+    </div>
+</div>
