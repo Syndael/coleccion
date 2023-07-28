@@ -26,7 +26,7 @@ class Rom(db.Model):
     region = db.relationship('Region', primaryjoin='Rom.region_id == Region.id')
     tipo_rom = db.relationship('TipoRom', primaryjoin='Rom.tipo_rom_id == TipoRom.id')
 
-    def __init__(self, juego, plataforma, nombre_rom, nombre_rom_ext, idioma, region, tipo_rom, fecha_descarga):
+    def __init__(self, juego, plataforma, nombre_rom=None, nombre_rom_ext=None, idioma=None, region=None, tipo_rom=None, fecha_descarga=None):
         self.juego = juego
         self.plataforma = plataforma
         self.nombre_rom = nombre_rom

@@ -43,9 +43,9 @@ export class JuegoTemplateComponent {
   save(): void {
     if (this.juego) {
       if (this.modoAlta) {
-        this.juegoService.addJuego(this.juego).subscribe(() => this.router.navigate([this.router.url]));
+        this.juegoService.addJuego(this.juego).subscribe(() => this.back());
       } else {
-        this.juegoService.updateJuego(this.juego).subscribe(() => this.router.navigate([this.router.url]));
+        this.juegoService.updateJuego(this.juego).subscribe(() => this.back());
       }
     }
   }

@@ -24,7 +24,7 @@ class Jugado(db.Model):
     plataforma = db.relationship('Plataforma', primaryjoin='Jugado.plataforma_id == Plataforma.id')
     estado_jugado = db.relationship('Estado', primaryjoin='Jugado.estado_jugado_id == Estado.id')
 
-    def __init__(self, juego, plataforma, estado_jugado, porcentaje, horas, historia_completa, notas, fecha_inicio, fecha_fin):
+    def __init__(self, juego, plataforma, estado_jugado=None, porcentaje=None, horas=None, historia_completa=None, notas=None, fecha_inicio=None, fecha_fin=None):
         self.juego = juego
         self.plataforma = plataforma
         self.estado_jugado = estado_jugado

@@ -1,5 +1,4 @@
 from flask import jsonify
-import json
 from app.utils.datos import db
 from app.model.juego_model import Juego, JuegoSchema
 
@@ -11,12 +10,12 @@ class JuegoService:
     def get_juegos(self):
         juegos = Juego.query.order_by(Juego.nombre.asc()).all()
         result = self._juegos_schema.dump(juegos)
-        return jsonify(result)
+        return jsonify(result), 200
 
     def get_juegos_by_nombre(self, nombre):
         juegos = Juego.query.filter(Juego.nombre.ilike(f'%{nombre}%')).order_by(Juego.nombre.asc()).all()
         result = self._juegos_schema.dump(juegos)
-        return jsonify(result)
+        return jsonify(result), 200
 
     def get_juegos_by_id(self, id):
         juego = Juego.query.get(id)
@@ -39,9 +38,7 @@ class JuegoService:
         db.session.commit()
 
         juego_dict = self._juego_schema.dump(juego)
-        juego_json = json.dumps(juego_dict)
-
-        return juego_json
+        return jsonify(juego_dict), 200
 
     def update_juego(self, request, id):
         data = request.get_json()
@@ -51,8 +48,14 @@ class JuegoService:
             return jsonify({'message': 'Juego no encontrado'}), 404
 
         juego.nombre = data.get('nombre', juego.nombre)
-        juego.saga = data.get('saga', juego.saga)
-        juego.fecha_salida = data.get('fecha_salida', juego.fecha_salida)
+        if 'saga' in data and not data['saga'] == '':
+            juego.saga = data['saga']
+        else:
+            juego.saga = None
+        if 'fecha_salida' in data and not data['fecha_salida'] == '':
+            juego.fecha_salida = data['fecha_salida']
+        else:
+            juego.fecha_salida = None
 
         db.session.commit()
 

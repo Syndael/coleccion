@@ -1,22 +1,32 @@
 <div class="template" *ngIf="rom">
     <div class="detalles">
         <label for="rom-plataforma">Plataforma: </label>
-        <input id="rom-plataforma" *ngIf="rom.plataforma" [(ngModel)]="rom.plataforma.nombre" placeholder="Plataforma" />
+        <select [(ngModel)]="plataformaSeleccionada">
+            <option *ngFor="let plataforma of listaPlataformas" [value]="plataforma.id">{{ plataforma.corto ? '(' + plataforma.corto + ') ' : '' }}{{ plataforma.nombre }}</option>
+        </select>
         <br />
         <label for="rom-juego">Juego: </label>
-        <input id="rom-juego" *ngIf="rom.juego" [(ngModel)]="rom.juego.nombre" placeholder="Juego" />
+        <select [(ngModel)]="juegoSeleccionado">
+            <option *ngFor="let juego of listaJuegos" [value]="juego.id">{{ juego.nombre }}</option>
+        </select>
         <br />
         <label for="rom-rom">ROM: </label>
-        <input id="rom-rom" [(ngModel)]="rom.nombre_rom" placeholder="ROM" disabled="true" />
+        <input id="rom-rom" [(ngModel)]="rom.nombre_rom" placeholder="Nombre de la ROM (Autogenerado)" disabled="true" />
         <br />
         <label for="rom-idioma">Idioma: </label>
-        <input id="rom-idioma" *ngIf="rom.idioma" [(ngModel)]="rom.idioma.descripcion" placeholder="Idioma" />
+        <select [(ngModel)]="idiomaSeleccionado">
+            <option *ngFor="let idioma of listaIdiomas" [value]="idioma.id">{{ idioma.corto ? '(' + idioma.corto + ') ' : '' }}{{ idioma.descripcion }}</option>
+        </select>
         <br />
         <label for="rom-region">Región: </label>
-        <input id="rom-region" *ngIf="rom.region" [(ngModel)]="rom.region.descripcion" placeholder="Región" />
+        <select [(ngModel)]="regionSeleccionada">
+            <option *ngFor="let region of listaRegiones" [value]="region.id">{{ region.corto ? '(' + region.corto + ') ' : '' }}{{ region.descripcion }}</option>
+        </select>
         <br />
         <label for="rom-extension">Extensión: </label>
-        <input id="rom-extension" *ngIf="rom.tipo_rom" [(ngModel)]="rom.tipo_rom.extension" placeholder="Extensión" />
+        <select [(ngModel)]="tipoRomSeleccionado">
+            <option *ngFor="let tipoRom of listaTiposRom" [value]="tipoRom.id">{{ tipoRom.extension }}</option>
+        </select>
         <br />
         <label for="rom-descarga">Descarga: </label>
         <input id="rom-descarga" type="date" [(ngModel)]="rom.fecha_descarga" placeholder="Descarga" />

@@ -1,4 +1,7 @@
 <div class="contenedor-colecciones">
+    <div class="crud">
+        <button routerLink="/coleccion/new">+</button>
+    </div>
     <table class="lista-colecciones">
         <tr class="encabezado-colecciones">
             <th>Plataforma</th>
@@ -12,7 +15,7 @@
             <th>Tienda</th>
             <th>Notas</th>
         </tr>
-        <tr class="coleccion" *ngFor="let coleccion of colecciones">
+        <tr class="coleccion" *ngFor="let coleccion of colecciones" routerLink="/coleccion/{{coleccion.id}}">
             <td class="plataforma">{{coleccion.plataforma?.nombre}}</td>
             <td class="juego">{{coleccion.juego?.nombre}}</td>
             <td *ngIf="coleccion.idioma && coleccion.region" class="idioma-region">{{coleccion.idioma.descripcion}} / {{coleccion.region.descripcion}}</td>

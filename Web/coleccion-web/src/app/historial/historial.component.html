@@ -1,4 +1,7 @@
 <div class="contenedor-historiales">
+    <div class="crud">
+        <button routerLink="/historial/new">+</button>
+    </div>
     <table class="lista-historiales">
         <tr class="encabezado-historiales">
             <th>Plataforma</th>
@@ -11,7 +14,7 @@
             <th>Inicio</th>
             <th>Fin</th>
         </tr>
-        <tr class="historial" *ngFor="let historial of historiales">
+        <tr class="historial" *ngFor="let historial of historiales" routerLink="/historial/{{historial.id}}">
             <td class="plataforma">{{historial.plataforma?.nombre}}</td>
             <td class="juego">{{historial.juego?.nombre}}</td>
             <td class="estado">{{historial.estado_jugado?.descripcion}}</td>

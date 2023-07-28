@@ -1,4 +1,7 @@
 import { Component, OnInit } from '@angular/core';
+
+import { JuegoService } from '../services/juego.service';
+import { PlataformaService } from '../services/plataforma.service';
 import { Rom } from '../models/rom.model';
 import { RomService } from '../services/rom.service';
 
@@ -8,7 +11,9 @@ import { RomService } from '../services/rom.service';
 })
 
 export class RomsComponent implements OnInit {
-  constructor(private romService: RomService) { }
+  constructor(
+    private romService: RomService
+  ) { }
 
   ngOnInit(): void {
     this.getRoms();

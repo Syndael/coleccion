@@ -32,7 +32,7 @@ class Coleccion(db.Model):
     estado_caja = db.relationship('Estado', primaryjoin='Coleccion.estado_caja_id == Estado.id')
     tienda = db.relationship('Tienda', primaryjoin='Coleccion.tienda_id == Tienda.id')
 
-    def __init__(self, juego, plataforma, idioma, region, estado_general, estado_caja, fecha_compra, fecha_recibo, coste, tienda, notas):
+    def __init__(self, juego, plataforma, idioma=None, region=None, estado_general=None, estado_caja=None, fecha_compra=None, fecha_recibo=None, coste=None, tienda=None, notas=None):
         self.juego = juego
         self.plataforma = plataforma
         self.idioma = idioma
