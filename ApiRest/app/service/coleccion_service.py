@@ -13,8 +13,23 @@ class ColeccionService:
     _coleccion_schema = ColeccionSchema()
     _colecciones_schema = ColeccionSchema(many=True)
 
-    def get_colecciones(self):
-        colecciones = Coleccion.query.join(Coleccion.plataforma).join(Coleccion.juego).order_by(Plataforma.nombre.asc(), Plataforma.corto.asc(), Juego.nombre.asc()).all()
+    def get_colecciones(self, request):
+        colecciones = Coleccion.query.join(Coleccion.plataforma).join(Coleccion.juego)
+        if request.args:
+            if request.args.get('plataforma_id'):
+                colecciones = colecciones.filter(Coleccion.plataforma_id == request.args.get('plataforma_id'))
+            if request.args.get('nombre'):
+                nombre = request.args.get('nombre')
+                colecciones = colecciones.filter(Juego.nombre.ilike(f'%{nombre}%'))
+            if request.args.get('saga'):
+                saga = request.args.get('saga')
+                colecciones = colecciones.filter(Juego.saga.ilike(f'%{saga}%'))
+            if request.args.get('estado_gen_id'):
+                colecciones = colecciones.filter(Coleccion.estado_general_id == request.args.get('estado_gen_id'))
+            if request.args.get('tienda_id'):
+                colecciones = colecciones.filter(Coleccion.tienda_id == request.args.get('tienda_id'))
+
+        colecciones = colecciones.filter(Coleccion.activado == 1).order_by(Plataforma.nombre.asc(), Plataforma.corto.asc(), Juego.nombre.asc()).all()
         result = self._colecciones_schema.dump(colecciones)
         return jsonify(result), 200
 
@@ -26,7 +41,7 @@ class ColeccionService:
         return jsonify(result), 200
 
     def get_colecciones_by_nombre(self, nombre):
-        colecciones = db.session.query(Coleccion).join(Juego).filter(Juego.nombre.ilike(f'%{nombre}%')).join(Coleccion.plataforma).join(Coleccion.juego).order_by(Plataforma.nombre.asc(), Plataforma.corto.asc(), Juego.nombre.asc()).all()
+        colecciones = db.session.query(Coleccion).join(Juego).filter(Juego.nombre.ilike(f'%{nombre}%'), Coleccion.activado == 1).join(Coleccion.plataforma).join(Coleccion.juego).order_by(Plataforma.nombre.asc(), Plataforma.corto.asc(), Juego.nombre.asc()).all()
         result = self._colecciones_schema.dump(colecciones)
         return jsonify(result), 200
 
@@ -56,12 +71,15 @@ class ColeccionService:
             coleccion.fecha_compra = data['fecha_compra']
         if 'fecha_recibo' in data:
             coleccion.fecha_recibo = data['fecha_recibo']
+        if 'unidades' in data:
+            coleccion.unidades = data['unidades']
         if 'coste' in data:
             coleccion.coste = data['coste']
         if 'tienda' in data and data['tienda']['id']:
             coleccion.tienda = Tienda.query.get(data['tienda']['id'])
         if 'notas' in data:
             coleccion.notas = data['notas']
+        coleccion.activado = 1
 
         db.session.add(coleccion)
         db.session.commit()
@@ -110,6 +128,10 @@ class ColeccionService:
             coleccion.fecha_recibo = data['fecha_recibo']
         else:
             coleccion.fecha_recibo = None
+        if 'unidades' in data and not data['unidades'] == '':
+            coleccion.unidades = data['unidades']
+        else:
+            coleccion.unidades = None
         if 'coste' in data and not data['coste'] == '':
             coleccion.coste = data['coste']
         else:

@@ -12,10 +12,21 @@ class RomService:
     _rom_schema = RomSchema()
     _roms_schema = RomSchema(many=True)
 
-    def get_roms(self):
-        roms = Rom.query.join(Rom.plataforma).join(Rom.juego).order_by(Plataforma.nombre.asc(), Plataforma.corto.asc(), Juego.nombre.asc()).all()
+    def get_roms(self, request):
+        roms = Rom.query.join(Rom.plataforma).join(Rom.juego)
+        if request.args:
+            if request.args.get('plataforma_id'):
+                roms = roms.filter(Rom.plataforma_id == request.args.get('plataforma_id'))
+            if request.args.get('nombre'):
+                nombre = request.args.get('nombre')
+                roms = roms.filter(Juego.nombre.ilike(f'%{nombre}%'))
+            if request.args.get('saga'):
+                saga = request.args.get('saga')
+                roms = roms.filter(Juego.saga.ilike(f'%{saga}%'))
+        roms = roms.order_by(Plataforma.nombre.asc(), Plataforma.corto.asc(), Juego.nombre.asc()).all()
         result = self._roms_schema.dump(roms)
         return jsonify(result), 200
+
 
     def get_rom_by_id(self, id):
         rom = Rom.query.get(id)

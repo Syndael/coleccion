@@ -1,22 +1,22 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { ColeccionComponent } from './coleccion/coleccion.component';
-import { ColeccionTemplateComponent } from './coleccion-template/coleccion-template.component';
-import { HistorialComponent } from './historial/historial.component';
-import { HistorialTemplateComponent } from './historial-template/historial-template.component';
-import { JuegosComponent } from './juego/juego.component';
-import { JuegoTemplateComponent } from './juego-template/juego-template.component';
-import { RomsTemplateComponent } from './roms-template/roms-template.component';
-import { RomsComponent } from './roms/roms.component';
+import { ColeccionComponent } from './components/coleccion/coleccion.component';
+import { ColeccionTemplateComponent } from './components/coleccion-template/coleccion-template.component';
+import { HistorialComponent } from './components/historial/historial.component';
+import { HistorialTemplateComponent } from './components/historial-template/historial-template.component';
+import { JuegosComponent } from './components/juego/juego.component';
+import { JuegoTemplateComponent } from './components/juego-template/juego-template.component';
+import { RomsTemplateComponent } from './components/roms-template/roms-template.component';
+import { RomsComponent } from './components/roms/roms.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/coleccion', pathMatch: 'full' },
   { path: 'coleccion', component: ColeccionComponent },
   { path: 'coleccion/:id', component: ColeccionTemplateComponent },
   { path: 'coleccion/new', component: ColeccionTemplateComponent },
-  { path: 'historial', component: HistorialComponent },
-  { path: 'historial/:id', component: HistorialTemplateComponent },
-  { path: 'historial/new', component: HistorialTemplateComponent },
+  { path: 'progreso', component: HistorialComponent },
+  { path: 'progreso/:id', component: HistorialTemplateComponent },
+  { path: 'progreso/new', component: HistorialTemplateComponent },
   { path: 'juegos', component: JuegosComponent },
   { path: 'juego/:id', component: JuegoTemplateComponent },
   { path: 'juego/new', component: JuegoTemplateComponent },

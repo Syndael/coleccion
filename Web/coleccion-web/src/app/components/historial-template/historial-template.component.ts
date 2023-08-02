@@ -2,15 +2,15 @@ import { Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
 
-import { Estado } from '../models/estado.model';
-import { Historial } from '../models/historial.model';
-import { Juego } from '../models/juego.model';
-import { Plataforma } from '../models/plataforma.model';
-import { TipoEstado } from '../models/tipo-estado';
+import { Estado } from '../../models/estado.model';
+import { Historial } from '../../models/historial.model';
+import { Juego } from '../../models/juego.model';
+import { Plataforma } from '../../models/plataforma.model';
+import { TipoEstado } from '../../models/tipo-estado';
 
-import { ErrorService } from '../services/error.service';
-import { HistorialService } from '../services/historial.service';
-import { UtilService } from '../services/util.service';
+import { ErrorService } from '../../services/error.service';
+import { HistorialService } from '../../services/historial.service';
+import { UtilService } from '../../services/util.service';
 
 @Component({
   selector: 'app-historial-template',
@@ -50,7 +50,7 @@ export class HistorialTemplateComponent {
     this.route.params.subscribe(params => {
       this.utilService.getListaEstados(TipoEstado.HISTORIAL, false).subscribe(estados => this.listaEstados = estados);
       this.utilService.getListaJuegos().subscribe(juegos => this.listaJuegos = juegos);
-      this.utilService.getListaPlataformas().subscribe(plataformas => this.listaPlataformas = plataformas);
+      this.utilService.getListaPlataformas(false).subscribe(plataformas => this.listaPlataformas = plataformas);
 
       const id = params['id'];
       if (id && id == "new") {

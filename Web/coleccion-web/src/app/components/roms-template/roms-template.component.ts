@@ -2,16 +2,16 @@ import { Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
 
-import { Rom } from '../models/rom.model';
-import { Juego } from '../models/juego.model';
-import { Plataforma } from '../models/plataforma.model';
-import { Idioma } from '../models/idioma.model';
-import { Region } from '../models/region.model';
-import { TipoRom } from '../models/tipo-rom.model';
+import { Rom } from '../../models/rom.model';
+import { Juego } from '../../models/juego.model';
+import { Plataforma } from '../../models/plataforma.model';
+import { Idioma } from '../../models/idioma.model';
+import { Region } from '../../models/region.model';
+import { TipoRom } from '../../models/tipo-rom.model';
 
-import { ErrorService } from '../services/error.service';
-import { RomService } from '../services/rom.service';
-import { UtilService } from '../services/util.service';
+import { ErrorService } from '../../services/error.service';
+import { RomService } from '../../services/rom.service';
+import { UtilService } from '../../services/util.service';
 
 @Component({
   selector: 'app-roms-template',
@@ -55,7 +55,7 @@ export class RomsTemplateComponent {
     this.route.params.subscribe(params => {
       this.utilService.getListaIdiomas(true).subscribe(idiomas => this.listaIdiomas = idiomas);
       this.utilService.getListaJuegos().subscribe(juegos => this.listaJuegos = juegos);
-      this.utilService.getListaPlataformas().subscribe(plataformas => this.listaPlataformas = plataformas);
+      this.utilService.getListaPlataformas(false).subscribe(plataformas => this.listaPlataformas = plataformas);
       this.utilService.getListaRegiones(true).subscribe(regiones => this.listaRegiones = regiones);
       this.utilService.getListaTiposRom(true).subscribe(tiposRom => this.listaTiposRom = tiposRom);
 

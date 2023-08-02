@@ -7,14 +7,15 @@ import { ToastrModule } from 'ngx-toastr';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { JuegosComponent } from './juego/juego.component';
-import { JuegoTemplateComponent } from './juego-template/juego-template.component';
-import { ColeccionComponent } from './coleccion/coleccion.component';
-import { HistorialComponent } from './historial/historial.component';
-import { RomsComponent } from './roms/roms.component';
-import { RomsTemplateComponent } from './roms-template/roms-template.component';
-import { HistorialTemplateComponent } from './historial-template/historial-template.component';
-import { ColeccionTemplateComponent } from './coleccion-template/coleccion-template.component';
+import { JuegosComponent } from './components/juego/juego.component';
+import { JuegoTemplateComponent } from './components/juego-template/juego-template.component';
+import { ColeccionComponent } from './components/coleccion/coleccion.component';
+import { EllipsisPipe, FormatPipe } from './pipes';
+import { HistorialComponent } from './components/historial/historial.component';
+import { RomsComponent } from './components/roms/roms.component';
+import { RomsTemplateComponent } from './components/roms-template/roms-template.component';
+import { HistorialTemplateComponent } from './components/historial-template/historial-template.component';
+import { ColeccionTemplateComponent } from './components/coleccion-template/coleccion-template.component';
 
 @NgModule({
   declarations: [
@@ -26,7 +27,9 @@ import { ColeccionTemplateComponent } from './coleccion-template/coleccion-templ
     RomsComponent,
     RomsTemplateComponent,
     HistorialTemplateComponent,
-    ColeccionTemplateComponent
+    ColeccionTemplateComponent,
+    EllipsisPipe,
+    FormatPipe
   ],
   imports: [
     BrowserModule,

@@ -20,9 +20,11 @@ class Coleccion(db.Model):
     estado_caja_id = db.Column(db.Integer, db.ForeignKey('ESTADO.id'))
     fecha_compra = db.Column(db.Date)
     fecha_recibo = db.Column(db.Date)
+    unidades = db.Column(db.Integer)
     coste = db.Column(db.Float)
     tienda_id = db.Column(db.Integer, db.ForeignKey('TIENDA.id'))
     notas = db.Column(db.String(255))
+    activado = db.Column(db.Boolean)
 
     juego = db.relationship('Juego', primaryjoin='Coleccion.juego_id == Juego.id')
     plataforma = db.relationship('Plataforma', primaryjoin='Coleccion.plataforma_id == Plataforma.id')
@@ -32,7 +34,7 @@ class Coleccion(db.Model):
     estado_caja = db.relationship('Estado', primaryjoin='Coleccion.estado_caja_id == Estado.id')
     tienda = db.relationship('Tienda', primaryjoin='Coleccion.tienda_id == Tienda.id')
 
-    def __init__(self, juego, plataforma, idioma=None, region=None, estado_general=None, estado_caja=None, fecha_compra=None, fecha_recibo=None, coste=None, tienda=None, notas=None):
+    def __init__(self, juego, plataforma, idioma=None, region=None, estado_general=None, estado_caja=None, fecha_compra=None, fecha_recibo=None, unidades=None, coste=None, tienda=None, notas=None, activado=None):
         self.juego = juego
         self.plataforma = plataforma
         self.idioma = idioma
@@ -41,9 +43,11 @@ class Coleccion(db.Model):
         self.estado_caja = estado_caja
         self.fecha_compra = fecha_compra
         self.fecha_recibo = fecha_recibo
+        self.unidades = unidades
         self.coste = coste
         self.tienda = tienda
         self.notas = notas
+        self.activado = activado
 
 
 class ColeccionSchema(Schema):
@@ -56,5 +60,5 @@ class ColeccionSchema(Schema):
     tienda = fields.Nested(TiendaSchema)
 
     class Meta:
-        fields = ('id', 'juego', 'plataforma', 'idioma', 'region', 'estado_general', 'estado_caja', 'fecha_compra', 'fecha_recibo', 'coste', 'tienda', 'notas')
+        fields = ('id', 'juego', 'plataforma', 'idioma', 'region', 'estado_general', 'estado_caja', 'fecha_compra', 'fecha_recibo', 'unidades', 'coste', 'tienda', 'notas', 'activado')
         include_relationships = True

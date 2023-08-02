@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { catchError } from 'rxjs/operators';
 
 import { Constantes } from '../constantes';
 import { Rom } from '../models/rom.model';
+import { FiltroRom } from '../filters/roms.filter';
 import { ErrorService } from './error.service';
 
 @Injectable({ providedIn: 'root', })
@@ -18,8 +19,20 @@ export class RomService {
         private error: ErrorService
     ) { }
 
-    getRoms(): Observable<Rom[]> {
-        return this.http.get<Rom[]>(Constantes.ROMS_URL).pipe(catchError(this.error.handleError<Rom[]>('getRoms', [])));
+    getRoms(filtro: FiltroRom | undefined): Observable<Rom[]> {
+        let params = new HttpParams()
+        if (filtro) {
+            if (filtro.plataformaSeleccionada && filtro.plataformaSeleccionada.toString() != 'undefined') {
+                params = params.set('plataforma_id', filtro.plataformaSeleccionada.toString());
+            }
+            if (filtro.nombreJuego && filtro.nombreJuego.length != 0) {
+                params = params.set('nombre', filtro.nombreJuego);
+            }
+            if (filtro.sagaJuego && filtro.sagaJuego.length != 0) {
+                params = params.set('saga', filtro.sagaJuego);
+            }
+        }
+        return this.http.get<Rom[]>(Constantes.ROMS_URL, { params: params }).pipe(catchError(this.error.handleError<Rom[]>('getRoms', [])));
     }
 
     getRom(id: number): Observable<Rom> {

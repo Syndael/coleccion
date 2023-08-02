@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { catchError } from 'rxjs/operators';
 
 import { Constantes } from '../constantes';
 import { Coleccion } from '../models/coleccion.model';
+import { FiltroColeccion } from '../filters/coleccion.filter';
 import { ErrorService } from './error.service';
 
 @Injectable({ providedIn: 'root', })
@@ -18,8 +19,26 @@ export class ColeccionService {
         private error: ErrorService
     ) { }
 
-    getColecciones(): Observable<Coleccion[]> {
-        return this.http.get<Coleccion[]>(Constantes.COLECCIONES_URL).pipe(catchError(this.error.handleError<Coleccion[]>('getColecciones', [])));
+    getColecciones(filtro: FiltroColeccion | undefined): Observable<Coleccion[]> {
+        let params = new HttpParams()
+        if (filtro) {
+            if (filtro.plataformaSeleccionada && filtro.plataformaSeleccionada.toString() != 'undefined') {
+                params = params.set('plataforma_id', filtro.plataformaSeleccionada.toString());
+            }
+            if (filtro.nombreJuego && filtro.nombreJuego.length != 0) {
+                params = params.set('nombre', filtro.nombreJuego);
+            }
+            if (filtro.sagaJuego && filtro.sagaJuego.length != 0) {
+                params = params.set('saga', filtro.sagaJuego);
+            }
+            if (filtro.estadoGeneralSeleccionado && filtro.estadoGeneralSeleccionado.toString() != 'undefined') {
+                params = params.set('estado_gen_id', filtro.estadoGeneralSeleccionado.toString());
+            }
+            if (filtro.tiendaSeleccionada && filtro.tiendaSeleccionada.toString() != 'undefined') {
+                params = params.set('tienda_id', filtro.tiendaSeleccionada.toString());
+            }
+        }
+        return this.http.get<Coleccion[]>(Constantes.COLECCIONES_URL, { params: params }).pipe(catchError(this.error.handleError<Coleccion[]>('getColecciones', [])));
     }
 
     getColeccion(id: number): Observable<Coleccion> {

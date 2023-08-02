@@ -1,0 +1,78 @@
+<div class="contenedor-colecciones">
+    <div class="crud">
+        <button routerLink="/coleccion/new">+</button>
+    </div>
+    <div class="params">
+        <div class="campo">
+            <button class="limpiar-filtro" (click)="limpiarFiltro()">×</button>
+        </div>
+        <div class="campo">
+            Plataforma:
+            <br />
+            <select [(ngModel)]="filtro.plataformaSeleccionada" (change)="getColecciones()">
+                <option *ngFor="let plataforma of listaPlataformas" [value]="plataforma.id">{{ plataforma.corto ? '(' +
+                    plataforma.corto + ') ' : '' }}{{ plataforma.nombre }}</option>
+            </select>
+        </div>
+        <div class="campo">
+            Juego:
+            <br />
+            <input [(ngModel)]="filtro.nombreJuego" placeholder="Juego" (ngModelChange)="getColecciones()" />
+        </div>
+        <div class="campo">
+            Saga:
+            <br />
+            <input [(ngModel)]="filtro.sagaJuego" placeholder="Saga/Franquicia" (ngModelChange)="getColecciones()" />
+        </div>
+        <div class="campo">
+            Estado:
+            <br />
+            <select [(ngModel)]="filtro.estadoGeneralSeleccionado" (change)="getColecciones()">
+                <option *ngFor="let estado of listaEstadosGeneral" [value]="estado.id">{{ estado.descripcion }}</option>
+            </select>
+        </div>
+        <div class="campo">
+            Tienda:
+            <br />
+            <select [(ngModel)]="filtro.tiendaSeleccionada" (change)="getColecciones()">
+                <option *ngFor="let tienda of listaTiendas" [value]="tienda.id">{{ tienda.nombre }}</option>
+            </select>
+        </div>
+    </div>
+    <table class="lista-colecciones">
+        <tr class="encabezado-colecciones">
+            <th>Plataforma</th>
+            <th>Juego</th>
+            <th>Idioma/Región</th>
+            <th>Estado</th>
+            <th>Caja</th>
+            <th>Fecha compra</th>
+            <th>Fecha entrega</th>
+            <th>Unidades</th>
+            <th>Coste</th>
+            <th>Tienda</th>
+            <th>Notas</th>
+        </tr>
+        <tr class="coleccion" *ngFor="let coleccion of colecciones" routerLink="/coleccion/{{coleccion.id}}">
+            <td class="plataforma">{{coleccion.plataforma?.nombre}}</td>
+            <td class="juego">{{coleccion.juego?.nombre}}</td>
+            <td *ngIf="coleccion.idioma && coleccion.region" class="idioma-region">{{coleccion.idioma.descripcion}} /
+                {{coleccion.region.descripcion}}</td>
+            <td *ngIf="coleccion.idioma && !coleccion.region" class="idioma-region">{{coleccion.idioma.descripcion}}
+            </td>
+            <td *ngIf="!coleccion.idioma && coleccion.region" class="idioma-region">{{coleccion.region.descripcion}}
+            </td>
+            <td *ngIf="!coleccion.idioma && !coleccion.region" class="idioma-region"></td>
+            <td class="estado-general">{{coleccion.estado_general?.descripcion}}</td>
+            <td class="estado-caja">{{coleccion.estado_caja?.descripcion}}</td>
+            <td class="fecha-compra">{{coleccion.fecha_compra | date: 'dd/MM/yyyy'}}</td>
+            <td class="fecha-entrega">{{coleccion.fecha_recibo | date: 'dd/MM/yyyy'}}</td>
+            <td class="unidades">{{coleccion.unidades}}</td>
+            <td *ngIf="coleccion.coste" class="coste">{{coleccion.coste | formateo:'€'}}</td>
+            <td *ngIf="!coleccion.coste" class="coste"></td>
+            <td *ngIf="coleccion.tienda" class="tienda">{{coleccion.tienda.nombre}}</td>
+            <td *ngIf="!coleccion.tienda" class="tienda"></td>
+            <td class="notas">{{coleccion.notas | ellipsis: 50 }}</td>
+        </tr>
+    </table>
+</div>

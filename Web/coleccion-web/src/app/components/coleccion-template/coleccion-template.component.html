@@ -1,0 +1,59 @@
+<div class="template" *ngIf="coleccion">
+    <div class="detalles">
+        <label for="coleccion-plataforma">Plataforma: </label>
+        <select [(ngModel)]="plataformaSeleccionada">
+            <option *ngFor="let plataforma of listaPlataformas" [value]="plataforma.id">{{ plataforma.corto ? '(' + plataforma.corto + ') ' : '' }}{{ plataforma.nombre }}</option>
+        </select>
+        <br />
+        <label for="coleccion-juego">Juego: </label>
+        <select [(ngModel)]="juegoSeleccionado">
+            <option *ngFor="let juego of listaJuegos" [value]="juego.id">{{ juego.nombre }}</option>
+        </select>
+        <br />
+        <label for="coleccion-idioma">Idioma: </label>
+        <select [(ngModel)]="idiomaSeleccionado">
+            <option *ngFor="let idioma of listaIdiomas" [value]="idioma.id">{{ idioma.corto ? '(' + idioma.corto + ') ' : '' }}{{ idioma.descripcion }}</option>
+        </select>
+        <br />
+        <label for="coleccion-region">Región: </label>
+        <select [(ngModel)]="regionSeleccionada">
+            <option *ngFor="let region of listaRegiones" [value]="region.id">{{ region.corto ? '(' + region.corto + ') ' : '' }}{{ region.descripcion }}</option>
+        </select>
+        <br />
+        <label for="coleccion-estado-general">Estado: </label>
+        <select [(ngModel)]="estadoGeneralSeleccionado">
+            <option *ngFor="let estado of listaEstadosGeneral" [value]="estado.id">{{ estado.descripcion }}</option>
+        </select>
+        <br />
+        <label for="coleccion-estado-caja">Caja: </label>
+        <select [(ngModel)]="estadoCajaSeleccionado">
+            <option *ngFor="let estado of listaEstadosCaja" [value]="estado.id">{{ estado.descripcion }}</option>
+        </select>
+        <br />
+        <label for="coleccion-compra">F. Compra: </label>
+        <input id="coleccion-compra" type="date" [(ngModel)]="coleccion.fecha_compra" placeholder="Fecha compra" />
+        <br />
+        <label for="coleccion-entrega">F. Entrega: </label>
+        <input id="coleccion-entrega" type="date" [(ngModel)]="coleccion.fecha_recibo" placeholder="Fecha entrega" />
+        <br />
+        <label for="coleccion-unidades">Unidades: </label>
+        <input id="coleccion-unidades" [(ngModel)]="coleccion.unidades" placeholder="Unidades" />
+        <br />
+        <label for="coleccion-coste">Coste: </label>
+        <input id="coleccion-coste" [(ngModel)]="coleccion.coste" placeholder="Coste" />
+        <br />
+        <label for="coleccion-tienda">Tienda: </label>
+        <select [(ngModel)]="tiendaSeleccionada">
+            <option *ngFor="let tienda of listaTiendas" [value]="tienda.id">{{ tienda.nombre }}</option>
+        </select>
+        <br />
+        <label for="coleccion-notas">Notas: </label>
+        <textarea id="coleccion-notas" [(ngModel)]="coleccion.notas">{{coleccion.notas}}</textarea>
+        <br />
+        <br />
+        <div class="detalles-botones">
+            <button type="button" (click)="back()">Atrás</button>
+            <button type="button" (click)="save()">Guardar</button>
+        </div>
+    </div>
+</div>

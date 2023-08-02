@@ -14,6 +14,7 @@ from app.service.jugado_service import JugadoService
 from app.service.plataforma_service import PlataformaService
 from app.service.region_service import RegionService
 from app.service.rom_service import RomService
+from app.service.tienda_service import TiendaService
 from app.service.tipo_rom_service import TipoRomService
 
 _config = ConfigParser()
@@ -45,15 +46,11 @@ _coleccion_service = ColeccionService()
 
 @app.route('/api/colecciones', methods=['GET'])
 def get_colecciones():
-    return _coleccion_service.get_colecciones()
+    return _coleccion_service.get_colecciones(request)
 
 @app.route('/api/coleccion/id/<id>', methods=['GET'])
 def get_colecciones_by_id(id):
     return _coleccion_service.get_coleccion_by_id(id)
-
-@app.route('/api/coleccion/nombre/<nombre>', methods=['GET'])
-def get_colecciones_by_nombre(nombre):
-    return _coleccion_service.get_colecciones_by_nombre(nombre)
 
 @app.route('/api/coleccion', methods=['POST'])
 def add_coleccion():
@@ -88,15 +85,11 @@ _juego_service = JuegoService()
 
 @app.route('/api/juegos', methods=['GET'])
 def get_juegos():
-    return _juego_service.get_juegos()
+    return _juego_service.get_juegos(request)
 
 @app.route('/api/juego/id/<id>', methods=['GET'])
 def get_juegos_by_id(id):
     return _juego_service.get_juegos_by_id(id)
-
-@app.route('/api/juego/nombre/<nombre>', methods=['GET'])
-def get_juegos_by_nombre(nombre):
-    return _juego_service.get_juegos_by_nombre(nombre)
 
 @app.route('/api/juego', methods=['POST'])
 def add_juego():
@@ -113,7 +106,7 @@ _jugado_service = JugadoService()
 
 @app.route('/api/jugados', methods=['GET'])
 def get_jugados():
-    return _jugado_service.get_jugados()
+    return _jugado_service.get_jugados(request)
 
 @app.route('/api/jugado/id/<id>', methods=['GET'])
 def get_jugado_by_id(id):
@@ -152,7 +145,7 @@ _rom_service = RomService()
 
 @app.route('/api/roms', methods=['GET'])
 def get_roms():
-    return _rom_service.get_roms()
+    return _rom_service.get_roms(request)
 
 @app.route('/api/rom/id/<id>', methods=['GET'])
 def get_rom_by_id(id):
@@ -165,6 +158,15 @@ def add_rom():
 @app.route('/api/rom/id/<id>', methods=['PUT'])
 def update_rom(id):
     return _rom_service.update_rom(request, id)
+
+
+# Tiendas
+_tienda_service = TiendaService()
+
+
+@app.route('/api/tiendas', methods=['GET'])
+def get_tiendas():
+    return _tienda_service.get_tiendas()
 
 
 # Tipo ROM

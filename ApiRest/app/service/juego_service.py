@@ -7,8 +7,16 @@ class JuegoService:
     _juego_schema = JuegoSchema()
     _juegos_schema = JuegoSchema(many=True)
 
-    def get_juegos(self):
-        juegos = Juego.query.order_by(Juego.nombre.asc()).all()
+    def get_juegos(self, request):
+        juegos = Juego.query
+        if request.args:
+            if request.args.get('nombre'):
+                nombre = request.args.get('nombre')
+                juegos = juegos.filter(Juego.nombre.ilike(f'%{nombre}%'))
+            if request.args.get('saga'):
+                saga = request.args.get('saga')
+                juegos = juegos.filter(Juego.saga.ilike(f'%{saga}%'))
+        juegos = juegos.order_by(Juego.nombre.asc()).all()
         result = self._juegos_schema.dump(juegos)
         return jsonify(result), 200
 

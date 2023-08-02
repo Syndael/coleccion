@@ -1,6 +1,8 @@
 import { Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 
+import { Environment } from '../environments/environment';
+
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html'
@@ -10,9 +12,10 @@ export class AppComponent {
     private route: ActivatedRoute
   ) { }
 
+  cintaEntorno = Environment.TAG;
   menuItems = [
     { id: 1, name: 'Colección', route: '/coleccion', selected: false },
-    { id: 2, name: 'Historial', route: '/historial', selected: false },
+    { id: 2, name: 'Progresos', route: '/progreso', selected: false },
     { id: 3, name: 'ROMs', route: '/roms', selected: false },
     { id: 4, name: 'Juegos', route: '/juegos', selected: false }
   ];

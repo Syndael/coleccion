@@ -1,3 +1,4 @@
+<div class="cinta-entorno">{{ cintaEntorno }}</div>
 <div class="menu">
   <div *ngFor="let item of menuItems" [routerLink]="item.route" [ngClass]="{'selected-background': item.selected}"
     (click)="onMenuItemClick(item)">

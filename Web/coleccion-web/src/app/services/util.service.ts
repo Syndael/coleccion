@@ -7,13 +7,20 @@ import { Idioma } from '../models/idioma.model';
 import { Juego } from '../models/juego.model';
 import { Plataforma } from '../models/plataforma.model';
 import { Region } from '../models/region.model';
+import { Tienda } from '../models/tienda.model';
 import { TipoRom } from '../models/tipo-rom.model';
+
+import { FiltroColeccion } from '../filters/coleccion.filter';
+import { FiltroHistorial } from '../filters/historial.filter';
+import { FiltroJuego } from '../filters/juego.filter';
+import { FiltroRom } from '../filters/roms.filter';
 
 import { EstadoService } from '../services/estado.service';
 import { IdiomaService } from '../services/idioma.service';
 import { JuegoService } from '../services/juego.service';
 import { PlataformaService } from '../services/plataforma.service';
 import { RegionService } from '../services/region.service';
+import { TiendaService } from '../services/tienda.service';
 import { TipoRomService } from '../services/tipo-rom.service';
 import { TipoEstado } from '../models/tipo-estado';
 
@@ -26,7 +33,13 @@ export class UtilService {
   juegos: Juego[] = [];
   plataformas: Plataforma[] = [];
   regiones: Region[] = [];
+  tiendas: Tienda[] = [];
   tiposRom: TipoRom[] = [];
+
+  filtroColeccion: FiltroColeccion | undefined;
+  filtroHistorial: FiltroHistorial | undefined;
+  filtroJuego: FiltroJuego | undefined;
+  filtroRom: FiltroRom | undefined;
 
   constructor(
     private estadoService: EstadoService,
@@ -34,6 +47,7 @@ export class UtilService {
     private juegoService: JuegoService,
     private plataformaService: PlataformaService,
     private regionService: RegionService,
+    private tiendaService: TiendaService,
     private tipoRomService: TipoRomService
   ) { }
 
@@ -131,7 +145,7 @@ export class UtilService {
   }
   getListaJuegos(): Observable<Juego[]> {
     if (this.juegos.length === 0) {
-      return this.juegoService.getJuegos().pipe(
+      return this.juegoService.getJuegos(undefined).pipe(
         map(juegos => {
           this.juegos = juegos;
           return juegos;
@@ -145,12 +159,22 @@ export class UtilService {
       return of(this.juegos);
     }
   }
-  getListaPlataformas(): Observable<Plataforma[]> {
+  getListaPlataformas(incluirDefault: Boolean): Observable<Plataforma[]> {
+    const plataformaNull: Plataforma = {
+      id: undefined,
+      nombre: '',
+      corto: undefined
+    }
+
     if (this.plataformas.length === 0) {
       return this.plataformaService.getPlataformas().pipe(
         map(plataformas => {
           this.plataformas = plataformas;
-          return plataformas;
+          if (incluirDefault) {
+            return [plataformaNull, ...this.plataformas];
+          } else {
+            return this.plataformas;
+          }
         }),
         catchError(error => {
           console.error('Error en la llamada a la API:', error);
@@ -158,11 +182,15 @@ export class UtilService {
         })
       );
     } else {
-      return of(this.plataformas);
+      if (incluirDefault) {
+        return of([plataformaNull, ...this.plataformas]);
+      } else {
+        return of(this.plataformas);
+      }
     }
   }
   getListaRegiones(incluirDefault: Boolean): Observable<Region[]> {
-    const regionNull: Idioma = {
+    const regionNull: Region = {
       id: undefined,
       descripcion: '',
       corto: undefined
@@ -188,6 +216,35 @@ export class UtilService {
         return of([regionNull, ...this.regiones]);
       } else {
         return of(this.regiones);
+      }
+    }
+  }
+  getListaTiendas(incluirDefault: Boolean): Observable<Tienda[]> {
+    const tiendaNull: Tienda = {
+      id: undefined,
+      nombre: ''
+    }
+
+    if (this.tiendas.length === 0) {
+      return this.tiendaService.getTiendas().pipe(
+        map(tiendas => {
+          this.tiendas = tiendas;
+          if (incluirDefault) {
+            return [tiendaNull, ...this.tiendas];
+          } else {
+            return this.tiendas;
+          }
+        }),
+        catchError(error => {
+          console.error('Error en la llamada a la API:', error);
+          return of([]);
+        })
+      );
+    } else {
+      if (incluirDefault) {
+        return of([tiendaNull, ...this.tiendas]);
+      } else {
+        return of(this.tiendas);
       }
     }
   }
@@ -236,5 +293,36 @@ export class UtilService {
   }
   setListaTiposRom(tiposRom: TipoRom[]): void {
     this.tiposRom = tiposRom;
+  }
+  setListaTiendas(tiendas: Tienda[]): void {
+    this.tiendas = tiendas;
+  }
+
+  getFiltroColeccion(): FiltroColeccion | undefined {
+    return this.filtroColeccion;
+  }
+  setFiltroColeccion(filtro: FiltroColeccion | undefined): void {
+    this.filtroColeccion = filtro;
+  }
+
+  getFiltroHistorial(): FiltroHistorial | undefined {
+    return this.filtroHistorial;
+  }
+  setFiltroHistorial(filtro: FiltroHistorial | undefined): void {
+    this.filtroHistorial = filtro;
+  }
+
+  getFiltroJuego(): FiltroJuego | undefined {
+    return this.filtroJuego;
+  }
+  setFiltroJuego(filtro: FiltroJuego | undefined): void {
+    this.filtroJuego = filtro;
+  }
+
+  getFiltroRom(): FiltroRom | undefined {
+    return this.filtroRom;
+  }
+  setFiltroRom(filtro: FiltroRom | undefined): void {
+    this.filtroRom = filtro;
   }
 }

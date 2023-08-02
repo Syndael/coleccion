@@ -2,6 +2,29 @@
     <div class="crud">
         <button routerLink="/rom/new">+</button>
     </div>
+    <div class="params">
+        <div class="campo">
+            <button class="limpiar-filtro" (click)="limpiarFiltro()">×</button>
+        </div>
+        <div class="campo">
+            Plataforma:
+            <br />
+            <select [(ngModel)]="filtro.plataformaSeleccionada" (change)="getRoms()">
+                <option *ngFor="let plataforma of listaPlataformas" [value]="plataforma.id">{{ plataforma.corto ? '(' +
+                    plataforma.corto + ') ' : '' }}{{ plataforma.nombre }}</option>
+            </select>
+        </div>
+        <div class="campo">
+            Juego:
+            <br />
+            <input [(ngModel)]="filtro.nombreJuego" placeholder="Juego" (ngModelChange)="getRoms()" />
+        </div>
+        <div class="campo">
+            Saga:
+            <br />
+            <input [(ngModel)]="filtro.sagaJuego" placeholder="Saga/Franquicia" (ngModelChange)="getRoms()" />
+        </div>
+    </div>
     <table class="lista-roms">
         <tr class="encabezado-roms">
             <th>Plataforma</th>

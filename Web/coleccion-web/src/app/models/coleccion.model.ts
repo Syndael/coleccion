@@ -15,6 +15,7 @@ export class Coleccion {
     estado_caja: Estado | undefined;
     fecha_compra: string | undefined;
     fecha_recibo: string | undefined;
+    unidades: number | undefined;
     coste: number | undefined;
     tienda: Tienda | undefined;
     notas: string | undefined;

@@ -8,12 +8,14 @@ class Estado(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     descripcion = db.Column(db.String(255))
     tipo = db.Column(db.Integer)
+    orden = db.Column(db.Integer)
 
-    def __init__(self, descripcion, tipo):
+    def __init__(self, descripcion, tipo, orden):
         self.descripcion = descripcion
         self.tipo = tipo
+        self.orden = orden
 
 
 class EstadoSchema(Schema):
     class Meta:
-        fields = ('id', 'descripcion', 'tipo')
+        fields = ('id', 'descripcion', 'tipo', 'orden')

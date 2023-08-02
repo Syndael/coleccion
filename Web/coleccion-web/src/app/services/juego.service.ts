@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { catchError } from 'rxjs/operators';
 
 import { Constantes } from '../constantes';
 import { Juego } from '../models/juego.model';
+import { FiltroJuego } from '../filters/juego.filter';
 import { ErrorService } from './error.service';
 
 @Injectable({ providedIn: 'root', })
@@ -18,8 +19,17 @@ export class JuegoService {
         private error: ErrorService
     ) { }
 
-    getJuegos(): Observable<Juego[]> {
-        return this.http.get<Juego[]>(Constantes.JUEGOS_URL).pipe(catchError(this.error.handleError<Juego[]>('getJuegos', [])));
+    getJuegos(filtro: FiltroJuego | undefined): Observable<Juego[]> {
+        let params = new HttpParams()
+        if (filtro) {
+            if (filtro.nombreJuego && filtro.nombreJuego.length != 0) {
+                params = params.set('nombre', filtro.nombreJuego);
+            }
+            if (filtro.sagaJuego && filtro.sagaJuego.length != 0) {
+                params = params.set('saga', filtro.sagaJuego);
+            }
+        }
+        return this.http.get<Juego[]>(Constantes.JUEGOS_URL, { params: params }).pipe(catchError(this.error.handleError<Juego[]>('getJuegos', [])));
     }
 
     getJuego(id: number): Observable<Juego> {

@@ -1,10 +1,11 @@
 import { Injectable } from '@angular/core';
 import { Observable } from 'rxjs';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
 import { catchError } from 'rxjs/operators';
 
 import { Constantes } from '../constantes';
 import { Historial } from '../models/historial.model';
+import { FiltroHistorial } from '../filters/historial.filter';
 import { ErrorService } from './error.service';
 
 @Injectable({ providedIn: 'root', })
@@ -18,8 +19,23 @@ export class HistorialService {
         private error: ErrorService
     ) { }
 
-    getHistoriales(): Observable<Historial[]> {
-        return this.http.get<Historial[]>(Constantes.HISTORIALES_URL).pipe(catchError(this.error.handleError<Historial[]>('getHistoriales', [])));
+    getHistoriales(filtro: FiltroHistorial | undefined): Observable<Historial[]> {
+        let params = new HttpParams()
+        if (filtro) {
+            if (filtro.plataformaSeleccionada && filtro.plataformaSeleccionada.toString() != 'undefined') {
+                params = params.set('plataforma_id', filtro.plataformaSeleccionada.toString());
+            }
+            if (filtro.nombreJuego && filtro.nombreJuego.length != 0) {
+                params = params.set('nombre', filtro.nombreJuego);
+            }
+            if (filtro.sagaJuego && filtro.sagaJuego.length != 0) {
+                params = params.set('saga', filtro.sagaJuego);
+            }
+            if (filtro.estadoSeleccionado && filtro.estadoSeleccionado.toString() != 'undefined') {
+                params = params.set('estado_id', filtro.estadoSeleccionado.toString());
+            }
+        }
+        return this.http.get<Historial[]>(Constantes.HISTORIALES_URL, { params: params }).pipe(catchError(this.error.handleError<Historial[]>('getHistoriales', [])));
     }
 
     getHistorial(id: number): Observable<Historial> {

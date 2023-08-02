@@ -1,8 +1,8 @@
 import { Component } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
-import { Juego } from '../models/juego.model';
-import { JuegoService } from '../services/juego.service';
+import { Juego } from '../../models/juego.model';
+import { JuegoService } from '../../services/juego.service';
 
 @Component({
   selector: 'app-juego-template',

@@ -2,6 +2,21 @@
     <div class="crud">
         <button routerLink="/juego/new">+</button>
     </div>
+    <div class="params">
+        <div class="campo">
+            <button class="limpiar-filtro" (click)="limpiarFiltro()">×</button>
+        </div>
+        <div class="campo">
+            Nombre:
+            <br />
+            <input [(ngModel)]="filtro.nombreJuego" placeholder="Juego" (ngModelChange)="getJuegos()" />
+        </div>
+        <div class="campo">
+            Saga:
+            <br />
+            <input [(ngModel)]="filtro.sagaJuego" placeholder="Saga/Franquicia" (ngModelChange)="getJuegos()" />
+        </div>
+    </div>
     <table class="lista-juegos">
         <tr class="encabezado-juegos">
             <th>Juego</th>

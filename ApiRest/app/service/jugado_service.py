@@ -10,8 +10,20 @@ class JugadoService:
     _jugado_schema = JugadoSchema()
     _jugados_schema = JugadoSchema(many=True)
 
-    def get_jugados(self):
-        jugados = Jugado.query.join(Jugado.plataforma).join(Jugado.juego).order_by(Plataforma.nombre.asc(), Plataforma.corto.asc(), Juego.nombre.asc()).all()
+    def get_jugados(self, request):
+        jugados = Jugado.query.join(Jugado.estado_jugado).join(Jugado.plataforma).join(Jugado.juego)
+        if request.args:
+            if request.args.get('plataforma_id'):
+                jugados = jugados.filter(Jugado.plataforma_id == request.args.get('plataforma_id'))
+            if request.args.get('nombre'):
+                nombre = request.args.get('nombre')
+                jugados = jugados.filter(Juego.nombre.ilike(f'%{nombre}%'))
+            if request.args.get('saga'):
+                saga = request.args.get('saga')
+                jugados = jugados.filter(Juego.saga.ilike(f'%{saga}%'))
+            if request.args.get('estado_id'):
+                jugados = jugados.filter(Jugado.estado_jugado_id == request.args.get('estado_id'))
+        jugados = jugados.order_by(Estado.orden.asc(), Plataforma.nombre.asc(), Plataforma.corto.asc(), Juego.nombre.asc()).all()
         result = self._jugados_schema.dump(jugados)
         return jsonify(result), 200
 

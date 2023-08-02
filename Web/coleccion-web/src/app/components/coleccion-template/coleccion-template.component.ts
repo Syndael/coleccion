@@ -2,17 +2,18 @@ import { Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
 
-import { Coleccion } from '../models/coleccion.model';
-import { Estado } from '../models/estado.model';
-import { Idioma } from '../models/idioma.model';
-import { Juego } from '../models/juego.model';
-import { Plataforma } from '../models/plataforma.model';
-import { Region } from '../models/region.model';
-import { TipoEstado } from '../models/tipo-estado';
+import { Coleccion } from '../../models/coleccion.model';
+import { Estado } from '../../models/estado.model';
+import { Idioma } from '../../models/idioma.model';
+import { Juego } from '../../models/juego.model';
+import { Plataforma } from '../../models/plataforma.model';
+import { Region } from '../../models/region.model';
+import { Tienda } from '../../models/tienda.model';
+import { TipoEstado } from '../../models/tipo-estado';
 
-import { ErrorService } from '../services/error.service';
-import { ColeccionService } from '../services/coleccion.service';
-import { UtilService } from '../services/util.service';
+import { ErrorService } from '../../services/error.service';
+import { ColeccionService } from '../../services/coleccion.service';
+import { UtilService } from '../../services/util.service';
 
 @Component({
   selector: 'app-coleccion-template',
@@ -38,6 +39,7 @@ export class ColeccionTemplateComponent {
     estado_caja: undefined,
     fecha_compra: undefined,
     fecha_recibo: undefined,
+    unidades: undefined,
     coste: undefined,
     tienda: undefined,
     notas: undefined
@@ -48,6 +50,7 @@ export class ColeccionTemplateComponent {
   listaJuegos: Juego[] = [];
   listaPlataformas: Plataforma[] = [];
   listaRegiones: Region[] = [];
+  listaTiendas: Tienda[] = [];
 
   estadoGeneralSeleccionado: number | undefined;
   estadoCajaSeleccionado: number | undefined;
@@ -55,6 +58,7 @@ export class ColeccionTemplateComponent {
   juegoSeleccionado: number | undefined;
   plataformaSeleccionada: number | undefined;
   regionSeleccionada: number | undefined;
+  tiendaSeleccionada: number | undefined;
 
   ngOnInit(): void {
     this.route.params.subscribe(params => {
@@ -62,8 +66,9 @@ export class ColeccionTemplateComponent {
       this.utilService.getListaEstados(TipoEstado.CAJAS, false).subscribe(estados => this.listaEstadosCaja = estados);
       this.utilService.getListaIdiomas(true).subscribe(idiomas => this.listaIdiomas = idiomas);
       this.utilService.getListaJuegos().subscribe(juegos => this.listaJuegos = juegos);
-      this.utilService.getListaPlataformas().subscribe(plataformas => this.listaPlataformas = plataformas);
+      this.utilService.getListaPlataformas(false).subscribe(plataformas => this.listaPlataformas = plataformas);
       this.utilService.getListaRegiones(true).subscribe(regiones => this.listaRegiones = regiones);
+      this.utilService.getListaTiendas(true).subscribe(tiendas => this.listaTiendas = tiendas);
 
       const id = params['id'];
       if (id && id == "new") {
@@ -84,6 +89,7 @@ export class ColeccionTemplateComponent {
       this.juegoSeleccionado = this.coleccion.juego?.id;
       this.plataformaSeleccionada = this.coleccion.plataforma?.id;
       this.regionSeleccionada = this.coleccion.region?.id;
+      this.tiendaSeleccionada = this.coleccion.tienda?.id;
     });
   }
 
@@ -95,9 +101,15 @@ export class ColeccionTemplateComponent {
       this.coleccion.juego = this.listaJuegos.find((juego) => juego.id === Number(this.juegoSeleccionado));
       this.coleccion.plataforma = this.listaPlataformas.find((plataforma) => plataforma.id === Number(this.plataformaSeleccionada));
       this.coleccion.region = this.listaRegiones.find((region) => region.id === Number(this.regionSeleccionada));
+      this.coleccion.tienda = this.listaTiendas.find((tienda) => tienda.id === Number(this.tiendaSeleccionada));
 
-      if (this.juegoSeleccionado == undefined || this.coleccion.juego == undefined || this.plataformaSeleccionada == undefined || this.coleccion.plataforma == undefined) {
-        this.errorService.printError('Plataforma y juego deben estar rellenos');
+      if (
+        this.juegoSeleccionado == undefined || this.coleccion.juego == undefined ||
+        this.plataformaSeleccionada == undefined || this.coleccion.plataforma == undefined ||
+        this.estadoGeneralSeleccionado == undefined || this.coleccion.estado_general == undefined ||
+        this.estadoCajaSeleccionado == undefined || this.coleccion.estado_caja == undefined
+      )  {
+        this.errorService.printError('Plataforma, juego y estados deben estar rellenos');
       }
       else if (this.modoAlta) {
         this.coleccionService.addColeccion(this.coleccion).subscribe(() => this.back());
