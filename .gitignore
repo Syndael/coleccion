@@ -6,6 +6,8 @@ ApiRest/tmp
 backups/
 backup/
 Sheet/
+*.ffs_batch
+*.ffs_gui
 
 Web/coleccion-web/.gitignore
 Web/coleccion-web/.editorconfig
