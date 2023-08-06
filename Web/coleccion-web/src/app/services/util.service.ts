@@ -2,49 +2,51 @@ import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
+import { Constantes } from '../constantes';
+
 import { Estado } from '../models/estado.model';
 import { Idioma } from '../models/idioma.model';
-import { Juego } from '../models/juego.model';
+import { Base } from '../models/base.model';
 import { Plataforma } from '../models/plataforma.model';
 import { Region } from '../models/region.model';
 import { Tienda } from '../models/tienda.model';
+import { TipoEstado } from '../models/tipo-estado';
 import { TipoRom } from '../models/tipo-rom.model';
 
 import { FiltroColeccion } from '../filters/coleccion.filter';
-import { FiltroHistorial } from '../filters/historial.filter';
-import { FiltroJuego } from '../filters/juego.filter';
+import { FiltroProgreso } from '../filters/progreso.filter';
+import { FiltroBase } from '../filters/base.filter';
 import { FiltroRom } from '../filters/roms.filter';
 
 import { EstadoService } from '../services/estado.service';
 import { IdiomaService } from '../services/idioma.service';
-import { JuegoService } from '../services/juego.service';
+import { BaseService } from '../services/base.service';
 import { PlataformaService } from '../services/plataforma.service';
 import { RegionService } from '../services/region.service';
 import { TiendaService } from '../services/tienda.service';
 import { TipoRomService } from '../services/tipo-rom.service';
-import { TipoEstado } from '../models/tipo-estado';
 
 @Injectable({ providedIn: 'root', })
 export class UtilService {
   estadosGeneral: Estado[] = [];
   estadosCajas: Estado[] = [];
-  estadosHistorial: Estado[] = [];
+  estadosProgreso: Estado[] = [];
   idiomas: Idioma[] = [];
-  juegos: Juego[] = [];
+  bases: Base[] = [];
   plataformas: Plataforma[] = [];
   regiones: Region[] = [];
   tiendas: Tienda[] = [];
   tiposRom: TipoRom[] = [];
 
   filtroColeccion: FiltroColeccion | undefined;
-  filtroHistorial: FiltroHistorial | undefined;
-  filtroJuego: FiltroJuego | undefined;
+  filtroProgreso: FiltroProgreso | undefined;
+  filtroBase: FiltroBase | undefined;
   filtroRom: FiltroRom | undefined;
 
   constructor(
     private estadoService: EstadoService,
     private idiomaService: IdiomaService,
-    private juegoService: JuegoService,
+    private baseService: BaseService,
     private plataformaService: PlataformaService,
     private regionService: RegionService,
     private tiendaService: TiendaService,
@@ -70,6 +72,13 @@ export class UtilService {
     return Number(num.replace(/,/g, ''));
   }
 
+  buildUrlFichero(id_fichero: number | undefined): string | undefined {
+    if (id_fichero) {
+      return Constantes.FICHERO_ID_URL + '/' + id_fichero;
+    }
+    return undefined;
+  }
+
   getListaEstados(tipo: TipoEstado, incluirDefault: Boolean): Observable<Estado[]> {
     const estadoNull: Estado = {
       id: undefined,
@@ -82,7 +91,7 @@ export class UtilService {
         map(estados => {
           this.estadosGeneral = estados.filter((estado) => estado.tipo === TipoEstado.GENERAL);
           this.estadosCajas = estados.filter((estado) => estado.tipo === TipoEstado.CAJAS);
-          this.estadosHistorial = estados.filter((estado) => estado.tipo === TipoEstado.HISTORIAL);
+          this.estadosProgreso = estados.filter((estado) => estado.tipo === TipoEstado.PROGRESO);
 
           if (incluirDefault) {
             return [estadoNull, ...this.getListaEstadosByTipo(tipo)];
@@ -108,8 +117,8 @@ export class UtilService {
       return this.estadosGeneral;
     } else if (tipo === TipoEstado.CAJAS) {
       return this.estadosCajas;
-    } else if (tipo === TipoEstado.HISTORIAL) {
-      return this.estadosHistorial;
+    } else if (tipo === TipoEstado.PROGRESO) {
+      return this.estadosProgreso;
     }
     return [];
   }
@@ -143,12 +152,12 @@ export class UtilService {
       }
     }
   }
-  getListaJuegos(): Observable<Juego[]> {
-    if (this.juegos.length === 0) {
-      return this.juegoService.getJuegos(undefined).pipe(
-        map(juegos => {
-          this.juegos = juegos;
-          return juegos;
+  getListaBases(): Observable<Base[]> {
+    if (this.bases.length === 0) {
+      return this.baseService.getBases(undefined).pipe(
+        map(bases => {
+          this.bases = bases;
+          return bases;
         }),
         catchError(error => {
           console.error('Error en la llamada a la API:', error);
@@ -156,7 +165,7 @@ export class UtilService {
         })
       );
     } else {
-      return of(this.juegos);
+      return of(this.bases);
     }
   }
   getListaPlataformas(incluirDefault: Boolean): Observable<Plataforma[]> {
@@ -282,8 +291,8 @@ export class UtilService {
   setListaIdiomas(idiomas: Idioma[]): void {
     this.idiomas = idiomas;
   }
-  setListaJuegos(juegos: Juego[]): void {
-    this.juegos = juegos;
+  setListaBases(bases: Base[]): void {
+    this.bases = bases;
   }
   setListaPlataformas(plataformas: Plataforma[]): void {
     this.plataformas = plataformas;
@@ -305,18 +314,18 @@ export class UtilService {
     this.filtroColeccion = filtro;
   }
 
-  getFiltroHistorial(): FiltroHistorial | undefined {
-    return this.filtroHistorial;
+  getFiltroProgreso(): FiltroProgreso | undefined {
+    return this.filtroProgreso;
   }
-  setFiltroHistorial(filtro: FiltroHistorial | undefined): void {
-    this.filtroHistorial = filtro;
+  setFiltroProgreso(filtro: FiltroProgreso | undefined): void {
+    this.filtroProgreso = filtro;
   }
 
-  getFiltroJuego(): FiltroJuego | undefined {
-    return this.filtroJuego;
+  getFiltroBase(): FiltroBase | undefined {
+    return this.filtroBase;
   }
-  setFiltroJuego(filtro: FiltroJuego | undefined): void {
-    this.filtroJuego = filtro;
+  setFiltroBase(filtro: FiltroBase | undefined): void {
+    this.filtroBase = filtro;
   }
 
   getFiltroRom(): FiltroRom | undefined {

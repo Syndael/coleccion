@@ -1,0 +1,63 @@
+<div class="template" *ngIf="base">
+    <div class="detalles">
+        <label for="base-nombre">Nombre: </label>
+        <input id="base-nombre" [(ngModel)]="base.nombre" placeholder="Nombre" />
+        <br />
+        <label for="base-saga">Saga/Franquicia: </label>
+        <input id="base-saga" [(ngModel)]="base.saga" placeholder="Saga/Franquicia" />
+        <br />
+        <label for="base-fecha">Fecha de salida: </label>
+        <input id="base-fecha" type="date" [(ngModel)]="base.fecha_salida" placeholder="Fecha de salida" />
+        <br />
+        <div class="extras">
+            <div class="extras-plataformas">
+                <div class="extra-plataformas-panel-add">
+                    <label>Plataformas</label>
+                    <br />
+                    <button class="extra-plataformas-add" (click)="addBasePlataforma()">+</button>
+                    <select [(ngModel)]="plataformaSeleccionada">
+                        <option *ngFor="let plataforma of listaPlataformas" [value]="plataforma.id">{{ plataforma.corto
+                            ?
+                            '(' + plataforma.corto + ') ' : '' }}{{ plataforma.nombre }}</option>
+                    </select>
+                    <input id="extra-plataforma-fecha" type="date" [(ngModel)]="plataformaFechaSeleccionada"
+                        placeholder="Fecha de salida" />
+                </div>
+                <ul class="extra-plataformas-panel-lista">
+                    <li *ngFor="let basePlataforma of listaBasesPlataforma">
+                        {{basePlataforma.plataforma?.nombre}}
+                        {{basePlataforma.fecha ? ' - ' + basePlataforma.fecha : '' | date: 'dd/MM/yyyy'}}
+                        <button (click)="deleteBasePlataforma(basePlataforma.id)">×</button>
+                    </li>
+                </ul>
+            </div>
+            <div class="extras-ediciones">
+                <div class="extra-ediciones-panel-add">
+                    <label>Ediciones</label>
+                    <br />
+                    <button class="extra-ediciones-add" (click)="addEdicion()">+</button>
+                    <input id="extra-edicion-nombre" [(ngModel)]="edicionNombreSeleccionado" placeholder="Nombre" />
+                    <select [(ngModel)]="edicionPlataformaSeleccionada">
+                        <option *ngFor="let plataforma of listaPlataformas" [value]="plataforma.id">
+                            {{ plataforma.corto?'(' + plataforma.corto + ') ' : '' }}{{ plataforma.nombre }}</option>
+                    </select>
+                    <input id="extra-edicion-fecha" type="date" [(ngModel)]="edicionFechaSeleccionada"
+                        placeholder="Fecha de salida" />
+                </div>
+                <ul class="extra-edicion-panel-lista">
+                    <li *ngFor="let edicion of listaEdiciones">
+                        {{ edicion.nombre }}
+                        {{ edicion.plataforma && edicion.plataforma.nombre ? '(' + edicion.plataforma.nombre + ')': '' }}
+                        {{ edicion.fecha ? ' - ' + edicion.fecha : '' | date: 'dd/MM/yyyy'}}
+                        <button (click)="deleteEdicion(edicion.id)">×</button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <br />
+        <div class="detalles-botones">
+            <button type="button" (click)="back()">Atrás</button>
+            <button type="button" (click)="save()">Guardar</button>
+        </div>
+    </div>
+</div>

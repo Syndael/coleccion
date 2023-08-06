@@ -15,14 +15,14 @@
             </select>
         </div>
         <div class="campo">
-            Juego:
+            Nombre:
             <br />
-            <input [(ngModel)]="filtro.nombreJuego" placeholder="Juego" (ngModelChange)="getColecciones()" />
+            <input [(ngModel)]="filtro.nombreBase" placeholder="Nombre" (ngModelChange)="getColecciones()" />
         </div>
         <div class="campo">
             Saga:
             <br />
-            <input [(ngModel)]="filtro.sagaJuego" placeholder="Saga/Franquicia" (ngModelChange)="getColecciones()" />
+            <input [(ngModel)]="filtro.saga" placeholder="Saga/Franquicia" (ngModelChange)="getColecciones()" />
         </div>
         <div class="campo">
             Estado:
@@ -42,7 +42,7 @@
     <table class="lista-colecciones">
         <tr class="encabezado-colecciones">
             <th>Plataforma</th>
-            <th>Juego</th>
+            <th>Nombre</th>
             <th>Idioma/Región</th>
             <th>Estado</th>
             <th>Caja</th>
@@ -55,7 +55,7 @@
         </tr>
         <tr class="coleccion" *ngFor="let coleccion of colecciones" routerLink="/coleccion/{{coleccion.id}}">
             <td class="plataforma">{{coleccion.plataforma?.nombre}}</td>
-            <td class="juego">{{coleccion.juego?.nombre}}</td>
+            <td class="base">{{coleccion.base?.nombre}}</td>
             <td *ngIf="coleccion.idioma && coleccion.region" class="idioma-region">{{coleccion.idioma.descripcion}} /
                 {{coleccion.region.descripcion}}</td>
             <td *ngIf="coleccion.idioma && !coleccion.region" class="idioma-region">{{coleccion.idioma.descripcion}}

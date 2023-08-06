@@ -25,11 +25,11 @@ export class ColeccionService {
             if (filtro.plataformaSeleccionada && filtro.plataformaSeleccionada.toString() != 'undefined') {
                 params = params.set('plataforma_id', filtro.plataformaSeleccionada.toString());
             }
-            if (filtro.nombreJuego && filtro.nombreJuego.length != 0) {
-                params = params.set('nombre', filtro.nombreJuego);
+            if (filtro.nombreBase && filtro.nombreBase.length != 0) {
+                params = params.set('nombre', filtro.nombreBase);
             }
-            if (filtro.sagaJuego && filtro.sagaJuego.length != 0) {
-                params = params.set('saga', filtro.sagaJuego);
+            if (filtro.saga && filtro.saga.length != 0) {
+                params = params.set('saga', filtro.saga);
             }
             if (filtro.estadoGeneralSeleccionado && filtro.estadoGeneralSeleccionado.toString() != 'undefined') {
                 params = params.set('estado_gen_id', filtro.estadoGeneralSeleccionado.toString());

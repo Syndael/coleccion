@@ -2,7 +2,7 @@ from marshmallow import Schema, fields
 from app.utils.datos import db
 from app.model.estado_model import EstadoSchema
 from app.model.idioma_model import IdiomaSchema
-from app.model.juego_model import JuegoSchema
+from app.model.base_model import BaseSchema
 from app.model.plataforma_model import PlataformaSchema
 from app.model.region_model import RegionSchema
 from app.model.tienda_model import TiendaSchema
@@ -12,7 +12,7 @@ class Coleccion(db.Model):
     __tablename__ = 'COLECCION'
 
     id = db.Column(db.Integer, primary_key=True)
-    juego_id = db.Column(db.Integer, db.ForeignKey('JUEGO.id'))
+    base_id = db.Column(db.Integer, db.ForeignKey('BASE.id'))
     plataforma_id = db.Column(db.Integer, db.ForeignKey('PLATAFORMA.id'))
     idioma_id = db.Column(db.Integer, db.ForeignKey('IDIOMA.id'))
     region_id = db.Column(db.Integer, db.ForeignKey('REGION.id'))
@@ -23,10 +23,11 @@ class Coleccion(db.Model):
     unidades = db.Column(db.Integer)
     coste = db.Column(db.Float)
     tienda_id = db.Column(db.Integer, db.ForeignKey('TIENDA.id'))
-    notas = db.Column(db.String(255))
+    notas = db.Column(db.String(500))
     activado = db.Column(db.Boolean)
+    codigo = db.Column(db.String(250))
 
-    juego = db.relationship('Juego', primaryjoin='Coleccion.juego_id == Juego.id')
+    base = db.relationship('Base', primaryjoin='Coleccion.base_id == Base.id')
     plataforma = db.relationship('Plataforma', primaryjoin='Coleccion.plataforma_id == Plataforma.id')
     idioma = db.relationship('Idioma', primaryjoin='Coleccion.idioma_id == Idioma.id')
     region = db.relationship('Region', primaryjoin='Coleccion.region_id == Region.id')
@@ -34,8 +35,8 @@ class Coleccion(db.Model):
     estado_caja = db.relationship('Estado', primaryjoin='Coleccion.estado_caja_id == Estado.id')
     tienda = db.relationship('Tienda', primaryjoin='Coleccion.tienda_id == Tienda.id')
 
-    def __init__(self, juego, plataforma, idioma=None, region=None, estado_general=None, estado_caja=None, fecha_compra=None, fecha_recibo=None, unidades=None, coste=None, tienda=None, notas=None, activado=None):
-        self.juego = juego
+    def __init__(self, base, plataforma, idioma=None, region=None, estado_general=None, estado_caja=None, fecha_compra=None, fecha_recibo=None, unidades=None, coste=None, tienda=None, notas=None, activado=None, codigo=None):
+        self.base = base
         self.plataforma = plataforma
         self.idioma = idioma
         self.region = region
@@ -48,10 +49,11 @@ class Coleccion(db.Model):
         self.tienda = tienda
         self.notas = notas
         self.activado = activado
+        self.codigo = codigo
 
 
 class ColeccionSchema(Schema):
-    juego = fields.Nested(JuegoSchema)
+    base = fields.Nested(BaseSchema)
     plataforma = fields.Nested(PlataformaSchema)
     idioma = fields.Nested(IdiomaSchema)
     region = fields.Nested(RegionSchema)
@@ -60,5 +62,5 @@ class ColeccionSchema(Schema):
     tienda = fields.Nested(TiendaSchema)
 
     class Meta:
-        fields = ('id', 'juego', 'plataforma', 'idioma', 'region', 'estado_general', 'estado_caja', 'fecha_compra', 'fecha_recibo', 'unidades', 'coste', 'tienda', 'notas', 'activado')
+        fields = ('id', 'base', 'plataforma', 'idioma', 'region', 'estado_general', 'estado_caja', 'fecha_compra', 'fecha_recibo', 'unidades', 'coste', 'tienda', 'notas', 'activado', 'codigo')
         include_relationships = True

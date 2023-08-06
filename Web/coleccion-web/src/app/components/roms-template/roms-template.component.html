@@ -5,9 +5,9 @@
             <option *ngFor="let plataforma of listaPlataformas" [value]="plataforma.id">{{ plataforma.corto ? '(' + plataforma.corto + ') ' : '' }}{{ plataforma.nombre }}</option>
         </select>
         <br />
-        <label for="rom-juego">Juego: </label>
-        <select [(ngModel)]="juegoSeleccionado">
-            <option *ngFor="let juego of listaJuegos" [value]="juego.id">{{ juego.nombre }}</option>
+        <label for="rom-base">Nombre: </label>
+        <select [(ngModel)]="baseSeleccionado">
+            <option *ngFor="let base of listaBases" [value]="base.id">{{ base.nombre }}</option>
         </select>
         <br />
         <label for="rom-rom">ROM: </label>

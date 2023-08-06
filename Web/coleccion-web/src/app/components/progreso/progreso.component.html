@@ -1,0 +1,59 @@
+<div class="contenedor-progresos">
+    <div class="crud">
+        <button routerLink="/progreso/new">+</button>
+    </div>
+    <div class="params">
+        <div class="campo">
+            <button class="limpiar-filtro" (click)="limpiarFiltro()">×</button>
+        </div>
+        <div class="campo">
+            Plataforma:
+            <br />
+            <select [(ngModel)]="filtro.plataformaSeleccionada" (change)="getProgresos()">
+                <option *ngFor="let plataforma of listaPlataformas" [value]="plataforma.id">{{ plataforma.corto ? '(' +
+                    plataforma.corto + ') ' : '' }}{{ plataforma.nombre }}</option>
+            </select>
+        </div>
+        <div class="campo">
+            Nombre:
+            <br />
+            <input [(ngModel)]="filtro.nombreBase" placeholder="Nombre" (ngModelChange)="getProgresos()" />
+        </div>
+        <div class="campo">
+            Saga:
+            <br />
+            <input [(ngModel)]="filtro.saga" placeholder="Saga/Franquicia" (ngModelChange)="getProgresos()" />
+        </div>
+        <div class="campo">
+            Estado:
+            <br />
+            <select [(ngModel)]="filtro.estadoSeleccionado" (change)="getProgresos()">
+                <option *ngFor="let estado of listaEstados" [value]="estado.id">{{ estado.descripcion }}</option>
+            </select>
+        </div>
+    </div>
+    <table class="lista-progresos">
+        <tr class="encabezado-progresos">
+            <th>Plataforma</th>
+            <th>Nombre</th>
+            <th>Estado</th>
+            <th>Porcentaje</th>
+            <th>Horas</th>
+            <th>Completo</th>
+            <th>Notas</th>
+            <th>Inicio</th>
+            <th>Fin</th>
+        </tr>
+        <tr class="progreso" *ngFor="let progreso of progresos" routerLink="/progreso/{{progreso.id}}">
+            <td class="plataforma">{{progreso.plataforma?.nombre}}</td>
+            <td class="base">{{progreso.base?.nombre}}</td>
+            <td class="estado">{{progreso.estado_jugado?.descripcion}}</td>
+            <td class="porcentaje">{{progreso.porcentaje | formateo: '%'}}</td>
+            <td class="horas">{{progreso.horas | number:'0.0-2'}}</td>
+            <td class="historia_completa">{{progreso.historia_completa ? 'Sí' : 'No'}}</td>
+            <td class="notas">{{progreso.notas}}</td>
+            <td class="fecha_inicio">{{progreso.fecha_inicio | date: 'dd/MM/yyyy'}}</td>
+            <td class="fecha_fin">{{progreso.fecha_fin | date: 'dd/MM/yyyy'}}</td>
+        </tr>
+    </table>
+</div>

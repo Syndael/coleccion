@@ -2,6 +2,7 @@
 __pycache__
 config.txt
 ApiRest/tmp
+ApiRest/files
 *.log
 backups/
 backup/

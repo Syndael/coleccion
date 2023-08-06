@@ -7,26 +7,26 @@ import { ToastrModule } from 'ngx-toastr';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { JuegosComponent } from './components/juego/juego.component';
-import { JuegoTemplateComponent } from './components/juego-template/juego-template.component';
+import { BaseComponent } from './components/base/base.component';
+import { BaseTemplateComponent } from './components/base-template/base-template.component';
 import { ColeccionComponent } from './components/coleccion/coleccion.component';
 import { EllipsisPipe, FormatPipe } from './pipes';
-import { HistorialComponent } from './components/historial/historial.component';
+import { ProgresoComponent } from './components/progreso/progreso.component';
 import { RomsComponent } from './components/roms/roms.component';
 import { RomsTemplateComponent } from './components/roms-template/roms-template.component';
-import { HistorialTemplateComponent } from './components/historial-template/historial-template.component';
+import { ProgresoTemplateComponent } from './components/progreso-template/progreso-template.component';
 import { ColeccionTemplateComponent } from './components/coleccion-template/coleccion-template.component';
 
 @NgModule({
   declarations: [
     AppComponent,
-    JuegosComponent,
-    JuegoTemplateComponent,
+    BaseComponent,
+    BaseTemplateComponent,
     ColeccionComponent,
-    HistorialComponent,
+    ProgresoComponent,
     RomsComponent,
     RomsTemplateComponent,
-    HistorialTemplateComponent,
+    ProgresoTemplateComponent,
     ColeccionTemplateComponent,
     EllipsisPipe,
     FormatPipe

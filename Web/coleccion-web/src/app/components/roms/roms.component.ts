@@ -45,8 +45,8 @@ export class RomsComponent implements OnInit {
     return {
       idRom: undefined,
       plataformaSeleccionada: undefined,
-      nombreJuego: undefined,
-      sagaJuego: undefined
+      nombreBase: undefined,
+      saga: undefined
     };
   }
 

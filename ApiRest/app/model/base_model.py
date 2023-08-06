@@ -2,8 +2,8 @@ from marshmallow import Schema
 from app.utils.datos import db
 
 
-class Juego(db.Model):
-    __tablename__ = 'JUEGO'
+class Base(db.Model):
+    __tablename__ = 'BASE'
 
     id = db.Column(db.Integer, primary_key=True)
     nombre = db.Column(db.String(255))
@@ -16,7 +16,7 @@ class Juego(db.Model):
         self.fecha_salida = fecha_salida
 
 
-class JuegoSchema(Schema):
+class BaseSchema(Schema):
     class Meta:
         fields = ('id', 'nombre', 'saga', 'fecha_salida')
         include_relationships = True

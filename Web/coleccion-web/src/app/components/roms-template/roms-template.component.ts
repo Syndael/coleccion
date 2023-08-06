@@ -3,7 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
 
 import { Rom } from '../../models/rom.model';
-import { Juego } from '../../models/juego.model';
+import { Base } from '../../models/base.model';
 import { Plataforma } from '../../models/plataforma.model';
 import { Idioma } from '../../models/idioma.model';
 import { Region } from '../../models/region.model';
@@ -29,7 +29,7 @@ export class RomsTemplateComponent {
   private modoAlta: Boolean | undefined;
   rom: Rom = {
     id: undefined,
-    juego: undefined,
+    base: undefined,
     plataforma: undefined,
     nombre_rom: undefined,
     nombre_rom_ext: undefined,
@@ -39,13 +39,13 @@ export class RomsTemplateComponent {
     fecha_descarga: this.utilService.formatDate(new Date())
   };
   listaIdiomas: Idioma[] = [];
-  listaJuegos: Juego[] = [];
+  listaBases: Base[] = [];
   listaPlataformas: Plataforma[] = [];
   listaRegiones: Region[] = [];
   listaTiposRom: TipoRom[] = [];
 
   idiomaSeleccionado: number | undefined;
-  juegoSeleccionado: number | undefined;
+  baseSeleccionado: number | undefined;
   plataformaSeleccionada: number | undefined;
   regionSeleccionada: number | undefined;
   tipoRomSeleccionado: number | undefined;
@@ -54,7 +54,7 @@ export class RomsTemplateComponent {
   ngOnInit(): void {
     this.route.params.subscribe(params => {
       this.utilService.getListaIdiomas(true).subscribe(idiomas => this.listaIdiomas = idiomas);
-      this.utilService.getListaJuegos().subscribe(juegos => this.listaJuegos = juegos);
+      this.utilService.getListaBases().subscribe(bases => this.listaBases = bases);
       this.utilService.getListaPlataformas(false).subscribe(plataformas => this.listaPlataformas = plataformas);
       this.utilService.getListaRegiones(true).subscribe(regiones => this.listaRegiones = regiones);
       this.utilService.getListaTiposRom(true).subscribe(tiposRom => this.listaTiposRom = tiposRom);
@@ -73,7 +73,7 @@ export class RomsTemplateComponent {
     this.romService.getRom(id).subscribe(rom => {
       this.rom = rom;
       this.idiomaSeleccionado = this.rom.idioma?.id;
-      this.juegoSeleccionado = this.rom.juego?.id;
+      this.baseSeleccionado = this.rom.base?.id;
       this.plataformaSeleccionada = this.rom.plataforma?.id;
       this.regionSeleccionada = this.rom.region?.id;
       this.tipoRomSeleccionado = this.rom.tipo_rom?.id;
@@ -83,13 +83,13 @@ export class RomsTemplateComponent {
   save(): void {
     if (this.rom) {
       this.rom.idioma = this.listaIdiomas.find((idioma) => idioma.id === Number(this.idiomaSeleccionado));
-      this.rom.juego = this.listaJuegos.find((juego) => juego.id === Number(this.juegoSeleccionado));
+      this.rom.base = this.listaBases.find((base) => base.id === Number(this.baseSeleccionado));
       this.rom.plataforma = this.listaPlataformas.find((plataforma) => plataforma.id === Number(this.plataformaSeleccionada));
       this.rom.region = this.listaRegiones.find((region) => region.id === Number(this.regionSeleccionada));
       this.rom.tipo_rom = this.listaTiposRom.find((tipoRom) => tipoRom.id === Number(this.tipoRomSeleccionado));
 
-      if (this.juegoSeleccionado == undefined || this.rom.juego == undefined || this.plataformaSeleccionada == undefined || this.rom.plataforma == undefined) {
-        this.errorService.printError('Plataforma y juego deben estar rellenos');
+      if (this.baseSeleccionado == undefined || this.rom.base == undefined || this.plataformaSeleccionada == undefined || this.rom.plataforma == undefined) {
+        this.errorService.printError('Plataforma y base deben estar rellenos');
       }
       else if (this.modoAlta) {
         this.romService.addRom(this.rom).subscribe(() => this.back());

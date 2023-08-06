@@ -52,8 +52,8 @@ export class ColeccionComponent implements OnInit {
       idColeccion: undefined,
       estadoGeneralSeleccionado: undefined,
       plataformaSeleccionada: undefined,
-      nombreJuego: undefined,
-      sagaJuego: undefined,
+      nombreBase: undefined,
+      saga: undefined,
       tiendaSeleccionada: undefined
     };
   }

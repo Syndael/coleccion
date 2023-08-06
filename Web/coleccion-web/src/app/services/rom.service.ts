@@ -25,11 +25,11 @@ export class RomService {
             if (filtro.plataformaSeleccionada && filtro.plataformaSeleccionada.toString() != 'undefined') {
                 params = params.set('plataforma_id', filtro.plataformaSeleccionada.toString());
             }
-            if (filtro.nombreJuego && filtro.nombreJuego.length != 0) {
-                params = params.set('nombre', filtro.nombreJuego);
+            if (filtro.nombreBase && filtro.nombreBase.length != 0) {
+                params = params.set('nombre', filtro.nombreBase);
             }
-            if (filtro.sagaJuego && filtro.sagaJuego.length != 0) {
-                params = params.set('saga', filtro.sagaJuego);
+            if (filtro.saga && filtro.saga.length != 0) {
+                params = params.set('saga', filtro.saga);
             }
         }
         return this.http.get<Rom[]>(Constantes.ROMS_URL, { params: params }).pipe(catchError(this.error.handleError<Rom[]>('getRoms', [])));

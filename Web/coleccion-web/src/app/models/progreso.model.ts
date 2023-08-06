@@ -1,10 +1,10 @@
-import { Juego } from "./juego.model";
+import { Base } from "./base.model";
 import { Plataforma } from "./plataforma.model";
 import { Estado } from "./estado.model";
 
-export class Historial {
+export class Progreso {
     id: number | undefined;
-    juego: Juego | undefined;
+    base: Base | undefined;
     plataforma: Plataforma | undefined;
     estado_jugado: Estado | undefined;
     porcentaje: number | undefined;

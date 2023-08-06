@@ -1,5 +1,5 @@
 import { Idioma } from "./idioma.model";
-import { Juego } from "./juego.model";
+import { Base } from "./base.model";
 import { Plataforma } from "./plataforma.model";
 import { Region } from "./region.model";
 import { Estado } from "./estado.model";
@@ -7,7 +7,7 @@ import { Tienda } from "./tienda.model";
 
 export class Coleccion {
     id: number | undefined;
-    juego: Juego | undefined;
+    base: Base | undefined;
     plataforma: Plataforma | undefined;
     idioma: Idioma | undefined;
     region: Region | undefined;
@@ -19,4 +19,5 @@ export class Coleccion {
     coste: number | undefined;
     tienda: Tienda | undefined;
     notas: string | undefined;
+    codigo: string | undefined;
 }

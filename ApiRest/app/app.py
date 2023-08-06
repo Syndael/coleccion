@@ -6,11 +6,14 @@ from flask import Flask, request
 from flask_cors import CORS
 from app.utils.datos import db
 from app.utils.config_parser_utils import ConfigParser
+from app.service.base_service import BaseService
+from app.service.base_plataforma_service import BasePlataformaService
 from app.service.coleccion_service import ColeccionService
+from app.service.edicion_service import EdicionService
 from app.service.estado_service import EstadoService
+from app.service.fichero_service import FicheroService
 from app.service.idioma_service import IdiomaService
-from app.service.juego_service import JuegoService
-from app.service.jugado_service import JugadoService
+from app.service.progreso_service import ProgresoService
 from app.service.plataforma_service import PlataformaService
 from app.service.region_service import RegionService
 from app.service.rom_service import RomService
@@ -40,6 +43,49 @@ CORS(app)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://{}:{}@{}/{}'.format(mssql['user'], mssql['passwd'], mssql['host'], mssql['db'])
 db.init_app(app)
 
+
+# Bases
+_base_service = BaseService()
+
+
+@app.route('/api/bases', methods=['GET'])
+def get_bases():
+    return _base_service.get_bases(request)
+
+@app.route('/api/base/id/<id>', methods=['GET'])
+def get_bases_by_id(id):
+    return _base_service.get_bases_by_id(id)
+
+@app.route('/api/base', methods=['POST'])
+def add_base():
+    return _base_service.add_base(request)
+
+@app.route('/api/base/id/<id>', methods=['PUT'])
+def update_base(id):
+    return _base_service.update_base(request, id)
+
+
+# Bases Plataforma
+_base_plataforma_service = BasePlataformaService()
+
+
+@app.route('/api/basesplataforma', methods=['GET'])
+def get_bases_plataforma():
+    return _base_plataforma_service.get_bases_plataforma(request)
+
+@app.route('/api/baseplataforma/id/<id>', methods=['GET'])
+def get_bases_plataforma_by_id(id):
+    return _base_plataforma_service.get_base_plataforma_by_id(id)
+
+@app.route('/api/baseplataforma', methods=['POST'])
+def add_base_plataforma():
+    return _base_plataforma_service.add_base_plataforma(request)
+
+@app.route('/api/baseplataforma/id/<id>', methods=['DELETE'])
+def delete_bases_plataforma_by_id(id):
+    return _base_plataforma_service.delete_base_plataforma_by_id(id)
+
+
 # Colecciones
 _coleccion_service = ColeccionService()
 
@@ -61,6 +107,27 @@ def update_coleccion(id):
     return _coleccion_service.update_coleccion(request, id)
 
 
+# Edicion
+_edicion_service = EdicionService()
+
+
+@app.route('/api/ediciones', methods=['GET'])
+def get_ediciones():
+    return _edicion_service.get_ediciones(request)
+
+@app.route('/api/edicion/id/<id>', methods=['GET'])
+def get_edicion_by_id(id):
+    return _edicion_service.get_edicion_by_id(id)
+
+@app.route('/api/edicion', methods=['POST'])
+def add_edicion():
+    return _edicion_service.add_edicion(request)
+
+@app.route('/api/edicion/id/<id>', methods=['DELETE'])
+def delete_edicion_by_id(id):
+    return _edicion_service.delete_edicion_by_id(id)
+
+
 # Estados
 _estado_service = EstadoService()
 
@@ -79,46 +146,25 @@ def get_idiomas():
     return _idioma_service.get_idiomas()
 
 
-# Juegos
-_juego_service = JuegoService()
+# Progresos
+_progreso_service = ProgresoService()
 
 
-@app.route('/api/juegos', methods=['GET'])
-def get_juegos():
-    return _juego_service.get_juegos(request)
+@app.route('/api/progresos', methods=['GET'])
+def get_progresos():
+    return _progreso_service.get_progresos(request)
 
-@app.route('/api/juego/id/<id>', methods=['GET'])
-def get_juegos_by_id(id):
-    return _juego_service.get_juegos_by_id(id)
+@app.route('/api/progreso/id/<id>', methods=['GET'])
+def get_progreso_by_id(id):
+    return _progreso_service.get_progreso_by_id(id)
 
-@app.route('/api/juego', methods=['POST'])
-def add_juego():
-    return _juego_service.add_juego(request)
+@app.route('/api/progreso', methods=['POST'])
+def add_progreso():
+    return _progreso_service.add_progreso(request)
 
-@app.route('/api/juego/id/<id>', methods=['PUT'])
-def update_juego(id):
-    return _juego_service.update_juego(request, id)
-
-
-# Jugados
-_jugado_service = JugadoService()
-
-
-@app.route('/api/jugados', methods=['GET'])
-def get_jugados():
-    return _jugado_service.get_jugados(request)
-
-@app.route('/api/jugado/id/<id>', methods=['GET'])
-def get_jugado_by_id(id):
-    return _jugado_service.get_jugado_by_id(id)
-
-@app.route('/api/jugado', methods=['POST'])
-def add_jugado():
-    return _jugado_service.add_jugado(request)
-
-@app.route('/api/jugado/id/<id>', methods=['PUT'])
-def update_jugado(id):
-    return _jugado_service.update_jugado(request, id)
+@app.route('/api/progreso/id/<id>', methods=['PUT'])
+def update_progreso(id):
+    return _progreso_service.update_progreso(request, id)
 
 
 # Plataformas
@@ -177,6 +223,26 @@ _tipo_rom_service = TipoRomService()
 def get_tipos_rom():
     return _tipo_rom_service.get_tipos_rom()
 
+
+# File Service
+_fichero_service = FicheroService()
+
+
+@app.route('/api/fichero/id/<id>', methods=['GET'])
+def get_fichero(id):
+    return  _fichero_service.get_fichero(id)
+
+@app.route('/api/datos_ficheros/<id>', methods=['GET'])
+def get_datos_ficheros(id):
+    return _fichero_service.get_datos_ficheros(id)
+
+@app.route('/api/fichero', methods=['POST'])
+def subir_fichero():
+    return _fichero_service.subir_fichero(request)
+
+@app.route('/api/fichero/id/<id>', methods=['DELETE'])
+def eliminar_fichero(id):
+    return _fichero_service.eliminar_fichero(id)
 
 # default
 @app.route('/')

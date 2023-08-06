@@ -3,7 +3,7 @@ from app.utils.datos import db
 from app.model.coleccion_model import Coleccion, ColeccionSchema
 from app.model.estado_model import Estado
 from app.model.idioma_model import Idioma
-from app.model.juego_model import Juego
+from app.model.base_model import Base
 from app.model.plataforma_model import Plataforma
 from app.model.region_model import Region
 from app.model.tienda_model import Tienda
@@ -14,22 +14,22 @@ class ColeccionService:
     _colecciones_schema = ColeccionSchema(many=True)
 
     def get_colecciones(self, request):
-        colecciones = Coleccion.query.join(Coleccion.plataforma).join(Coleccion.juego)
+        colecciones = Coleccion.query.join(Coleccion.plataforma).join(Coleccion.base)
         if request.args:
             if request.args.get('plataforma_id'):
                 colecciones = colecciones.filter(Coleccion.plataforma_id == request.args.get('plataforma_id'))
             if request.args.get('nombre'):
                 nombre = request.args.get('nombre')
-                colecciones = colecciones.filter(Juego.nombre.ilike(f'%{nombre}%'))
+                colecciones = colecciones.filter(Base.nombre.ilike(f'%{nombre}%'))
             if request.args.get('saga'):
                 saga = request.args.get('saga')
-                colecciones = colecciones.filter(Juego.saga.ilike(f'%{saga}%'))
+                colecciones = colecciones.filter(Base.saga.ilike(f'%{saga}%'))
             if request.args.get('estado_gen_id'):
                 colecciones = colecciones.filter(Coleccion.estado_general_id == request.args.get('estado_gen_id'))
             if request.args.get('tienda_id'):
                 colecciones = colecciones.filter(Coleccion.tienda_id == request.args.get('tienda_id'))
 
-        colecciones = colecciones.filter(Coleccion.activado == 1).order_by(Plataforma.nombre.asc(), Plataforma.corto.asc(), Juego.nombre.asc()).all()
+        colecciones = colecciones.filter(Coleccion.activado == 1).order_by(Plataforma.nombre.asc(), Plataforma.corto.asc(), Base.nombre.asc()).all()
         result = self._colecciones_schema.dump(colecciones)
         return jsonify(result), 200
 
@@ -41,23 +41,23 @@ class ColeccionService:
         return jsonify(result), 200
 
     def get_colecciones_by_nombre(self, nombre):
-        colecciones = db.session.query(Coleccion).join(Juego).filter(Juego.nombre.ilike(f'%{nombre}%'), Coleccion.activado == 1).join(Coleccion.plataforma).join(Coleccion.juego).order_by(Plataforma.nombre.asc(), Plataforma.corto.asc(), Juego.nombre.asc()).all()
+        colecciones = db.session.query(Coleccion).join(Base).filter(Base.nombre.ilike(f'%{nombre}%'), Coleccion.activado == 1).join(Coleccion.plataforma).join(Coleccion.base).order_by(Plataforma.nombre.asc(), Plataforma.corto.asc(), Base.nombre.asc()).all()
         result = self._colecciones_schema.dump(colecciones)
         return jsonify(result), 200
 
     def add_coleccion(self, request):
         data = request.get_json()
 
-        if 'juego' not in data or data['juego']['id'] is None or 'plataforma' not in data or data['plataforma']['id'] is None:
-            return jsonify({'message': 'Juego o plataforma no encontrado'}), 404
-        juego = Juego.query.get(data['juego']['id'])
-        if juego is None:
-            return jsonify({'message': 'Juego no encontrado'}), 404
+        if 'base' not in data or data['base']['id'] is None or 'plataforma' not in data or data['plataforma']['id'] is None:
+            return jsonify({'message': 'Base o plataforma no encontrado'}), 404
+        base = Base.query.get(data['base']['id'])
+        if base is None:
+            return jsonify({'message': 'Base no encontrado'}), 404
         plataforma = Plataforma.query.get(data['plataforma']['id'])
         if plataforma is None:
             return jsonify({'message': 'Plataforma no encontrada'}), 404
 
-        coleccion = Coleccion(juego=juego, plataforma=plataforma)
+        coleccion = Coleccion(base=base, plataforma=plataforma)
 
         if 'idioma' in data and data['idioma']['id']:
             coleccion.idioma = Idioma.query.get(data['idioma']['id'])
@@ -94,9 +94,9 @@ class ColeccionService:
         if not coleccion:
             return jsonify({'message': 'Colección no encontrada'}), 404
 
-        if 'juego' in data and data['juego']['id']:
-            if coleccion.juego is None or not coleccion.juego.id == data['juego']['id']:
-                coleccion.juego = Juego.query.get(data['juego']['id'])
+        if 'base' in data and data['base']['id']:
+            if coleccion.base is None or not coleccion.base.id == data['base']['id']:
+                coleccion.base = Base.query.get(data['base']['id'])
         if 'plataforma' in data and data['plataforma']['id']:
             if coleccion.plataforma is None or not coleccion.plataforma.id == data['plataforma']['id']:
                 coleccion.plataforma = Plataforma.query.get(data['plataforma']['id'])

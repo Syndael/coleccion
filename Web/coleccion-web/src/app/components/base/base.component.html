@@ -1,0 +1,34 @@
+<div class="contenedor-bases">
+    <div class="crud">
+        <button routerLink="/base/new">+</button>
+    </div>
+    <div class="params">
+        <div class="campo">
+            <button class="limpiar-filtro" (click)="limpiarFiltro()">×</button>
+        </div>
+        <div class="campo">
+            Nombre:
+            <br />
+            <input [(ngModel)]="filtro.nombre" placeholder="Nombre" (ngModelChange)="getBases()" />
+        </div>
+        <div class="campo">
+            Saga:
+            <br />
+            <input [(ngModel)]="filtro.saga" placeholder="Saga/Franquicia" (ngModelChange)="getBases()" />
+        </div>
+    </div>
+    <table class="lista-bases">
+        <tr class="encabezado-bases">
+            <th>Nombre</th>
+            <th>Saga</th>
+            <th>Fecha de salida</th>
+            <th>Plataformas</th>
+        </tr>
+        <tr class="base" *ngFor="let base of bases" routerLink="/base/{{base.id}}">
+            <td class="nombre">{{base.nombre}}</td>
+            <td class="saga">{{base.saga}}</td>
+            <td class="fecha">{{base.fecha_salida | date: 'dd/MM/yyyy'}}</td>
+            <td class="plataformas"></td>
+        </tr>
+    </table>
+</div>

@@ -1,0 +1,42 @@
+<div class="template" *ngIf="progreso">
+    <div class="detalles">
+        <label for="progreso-plataforma">Plataforma: </label>
+        <select [(ngModel)]="plataformaSeleccionada">
+            <option *ngFor="let plataforma of listaPlataformas" [value]="plataforma.id">{{ plataforma.corto ? '(' + plataforma.corto + ') ' : '' }}{{ plataforma.nombre }}</option>
+        </select>
+        <br />
+        <label for="progreso-base">Nombre: </label>
+        <select [(ngModel)]="baseSeleccionado">
+            <option *ngFor="let base of listaBases" [value]="base.id">{{ base.nombre }}</option>
+        </select>
+        <br />
+        <label for="progreso-estado">Estado: </label>
+        <select [(ngModel)]="estadoSeleccionado">
+            <option *ngFor="let estado of listaEstados" [value]="estado.id">{{ estado.descripcion }}</option>
+        </select>
+        <br />
+        <label for="progreso-porcentaje">Porcentaje: </label>
+        <input id="progreso-porcentaje" [(ngModel)]="progreso.porcentaje" placeholder="%" />
+        <br />
+        <label for="progreso-horas">Horas: </label>
+        <input id="progreso-horas" [(ngModel)]="progreso.horas" placeholder="Horas" (input)="formatHoras($event)" />
+        <br />
+        <label for="progreso-completo">Completo: </label>
+        <input id="progreso-completo" type="checkbox" [(ngModel)]="progreso.historia_completa" />
+        <br />
+        <label for="progreso-notas">Notas: </label>
+        <input id="progreso-notas" [(ngModel)]="progreso.notas" placeholder="Notas" />
+        <br />
+        <label for="progreso-incio">Inicio: </label>
+        <input id="progreso-incio" type="date" [(ngModel)]="progreso.fecha_inicio" placeholder="Inicio" />
+        <br />
+        <label for="progreso-fin">Fin: </label>
+        <input id="progreso-fin" type="date" [(ngModel)]="progreso.fecha_fin" placeholder="Fin" />
+        <br />
+        <br />
+        <div class="detalles-botones">
+            <button type="button" (click)="back()">Atrás</button>
+            <button type="button" (click)="save()">Guardar</button>
+        </div>
+    </div>
+</div>

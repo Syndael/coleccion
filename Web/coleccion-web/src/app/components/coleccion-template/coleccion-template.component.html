@@ -2,22 +2,25 @@
     <div class="detalles">
         <label for="coleccion-plataforma">Plataforma: </label>
         <select [(ngModel)]="plataformaSeleccionada">
-            <option *ngFor="let plataforma of listaPlataformas" [value]="plataforma.id">{{ plataforma.corto ? '(' + plataforma.corto + ') ' : '' }}{{ plataforma.nombre }}</option>
+            <option *ngFor="let plataforma of listaPlataformas" [value]="plataforma.id">{{ plataforma.corto ? '(' +
+                plataforma.corto + ') ' : '' }}{{ plataforma.nombre }}</option>
         </select>
         <br />
-        <label for="coleccion-juego">Juego: </label>
-        <select [(ngModel)]="juegoSeleccionado">
-            <option *ngFor="let juego of listaJuegos" [value]="juego.id">{{ juego.nombre }}</option>
+        <label for="coleccion-base">Nombre: </label>
+        <select [(ngModel)]="baseSeleccionado">
+            <option *ngFor="let base of listaBases" [value]="base.id">{{ base.nombre }}</option>
         </select>
         <br />
         <label for="coleccion-idioma">Idioma: </label>
         <select [(ngModel)]="idiomaSeleccionado">
-            <option *ngFor="let idioma of listaIdiomas" [value]="idioma.id">{{ idioma.corto ? '(' + idioma.corto + ') ' : '' }}{{ idioma.descripcion }}</option>
+            <option *ngFor="let idioma of listaIdiomas" [value]="idioma.id">{{ idioma.corto ? '(' + idioma.corto + ') '
+                : '' }}{{ idioma.descripcion }}</option>
         </select>
         <br />
         <label for="coleccion-region">Región: </label>
         <select [(ngModel)]="regionSeleccionada">
-            <option *ngFor="let region of listaRegiones" [value]="region.id">{{ region.corto ? '(' + region.corto + ') ' : '' }}{{ region.descripcion }}</option>
+            <option *ngFor="let region of listaRegiones" [value]="region.id">{{ region.corto ? '(' + region.corto + ') '
+                : '' }}{{ region.descripcion }}</option>
         </select>
         <br />
         <label for="coleccion-estado-general">Estado: </label>
@@ -47,6 +50,24 @@
             <option *ngFor="let tienda of listaTiendas" [value]="tienda.id">{{ tienda.nombre }}</option>
         </select>
         <br />
+        <div class="subir-fichero-container">
+            <button class="subir-fichero" (click)="subirFactura()">Añadir factura</button>
+            <div class="seleccion-fichero-container">
+                <button type="button" (click)="facturaInput.click()">Sel. factura</button>
+                <label> {{facturaSeleccionada?.name | ellipsis: 30 }}</label>
+                <input type="file" #facturaInput style="display: none" (change)="onFacturaSeleccionada($event)">
+            </div>
+        </div>
+        <br />
+        <div class="subir-fichero-container">
+            <button class="subir-fichero" (click)="subirFoto()">Añadir foto</button>
+            <div class="seleccion-fichero-container">
+                <button type="button" (click)="fotoInput.click()">Sel. foto</button>
+                <label> {{fotoSeleccionada?.name | ellipsis: 30 }}</label>
+                <input type="file" #fotoInput style="display: none" (change)="onFotoSeleccionada($event)">
+            </div>
+        </div>
+        <br />
         <label for="coleccion-notas">Notas: </label>
         <textarea id="coleccion-notas" [(ngModel)]="coleccion.notas">{{coleccion.notas}}</textarea>
         <br />
@@ -54,6 +75,33 @@
         <div class="detalles-botones">
             <button type="button" (click)="back()">Atrás</button>
             <button type="button" (click)="save()">Guardar</button>
+        </div>
+        <label class="codigo-coleccion">{{coleccion.codigo}}</label>
+    </div>
+    <div class="detalles-facturas" *ngIf="hayFacturas()">
+        <div class="detalles-facturas-titulo">Facturas</div>
+        <br />
+        <table class="detalles-lista-facturas">
+            <tr *ngFor="let factura of facturas">
+                <td>
+                    <li><a [href]="factura.url" target="_blank">{{factura.nombre_original}}</a></li>
+                </td>
+                <td>
+                    <button class="detalles-factura-eliminar" (click)="eliminarFichero(factura.id)">×</button>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="detalles-galeria" *ngIf="hayFotos()">
+        <div class="detalles-galeria-titulo">Galería</div>
+        <br />
+        <div class="detalles-fotos">
+            <div class="detalles-foto" *ngFor="let foto of fotos">
+                <button class="detalles-foto-eliminar" (click)="eliminarFichero(foto.id)">×</button>
+                <a [href]="foto.url" target="_blank">
+                    <img [src]="foto.url" alt="Imagen">
+                </a>
+            </div>
         </div>
     </div>
 </div>
