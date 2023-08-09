@@ -9,9 +9,13 @@ import { Idioma } from '../../models/idioma.model';
 import { Region } from '../../models/region.model';
 import { TipoRom } from '../../models/tipo-rom.model';
 
+import { FiltroBase } from '../../filters/base.filter';
+
+import { BaseService } from '../../services/base.service';
 import { ErrorService } from '../../services/error.service';
 import { RomService } from '../../services/rom.service';
 import { UtilService } from '../../services/util.service';
+import { TipoBaseEnum } from 'src/app/models/tipo-base.model';
 
 @Component({
   selector: 'app-roms-template',
@@ -21,6 +25,7 @@ export class RomsTemplateComponent {
   constructor(
     private route: ActivatedRoute,
     private location: Location,
+    private baseService: BaseService,
     private romService: RomService,
     private utilService: UtilService,
     private errorService: ErrorService
@@ -54,7 +59,6 @@ export class RomsTemplateComponent {
   ngOnInit(): void {
     this.route.params.subscribe(params => {
       this.utilService.getListaIdiomas(true).subscribe(idiomas => this.listaIdiomas = idiomas);
-      this.utilService.getListaBases().subscribe(bases => this.listaBases = bases);
       this.utilService.getListaPlataformas(false).subscribe(plataformas => this.listaPlataformas = plataformas);
       this.utilService.getListaRegiones(true).subscribe(regiones => this.listaRegiones = regiones);
       this.utilService.getListaTiposRom(true).subscribe(tiposRom => this.listaTiposRom = tiposRom);
@@ -77,7 +81,22 @@ export class RomsTemplateComponent {
       this.plataformaSeleccionada = this.rom.plataforma?.id;
       this.regionSeleccionada = this.rom.region?.id;
       this.tipoRomSeleccionado = this.rom.tipo_rom?.id;
+      this.refreshBases();
     });
+  }
+
+  refreshBases(): void {
+    if (this.plataformaSeleccionada) {
+      let filtro: FiltroBase = {
+        id: undefined,
+        tipo: undefined,
+        tipoDescripcion: TipoBaseEnum.JUEGO,
+        nombre: undefined,
+        saga: undefined,
+        plataforma: this.plataformaSeleccionada
+      };
+      this.baseService.getBases(filtro, true).subscribe((bases) => this.listaBases = bases);
+    }
   }
 
   save(): void {

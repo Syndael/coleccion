@@ -1,5 +1,6 @@
 export class FiltroColeccion {
     idColeccion: number | undefined;
+    tipo: number | undefined;
     estadoGeneralSeleccionado: number | undefined;
     plataformaSeleccionada: number | undefined;
     nombreBase: string | undefined;

@@ -42,5 +42,7 @@ export class Constantes {
 
     static readonly TIENDAS_URL = Constantes.URL_API_BASE + '/tiendas';
 
+    static readonly TIPOS_BASE_URL = Constantes.URL_API_BASE + '/tiposbase';
+
     static readonly TIPOS_ROM_URL = Constantes.URL_API_BASE + '/tiposrom';
 }

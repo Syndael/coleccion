@@ -1,14 +1,17 @@
 <div class="template" *ngIf="progreso">
     <div class="detalles">
+        <br />
         <label for="progreso-plataforma">Plataforma: </label>
-        <select [(ngModel)]="plataformaSeleccionada">
+        <select [(ngModel)]="plataformaSeleccionada" (ngModelChange)="refreshBases()">
             <option *ngFor="let plataforma of listaPlataformas" [value]="plataforma.id">{{ plataforma.corto ? '(' + plataforma.corto + ') ' : '' }}{{ plataforma.nombre }}</option>
         </select>
         <br />
         <label for="progreso-base">Nombre: </label>
-        <select [(ngModel)]="baseSeleccionado">
+        <select [(ngModel)]="baseSeleccionado" *ngIf="listaBases.length > 1">
             <option *ngFor="let base of listaBases" [value]="base.id">{{ base.nombre }}</option>
         </select>
+        <input id="progreso-base-input" placeholder="Selecciona tipo y plataforma" *ngIf="listaBases.length <= 1"
+            disabled="true">
         <br />
         <label for="progreso-estado">Estado: </label>
         <select [(ngModel)]="estadoSeleccionado">

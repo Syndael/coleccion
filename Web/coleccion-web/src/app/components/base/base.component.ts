@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 
 import { Base } from '../../models/base.model';
+import { TipoBase } from '../../models/tipo-base.model';
 
 import { FiltroBase } from '../../filters/base.filter';
 
@@ -18,18 +19,20 @@ export class BaseComponent implements OnInit {
     private utilService: UtilService
   ) { }
 
-  filtro: FiltroBase = this.getFiltroVacio();
-
   ngOnInit(): void {
     let filtro = this.utilService.getFiltroBase();
     if (filtro) {
       this.filtro = filtro;
     }
-
+    this.utilService.getListaTiposBase(true).subscribe(tipos => this.listaTipos = tipos);
     this.getBases();
   }
 
+  filtro: FiltroBase = this.getFiltroVacio();
+
   bases: Base[] = [];
+  listaTipos: TipoBase[] = [];
+  tipoSeleccionado: number | undefined;
 
   setBase?: Base;
   onSelect(base: Base): void {
@@ -39,8 +42,11 @@ export class BaseComponent implements OnInit {
   getFiltroVacio(): FiltroBase {
     return {
       id: undefined,
+      tipo: undefined,
+      tipoDescripcion: undefined,
       nombre: undefined,
-      saga: undefined
+      saga: undefined,
+      plataforma: undefined
     };
   }
 
@@ -51,6 +57,6 @@ export class BaseComponent implements OnInit {
 
   getBases(): void {
     this.utilService.setFiltroBase(this.filtro);
-    this.baseService.getBases(this.filtro).subscribe(bases => { this.bases = bases; this.utilService.setListaBases(bases) });
+    this.baseService.getBases(this.filtro, false).subscribe(bases => { this.bases = bases; });
   }
 }

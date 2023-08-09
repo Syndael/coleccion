@@ -6,7 +6,7 @@ export class Progreso {
     id: number | undefined;
     base: Base | undefined;
     plataforma: Plataforma | undefined;
-    estado_jugado: Estado | undefined;
+    estado_progreso: Estado | undefined;
     porcentaje: number | undefined;
     horas: number | undefined;
     historia_completa: Boolean | undefined;

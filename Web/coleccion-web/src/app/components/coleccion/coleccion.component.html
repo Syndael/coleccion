@@ -7,6 +7,13 @@
             <button class="limpiar-filtro" (click)="limpiarFiltro()">×</button>
         </div>
         <div class="campo">
+            Tipo:
+            <br />
+            <select [(ngModel)]="filtro.tipo" (change)="getColecciones()">
+                <option *ngFor="let tipo of listaTipos" [value]="tipo.id">{{ tipo.descripcion }}</option>
+            </select>
+        </div>
+        <div class="campo">
             Plataforma:
             <br />
             <select [(ngModel)]="filtro.plataformaSeleccionada" (change)="getColecciones()">
@@ -41,6 +48,7 @@
     </div>
     <table class="lista-colecciones">
         <tr class="encabezado-colecciones">
+            <th>Tipo</th>
             <th>Plataforma</th>
             <th>Nombre</th>
             <th>Idioma/Región</th>
@@ -54,8 +62,9 @@
             <th>Notas</th>
         </tr>
         <tr class="coleccion" *ngFor="let coleccion of colecciones" routerLink="/coleccion/{{coleccion.id}}">
+            <td class="tipo">{{coleccion.base?.tipo_base?.descripcion}}</td>
             <td class="plataforma">{{coleccion.plataforma?.nombre}}</td>
-            <td class="base">{{coleccion.base?.nombre}}</td>
+            <td class="base">{{coleccion.base?.nombre}}{{coleccion.edicion && coleccion.edicion.nombre ? ': ' + coleccion.edicion.nombre : ''}}</td>
             <td *ngIf="coleccion.idioma && coleccion.region" class="idioma-region">{{coleccion.idioma.descripcion}} /
                 {{coleccion.region.descripcion}}</td>
             <td *ngIf="coleccion.idioma && !coleccion.region" class="idioma-region">{{coleccion.idioma.descripcion}}

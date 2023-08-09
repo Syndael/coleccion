@@ -1,5 +1,11 @@
 <div class="template" *ngIf="base">
     <div class="detalles">
+        <br />
+        <label for="base-nombre">Tipo: </label>
+        <select [(ngModel)]="tipoSeleccionado">
+            <option *ngFor="let tipo of listaTipos" [value]="tipo.id">{{ tipo.descripcion }}</option>
+        </select>
+        <br />
         <label for="base-nombre">Nombre: </label>
         <input id="base-nombre" [(ngModel)]="base.nombre" placeholder="Nombre" />
         <br />

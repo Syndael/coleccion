@@ -1,5 +1,6 @@
 import { Idioma } from "./idioma.model";
 import { Base } from "./base.model";
+import { Edicion } from "./edicion.model";
 import { Plataforma } from "./plataforma.model";
 import { Region } from "./region.model";
 import { Estado } from "./estado.model";
@@ -8,6 +9,7 @@ import { Tienda } from "./tienda.model";
 export class Coleccion {
     id: number | undefined;
     base: Base | undefined;
+    edicion: Edicion | undefined;
     plataforma: Plataforma | undefined;
     idioma: Idioma | undefined;
     region: Region | undefined;

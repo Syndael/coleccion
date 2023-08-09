@@ -37,7 +37,8 @@ class RomService:
     def add_rom(self, request):
         data = request.get_json()
 
-        if 'base' not in data or data['base']['id'] is None or 'plataforma' not in data or data['plataforma']['id'] is None:
+        if 'base' not in data or data['base']['id'] is None or 'plataforma' not in data or data['plataforma'][
+            'id'] is None:
             return jsonify({'message': 'Base o plataforma no encontrado'}), 404
         base = Base.query.get(data['base']['id'])
         if base is None:

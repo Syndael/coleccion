@@ -7,6 +7,13 @@
             <button class="limpiar-filtro" (click)="limpiarFiltro()">×</button>
         </div>
         <div class="campo">
+            Tipo:
+            <br />
+            <select [(ngModel)]="filtro.tipo" (change)="getBases()">
+                <option *ngFor="let tipo of listaTipos" [value]="tipo.id">{{ tipo.descripcion }}</option>
+            </select>
+        </div>
+        <div class="campo">
             Nombre:
             <br />
             <input [(ngModel)]="filtro.nombre" placeholder="Nombre" (ngModelChange)="getBases()" />
@@ -19,16 +26,18 @@
     </div>
     <table class="lista-bases">
         <tr class="encabezado-bases">
+            <th>Tipo</th>
             <th>Nombre</th>
             <th>Saga</th>
             <th>Fecha de salida</th>
             <th>Plataformas</th>
         </tr>
         <tr class="base" *ngFor="let base of bases" routerLink="/base/{{base.id}}">
+            <td class="tipo">{{base.tipo_base?.descripcion}}</td>
             <td class="nombre">{{base.nombre}}</td>
             <td class="saga">{{base.saga}}</td>
             <td class="fecha">{{base.fecha_salida | date: 'dd/MM/yyyy'}}</td>
-            <td class="plataformas"></td>
+            <td class="plataformas">{{base.plataformas}}</td>
         </tr>
     </table>
 </div>

@@ -47,7 +47,7 @@
         <tr class="progreso" *ngFor="let progreso of progresos" routerLink="/progreso/{{progreso.id}}">
             <td class="plataforma">{{progreso.plataforma?.nombre}}</td>
             <td class="base">{{progreso.base?.nombre}}</td>
-            <td class="estado">{{progreso.estado_jugado?.descripcion}}</td>
+            <td class="estado">{{progreso.estado_progreso?.descripcion}}</td>
             <td class="porcentaje">{{progreso.porcentaje | formateo: '%'}}</td>
             <td class="horas">{{progreso.horas | number:'0.0-2'}}</td>
             <td class="historia_completa">{{progreso.historia_completa ? 'Sí' : 'No'}}</td>

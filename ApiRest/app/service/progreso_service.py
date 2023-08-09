@@ -23,7 +23,8 @@ class ProgresoService:
                 progresos = progresos.filter(Base.saga.ilike(f'%{saga}%'))
             if request.args.get('estado_id'):
                 progresos = progresos.filter(Progreso.estado_progreso_id == request.args.get('estado_id'))
-        progresos = progresos.order_by(Estado.orden.asc(), Plataforma.nombre.asc(), Plataforma.corto.asc(), Base.nombre.asc()).all()
+        progresos = progresos.order_by(Estado.orden.asc(), Plataforma.nombre.asc(), Plataforma.corto.asc(),
+                                       Base.nombre.asc()).all()
         result = self._progresos_schema.dump(progresos)
         return jsonify(result), 200
 
@@ -34,11 +35,11 @@ class ProgresoService:
         result = self._progreso_schema.dump(progreso)
         return jsonify(result), 200
 
-
     def add_progreso(self, request):
         data = request.get_json()
 
-        if 'base' not in data or data['base']['id'] is None or 'plataforma' not in data or data['plataforma']['id'] is None:
+        if 'base' not in data or data['base']['id'] is None or 'plataforma' not in data or data['plataforma'][
+            'id'] is None:
             return jsonify({'message': 'Base o plataforma no encontrado'}), 404
         base = Base.query.get(data['base']['id'])
         if base is None:

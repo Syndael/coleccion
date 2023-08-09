@@ -1,12 +1,14 @@
 from flask import jsonify
 from app.utils.datos import db
 from app.model.coleccion_model import Coleccion, ColeccionSchema
+from app.model.edicion_model import Edicion
 from app.model.estado_model import Estado
 from app.model.idioma_model import Idioma
 from app.model.base_model import Base
 from app.model.plataforma_model import Plataforma
 from app.model.region_model import Region
 from app.model.tienda_model import Tienda
+from app.model.tipo_base_model import TipoBase
 
 
 class ColeccionService:
@@ -14,8 +16,10 @@ class ColeccionService:
     _colecciones_schema = ColeccionSchema(many=True)
 
     def get_colecciones(self, request):
-        colecciones = Coleccion.query.join(Coleccion.plataforma).join(Coleccion.base)
+        colecciones = Coleccion.query.join(Coleccion.plataforma).join(Coleccion.base).join(Base.tipo_base)
         if request.args:
+            if request.args.get('tipo_base_id'):
+                colecciones = colecciones.filter(Base.tipo_id == request.args.get('tipo_base_id'))
             if request.args.get('plataforma_id'):
                 colecciones = colecciones.filter(Coleccion.plataforma_id == request.args.get('plataforma_id'))
             if request.args.get('nombre'):
@@ -29,7 +33,10 @@ class ColeccionService:
             if request.args.get('tienda_id'):
                 colecciones = colecciones.filter(Coleccion.tienda_id == request.args.get('tienda_id'))
 
-        colecciones = colecciones.filter(Coleccion.activado == 1).order_by(Plataforma.nombre.asc(), Plataforma.corto.asc(), Base.nombre.asc()).all()
+        colecciones = colecciones.filter(Coleccion.activado == 1).order_by(TipoBase.descripcion.asc(),
+                                                                           Plataforma.nombre.asc(),
+                                                                           Plataforma.corto.asc(),
+                                                                           Base.nombre.asc()).all()
         result = self._colecciones_schema.dump(colecciones)
         return jsonify(result), 200
 
@@ -41,14 +48,18 @@ class ColeccionService:
         return jsonify(result), 200
 
     def get_colecciones_by_nombre(self, nombre):
-        colecciones = db.session.query(Coleccion).join(Base).filter(Base.nombre.ilike(f'%{nombre}%'), Coleccion.activado == 1).join(Coleccion.plataforma).join(Coleccion.base).order_by(Plataforma.nombre.asc(), Plataforma.corto.asc(), Base.nombre.asc()).all()
+        colecciones = db.session.query(Coleccion).join(Base).filter(Base.nombre.ilike(f'%{nombre}%'),
+                                                                    Coleccion.activado == 1).join(
+            Coleccion.plataforma).join(Coleccion.base).order_by(Plataforma.nombre.asc(), Plataforma.corto.asc(),
+                                                                Base.nombre.asc()).all()
         result = self._colecciones_schema.dump(colecciones)
         return jsonify(result), 200
 
     def add_coleccion(self, request):
         data = request.get_json()
 
-        if 'base' not in data or data['base']['id'] is None or 'plataforma' not in data or data['plataforma']['id'] is None:
+        if 'base' not in data or data['base']['id'] is None or 'plataforma' not in data or data['plataforma'][
+            'id'] is None:
             return jsonify({'message': 'Base o plataforma no encontrado'}), 404
         base = Base.query.get(data['base']['id'])
         if base is None:
@@ -59,6 +70,8 @@ class ColeccionService:
 
         coleccion = Coleccion(base=base, plataforma=plataforma)
 
+        if 'edicion' in data and data['edicion']['id']:
+            coleccion.edicion = Edicion.query.get(data['edicion']['id'])
         if 'idioma' in data and data['idioma']['id']:
             coleccion.idioma = Idioma.query.get(data['idioma']['id'])
         if 'region' in data and data['region']['id']:
@@ -88,7 +101,6 @@ class ColeccionService:
 
     def update_coleccion(self, request, id):
         data = request.get_json()
-        print (data)
         coleccion = Coleccion.query.get(id)
 
         if not coleccion:
@@ -97,6 +109,13 @@ class ColeccionService:
         if 'base' in data and data['base']['id']:
             if coleccion.base is None or not coleccion.base.id == data['base']['id']:
                 coleccion.base = Base.query.get(data['base']['id'])
+        if 'edicion' in data and data['edicion']['id']:
+            if coleccion.edicion is None or not coleccion.edicion.id == data['edicion']['id']:
+                coleccion.edicion = Edicion.query.get(data['edicion']['id'])
+            else:
+                coleccion.edicion = None
+        else:
+            coleccion.edicion = None
         if 'plataforma' in data and data['plataforma']['id']:
             if coleccion.plataforma is None or not coleccion.plataforma.id == data['plataforma']['id']:
                 coleccion.plataforma = Plataforma.query.get(data['plataforma']['id'])

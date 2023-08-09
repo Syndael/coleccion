@@ -3,6 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
 
 import { Coleccion } from '../../models/coleccion.model';
+import { Edicion } from '../../models/edicion.model';
 import { Estado } from '../../models/estado.model';
 import { Idioma } from '../../models/idioma.model';
 import { Base } from '../../models/base.model';
@@ -10,7 +11,11 @@ import { Plataforma } from '../../models/plataforma.model';
 import { Region } from '../../models/region.model';
 import { Tienda } from '../../models/tienda.model';
 import { TipoEstado } from '../../models/tipo-estado';
+import { TipoBase } from '../../models/tipo-base.model';
 
+import { FiltroBase } from '../../filters/base.filter';
+
+import { BaseService } from '../../services/base.service';
 import { ErrorService } from '../../services/error.service';
 import { ColeccionService } from '../../services/coleccion.service';
 import { FicheroService } from '../../services/fichero.service';
@@ -32,13 +37,15 @@ export class ColeccionTemplateComponent {
     private coleccionService: ColeccionService,
     private ficheroService: FicheroService,
     private utilService: UtilService,
-    private errorService: ErrorService
+    private errorService: ErrorService,
+    private baseService: BaseService
   ) { }
 
   private modoAlta: Boolean | undefined;
   coleccion: Coleccion = {
     id: undefined,
     base: undefined,
+    edicion: undefined,
     plataforma: undefined,
     idioma: undefined,
     region: undefined,
@@ -52,6 +59,7 @@ export class ColeccionTemplateComponent {
     notas: undefined,
     codigo: undefined
   };
+  listaEdiciones: Edicion[] = [];
   listaEstadosGeneral: Estado[] = [];
   listaEstadosCaja: Estado[] = [];
   listaIdiomas: Idioma[] = [];
@@ -59,10 +67,12 @@ export class ColeccionTemplateComponent {
   listaPlataformas: Plataforma[] = [];
   listaRegiones: Region[] = [];
   listaTiendas: Tienda[] = [];
+  listaTipos: TipoBase[] = [];
 
   facturas: DatoFichero[] = [];
   fotos: DatoFichero[] = [];
 
+  edicionSeleccionada: number | undefined;
   estadoGeneralSeleccionado: number | undefined;
   estadoCajaSeleccionado: number | undefined;
   idiomaSeleccionado: number | undefined;
@@ -70,6 +80,7 @@ export class ColeccionTemplateComponent {
   plataformaSeleccionada: number | undefined;
   regionSeleccionada: number | undefined;
   tiendaSeleccionada: number | undefined;
+  tipoSeleccionado: number | undefined;
 
   facturaSeleccionada: File | null = null;
   fotoSeleccionada: File | null = null;
@@ -79,16 +90,17 @@ export class ColeccionTemplateComponent {
       this.utilService.getListaEstados(TipoEstado.GENERAL, false).subscribe(estados => this.listaEstadosGeneral = estados);
       this.utilService.getListaEstados(TipoEstado.CAJAS, false).subscribe(estados => this.listaEstadosCaja = estados);
       this.utilService.getListaIdiomas(true).subscribe(idiomas => this.listaIdiomas = idiomas);
-      this.utilService.getListaBases().subscribe(bases => this.listaBases = bases);
       this.utilService.getListaPlataformas(false).subscribe(plataformas => this.listaPlataformas = plataformas);
       this.utilService.getListaRegiones(true).subscribe(regiones => this.listaRegiones = regiones);
       this.utilService.getListaTiendas(true).subscribe(tiendas => this.listaTiendas = tiendas);
+      this.utilService.getListaTiposBase(false).subscribe(tipo => this.listaTipos = tipo);
 
       const id = params['id'];
       if (id && id == "new") {
         this.modoAlta = true;
         this.facturas = [];
         this.fotos = [];
+        this.listaEdiciones = [];
       } else if (id) {
         this.modoAlta = false;
         this.getColeccion(id);
@@ -143,10 +155,15 @@ export class ColeccionTemplateComponent {
       this.estadoGeneralSeleccionado = this.coleccion.estado_general?.id;
       this.estadoCajaSeleccionado = this.coleccion.estado_caja?.id;
       this.idiomaSeleccionado = this.coleccion.idioma?.id;
+      this.tipoSeleccionado = this.coleccion.base?.tipo_base?.id;
       this.baseSeleccionado = this.coleccion.base?.id;
       this.plataformaSeleccionada = this.coleccion.plataforma?.id;
+      this.edicionSeleccionada = this.coleccion.edicion?.id;
       this.regionSeleccionada = this.coleccion.region?.id;
       this.tiendaSeleccionada = this.coleccion.tienda?.id;
+      this.baseSeleccionado = this.coleccion.base?.id;
+      this.refreshBases();
+      this.refreshEdiciones();
     });
   }
 
@@ -172,6 +189,47 @@ export class ColeccionTemplateComponent {
     })
   }
 
+  refreshEdiciones(): void {
+    this.listaEdiciones = [];
+    if (this.baseSeleccionado) {
+      const edicionNull: Edicion = {
+        id: undefined,
+        base: undefined,
+        plataforma: undefined,
+        nombre: undefined,
+        fecha: undefined
+      }
+
+      this.listaEdiciones.push(edicionNull);
+      this.baseService.getEdiciones(this.baseSeleccionado).subscribe(datos => {
+        datos.forEach((dato) => {
+          this.listaEdiciones.push(dato);
+        });
+      });
+    }
+  }
+
+  refreshBases(): void {
+    this.listaBases = [];
+    if (this.tipoSeleccionado && this.plataformaSeleccionada) {
+      let filtro: FiltroBase = {
+        id: undefined,
+        tipo: this.tipoSeleccionado,
+        tipoDescripcion: undefined,
+        nombre: undefined,
+        saga: undefined,
+        plataforma: this.plataformaSeleccionada
+      };
+      this.baseService.getBases(filtro, true).subscribe((bases) => {
+        this.listaBases = bases;
+      });
+    }
+  }
+
+  hayEdiciones(): boolean {
+    return this.listaEstadosGeneral.length > 0;
+  }
+
   addFichero(dato: DatoFichero) {
     let url = this.utilService.buildUrlFichero(dato.id);
     if (url && dato.tipo_fichero == TipoFicheroEnum.FOTO) {
@@ -192,6 +250,7 @@ export class ColeccionTemplateComponent {
       this.coleccion.plataforma = this.listaPlataformas.find((plataforma) => plataforma.id === Number(this.plataformaSeleccionada));
       this.coleccion.region = this.listaRegiones.find((region) => region.id === Number(this.regionSeleccionada));
       this.coleccion.tienda = this.listaTiendas.find((tienda) => tienda.id === Number(this.tiendaSeleccionada));
+      this.coleccion.edicion = this.listaEdiciones.find((edicion) => edicion.id === Number(this.edicionSeleccionada));
 
       if (
         this.baseSeleccionado == undefined || this.coleccion.base == undefined ||

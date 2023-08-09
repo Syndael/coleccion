@@ -1,15 +1,31 @@
 <div class="template" *ngIf="coleccion">
     <div class="detalles">
+        <br />
+        <label for="base-nombre">Tipo: </label>
+        <select [(ngModel)]="tipoSeleccionado" (ngModelChange)="refreshBases()">
+            <option *ngFor="let tipo of listaTipos" [value]="tipo.id">{{ tipo.descripcion }}</option>
+        </select>
+        <br />
         <label for="coleccion-plataforma">Plataforma: </label>
-        <select [(ngModel)]="plataformaSeleccionada">
+        <select [(ngModel)]="plataformaSeleccionada" (ngModelChange)="refreshBases()">
             <option *ngFor="let plataforma of listaPlataformas" [value]="plataforma.id">{{ plataforma.corto ? '(' +
                 plataforma.corto + ') ' : '' }}{{ plataforma.nombre }}</option>
         </select>
         <br />
         <label for="coleccion-base">Nombre: </label>
-        <select [(ngModel)]="baseSeleccionado">
+        <select [(ngModel)]="baseSeleccionado" (ngModelChange)="refreshEdiciones()" *ngIf="listaBases.length > 1">
             <option *ngFor="let base of listaBases" [value]="base.id">{{ base.nombre }}</option>
         </select>
+        <input id="coleccion-base-input" placeholder="Selecciona tipo y plataforma" *ngIf="listaBases.length <= 1"
+            disabled="true">
+        <br />
+        <label for="coleccion-edicion">Edición: </label>
+        <select [(ngModel)]="edicionSeleccionada" *ngIf="listaEdiciones.length > 1">
+            <option *ngFor="let edicion of listaEdiciones" [value]="edicion.id">{{ edicion.nombre }}
+                {{ edicion.plataforma && edicion.plataforma.nombre ? '(' + edicion.plataforma.nombre + ')': '' }}
+            </option>
+        </select>
+        <input id="coleccion-edicion-input" placeholder="N/A" *ngIf="listaEdiciones.length <= 1" disabled="true">
         <br />
         <label for="coleccion-idioma">Idioma: </label>
         <select [(ngModel)]="idiomaSeleccionado">
@@ -95,12 +111,21 @@
     <div class="detalles-galeria" *ngIf="hayFotos()">
         <div class="detalles-galeria-titulo">Galería</div>
         <br />
-        <div class="detalles-fotos">
-            <div class="detalles-foto" *ngFor="let foto of fotos">
-                <button class="detalles-foto-eliminar" (click)="eliminarFichero(foto.id)">×</button>
-                <a [href]="foto.url" target="_blank">
-                    <img [src]="foto.url" alt="Imagen">
-                </a>
+        <div class="detalles-fotos-videos">
+            <div class="detalles-foto-video" *ngFor="let foto of fotos">
+                <ng-container *ngIf="foto.nombre_original?.endsWith('.mp4'); else imagenTemplate">
+                    <button class="detalles-video-eliminar" (click)="eliminarFichero(foto.id)">×</button>
+                    <video controls width="300">
+                        <source [src]="foto.url" type="video/mp4">
+                        Tu navegador no soporta el elemento de video.
+                    </video>
+                </ng-container>
+                <ng-template #imagenTemplate>
+                    <button class="detalles-foto-eliminar" (click)="eliminarFichero(foto.id)">×</button>
+                    <a [href]="foto.url" target="_blank">
+                        <img [src]="foto.url" alt="Imagen">
+                    </a>
+                </ng-template>
             </div>
         </div>
     </div>

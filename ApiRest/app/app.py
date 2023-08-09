@@ -18,6 +18,7 @@ from app.service.plataforma_service import PlataformaService
 from app.service.region_service import RegionService
 from app.service.rom_service import RomService
 from app.service.tienda_service import TiendaService
+from app.service.tipo_base_service import TipoBaseService
 from app.service.tipo_rom_service import TipoRomService
 
 _config = ConfigParser()
@@ -40,9 +41,9 @@ logger = logging.getLogger()
 
 app = Flask(__name__)
 CORS(app)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://{}:{}@{}/{}'.format(mssql['user'], mssql['passwd'], mssql['host'], mssql['db'])
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://{}:{}@{}/{}'.format(mssql['user'], mssql['passwd'],
+                                                                                    mssql['host'], mssql['db'])
 db.init_app(app)
-
 
 # Bases
 _base_service = BaseService()
@@ -52,13 +53,16 @@ _base_service = BaseService()
 def get_bases():
     return _base_service.get_bases(request)
 
+
 @app.route('/api/base/id/<id>', methods=['GET'])
 def get_bases_by_id(id):
     return _base_service.get_bases_by_id(id)
 
+
 @app.route('/api/base', methods=['POST'])
 def add_base():
     return _base_service.add_base(request)
+
 
 @app.route('/api/base/id/<id>', methods=['PUT'])
 def update_base(id):
@@ -73,13 +77,16 @@ _base_plataforma_service = BasePlataformaService()
 def get_bases_plataforma():
     return _base_plataforma_service.get_bases_plataforma(request)
 
+
 @app.route('/api/baseplataforma/id/<id>', methods=['GET'])
 def get_bases_plataforma_by_id(id):
     return _base_plataforma_service.get_base_plataforma_by_id(id)
 
+
 @app.route('/api/baseplataforma', methods=['POST'])
 def add_base_plataforma():
     return _base_plataforma_service.add_base_plataforma(request)
+
 
 @app.route('/api/baseplataforma/id/<id>', methods=['DELETE'])
 def delete_bases_plataforma_by_id(id):
@@ -94,13 +101,16 @@ _coleccion_service = ColeccionService()
 def get_colecciones():
     return _coleccion_service.get_colecciones(request)
 
+
 @app.route('/api/coleccion/id/<id>', methods=['GET'])
 def get_colecciones_by_id(id):
     return _coleccion_service.get_coleccion_by_id(id)
 
+
 @app.route('/api/coleccion', methods=['POST'])
 def add_coleccion():
     return _coleccion_service.add_coleccion(request)
+
 
 @app.route('/api/coleccion/id/<id>', methods=['PUT'])
 def update_coleccion(id):
@@ -115,13 +125,16 @@ _edicion_service = EdicionService()
 def get_ediciones():
     return _edicion_service.get_ediciones(request)
 
+
 @app.route('/api/edicion/id/<id>', methods=['GET'])
 def get_edicion_by_id(id):
     return _edicion_service.get_edicion_by_id(id)
 
+
 @app.route('/api/edicion', methods=['POST'])
 def add_edicion():
     return _edicion_service.add_edicion(request)
+
 
 @app.route('/api/edicion/id/<id>', methods=['DELETE'])
 def delete_edicion_by_id(id):
@@ -154,13 +167,16 @@ _progreso_service = ProgresoService()
 def get_progresos():
     return _progreso_service.get_progresos(request)
 
+
 @app.route('/api/progreso/id/<id>', methods=['GET'])
 def get_progreso_by_id(id):
     return _progreso_service.get_progreso_by_id(id)
 
+
 @app.route('/api/progreso', methods=['POST'])
 def add_progreso():
     return _progreso_service.add_progreso(request)
+
 
 @app.route('/api/progreso/id/<id>', methods=['PUT'])
 def update_progreso(id):
@@ -193,13 +209,16 @@ _rom_service = RomService()
 def get_roms():
     return _rom_service.get_roms(request)
 
+
 @app.route('/api/rom/id/<id>', methods=['GET'])
 def get_rom_by_id(id):
     return _rom_service.get_rom_by_id(id)
 
+
 @app.route('/api/rom', methods=['POST'])
 def add_rom():
     return _rom_service.add_rom(request)
+
 
 @app.route('/api/rom/id/<id>', methods=['PUT'])
 def update_rom(id):
@@ -213,6 +232,15 @@ _tienda_service = TiendaService()
 @app.route('/api/tiendas', methods=['GET'])
 def get_tiendas():
     return _tienda_service.get_tiendas()
+
+
+# Tipo Base
+_tipo_base_service = TipoBaseService()
+
+
+@app.route('/api/tiposbase', methods=['GET'])
+def get_tipos_base():
+    return _tipo_base_service.get_tipos_base()
 
 
 # Tipo ROM
@@ -230,19 +258,23 @@ _fichero_service = FicheroService()
 
 @app.route('/api/fichero/id/<id>', methods=['GET'])
 def get_fichero(id):
-    return  _fichero_service.get_fichero(id)
+    return _fichero_service.get_fichero(id)
+
 
 @app.route('/api/datos_ficheros/<id>', methods=['GET'])
 def get_datos_ficheros(id):
     return _fichero_service.get_datos_ficheros(id)
 
+
 @app.route('/api/fichero', methods=['POST'])
 def subir_fichero():
     return _fichero_service.subir_fichero(request)
 
+
 @app.route('/api/fichero/id/<id>', methods=['DELETE'])
 def eliminar_fichero(id):
     return _fichero_service.eliminar_fichero(id)
+
 
 # default
 @app.route('/')

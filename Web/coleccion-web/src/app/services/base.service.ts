@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Observable, of } from 'rxjs';
 import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
-import { catchError } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 
 import { Constantes } from '../constantes';
 
@@ -24,14 +24,51 @@ export class BaseService {
         private error: ErrorService
     ) { }
 
-    getBases(filtro: FiltroBase | undefined): Observable<Base[]> {
+    getBases(filtro: FiltroBase | undefined, incluirDefault: boolean): Observable<Base[]> {
+        const baseDefault: Base = {
+            id: undefined,
+            tipo_base: undefined,
+            nombre: undefined,
+            codigo: undefined,
+            saga: undefined,
+            fecha_salida: undefined,
+            plataformas: undefined
+        };
+
+        return this.getBasesDefault(filtro).pipe(
+            map(bases => {
+                if (incluirDefault) {
+                    return [baseDefault, ...bases];
+                } else {
+                    return bases;
+                }
+            }),
+            catchError(error => {
+                console.error('Error en la llamada a la API:', error);
+                return of([]);
+            })
+        );
+
+        return this.getBasesDefault(filtro);
+    }
+
+    getBasesDefault(filtro: FiltroBase | undefined): Observable<Base[]> {
         let params = new HttpParams()
         if (filtro) {
+            if (filtro.tipo && filtro.tipo.toString() != 'undefined') {
+                params = params.set('tipo_base_id', filtro.tipo);
+            }
+            if (filtro.tipoDescripcion && filtro.tipoDescripcion.length != 0) {
+                params = params.set('tipo_base_descripcion', filtro.tipoDescripcion);
+            }
             if (filtro.nombre && filtro.nombre.length != 0) {
                 params = params.set('nombre', filtro.nombre);
             }
             if (filtro.saga && filtro.saga.length != 0) {
                 params = params.set('saga', filtro.saga);
+            }
+            if (filtro.plataforma && filtro.plataforma.toString() != 'undefined') {
+                params = params.set('plataforma_id', filtro.plataforma);
             }
         }
         return this.http.get<Base[]>(Constantes.BASES_URL, { params: params }).pipe(catchError(this.error.handleError<Base[]>('getBases', [])));
@@ -94,7 +131,7 @@ export class BaseService {
         return of([]);
     }
 
-    getEdiciones(base_id: number): Observable<Edicion[]> {
+    getEdiciones(base_id: number | undefined): Observable<Edicion[]> {
         let params = new HttpParams()
         if (base_id) {
             params = params.set('base_id', base_id);

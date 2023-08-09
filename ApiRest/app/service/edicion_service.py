@@ -39,7 +39,6 @@ class EdicionService:
             return jsonify({'message': 'Base no encontrada'}), 404
         edicion = Edicion(base=base, nombre=data['nombre'])
 
-
         if 'plataforma' in data:
             plataforma = Plataforma.query.get(data['plataforma'])
             if plataforma:

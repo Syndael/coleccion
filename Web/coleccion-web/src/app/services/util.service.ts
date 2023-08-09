@@ -6,10 +6,10 @@ import { Constantes } from '../constantes';
 
 import { Estado } from '../models/estado.model';
 import { Idioma } from '../models/idioma.model';
-import { Base } from '../models/base.model';
 import { Plataforma } from '../models/plataforma.model';
 import { Region } from '../models/region.model';
 import { Tienda } from '../models/tienda.model';
+import { TipoBase } from '../models/tipo-base.model';
 import { TipoEstado } from '../models/tipo-estado';
 import { TipoRom } from '../models/tipo-rom.model';
 
@@ -20,10 +20,10 @@ import { FiltroRom } from '../filters/roms.filter';
 
 import { EstadoService } from '../services/estado.service';
 import { IdiomaService } from '../services/idioma.service';
-import { BaseService } from '../services/base.service';
 import { PlataformaService } from '../services/plataforma.service';
 import { RegionService } from '../services/region.service';
 import { TiendaService } from '../services/tienda.service';
+import { TipoBaseService } from '../services/tipo-base.service';
 import { TipoRomService } from '../services/tipo-rom.service';
 
 @Injectable({ providedIn: 'root', })
@@ -32,24 +32,24 @@ export class UtilService {
   estadosCajas: Estado[] = [];
   estadosProgreso: Estado[] = [];
   idiomas: Idioma[] = [];
-  bases: Base[] = [];
   plataformas: Plataforma[] = [];
   regiones: Region[] = [];
   tiendas: Tienda[] = [];
+  tiposBase: TipoBase[] = [];
   tiposRom: TipoRom[] = [];
 
   filtroColeccion: FiltroColeccion | undefined;
-  filtroProgreso: FiltroProgreso | undefined;
   filtroBase: FiltroBase | undefined;
+  filtroProgreso: FiltroProgreso | undefined;
   filtroRom: FiltroRom | undefined;
 
   constructor(
     private estadoService: EstadoService,
     private idiomaService: IdiomaService,
-    private baseService: BaseService,
     private plataformaService: PlataformaService,
     private regionService: RegionService,
     private tiendaService: TiendaService,
+    private tipoBaseService: TipoBaseService,
     private tipoRomService: TipoRomService
   ) { }
 
@@ -152,22 +152,6 @@ export class UtilService {
       }
     }
   }
-  getListaBases(): Observable<Base[]> {
-    if (this.bases.length === 0) {
-      return this.baseService.getBases(undefined).pipe(
-        map(bases => {
-          this.bases = bases;
-          return bases;
-        }),
-        catchError(error => {
-          console.error('Error en la llamada a la API:', error);
-          return of([]);
-        })
-      );
-    } else {
-      return of(this.bases);
-    }
-  }
   getListaPlataformas(incluirDefault: Boolean): Observable<Plataforma[]> {
     const plataformaNull: Plataforma = {
       id: undefined,
@@ -257,6 +241,35 @@ export class UtilService {
       }
     }
   }
+  getListaTiposBase(incluirDefault: Boolean): Observable<TipoBase[]> {
+    const tipoBaseNull: TipoBase = {
+      id: undefined,
+      descripcion: ''
+    }
+
+    if (this.tiposBase.length === 0) {
+      return this.tipoBaseService.getTiposBase().pipe(
+        map(tiposBase => {
+          this.tiposBase = tiposBase;
+          if (incluirDefault) {
+            return [tipoBaseNull, ...this.tiposBase];
+          } else {
+            return this.tiposBase;
+          }
+        }),
+        catchError(error => {
+          console.error('Error en la llamada a la API:', error);
+          return of([]);
+        })
+      );
+    } else {
+      if (incluirDefault) {
+        return of([tipoBaseNull, ...this.tiposBase]);
+      } else {
+        return of(this.tiposBase);
+      }
+    }
+  }
   getListaTiposRom(incluirDefault: Boolean): Observable<TipoRom[]> {
     const tipoRomNull: TipoRom = {
       id: undefined,
@@ -285,26 +298,6 @@ export class UtilService {
         return of(this.tiposRom);
       }
     }
-  }
-
-
-  setListaIdiomas(idiomas: Idioma[]): void {
-    this.idiomas = idiomas;
-  }
-  setListaBases(bases: Base[]): void {
-    this.bases = bases;
-  }
-  setListaPlataformas(plataformas: Plataforma[]): void {
-    this.plataformas = plataformas;
-  }
-  setListaRegiones(regiones: Region[]): void {
-    this.regiones = regiones;
-  }
-  setListaTiposRom(tiposRom: TipoRom[]): void {
-    this.tiposRom = tiposRom;
-  }
-  setListaTiendas(tiendas: Tienda[]): void {
-    this.tiendas = tiendas;
   }
 
   getFiltroColeccion(): FiltroColeccion | undefined {

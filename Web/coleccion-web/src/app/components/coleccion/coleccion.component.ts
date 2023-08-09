@@ -4,6 +4,7 @@ import { Coleccion } from '../../models/coleccion.model';
 import { Estado } from '../../models/estado.model';
 import { Plataforma } from '../../models/plataforma.model';
 import { Tienda } from '../../models/tienda.model';
+import { TipoBase } from '../../models/tipo-base.model';
 import { TipoEstado } from '../../models/tipo-estado';
 
 import { FiltroColeccion } from '../../filters/coleccion.filter';
@@ -24,6 +25,7 @@ export class ColeccionComponent implements OnInit {
   listaEstadosGeneral: Estado[] = [];
   listaPlataformas: Plataforma[] = [];
   listaTiendas: Tienda[] = [];
+  listaTipos: TipoBase[] = [];
 
   filtro: FiltroColeccion = this.getFiltroVacio();
 
@@ -31,6 +33,7 @@ export class ColeccionComponent implements OnInit {
     this.utilService.getListaEstados(TipoEstado.GENERAL, true).subscribe(estados => this.listaEstadosGeneral = estados);
     this.utilService.getListaPlataformas(true).subscribe(plataformas => this.listaPlataformas = plataformas);
     this.utilService.getListaTiendas(true).subscribe(tiendas => this.listaTiendas = tiendas);
+    this.utilService.getListaTiposBase(true).subscribe(tipos => this.listaTipos = tipos);
 
     let filtro = this.utilService.getFiltroColeccion();
     if (filtro) {
@@ -50,6 +53,7 @@ export class ColeccionComponent implements OnInit {
   getFiltroVacio(): FiltroColeccion {
     return {
       idColeccion: undefined,
+      tipo: undefined,
       estadoGeneralSeleccionado: undefined,
       plataformaSeleccionada: undefined,
       nombreBase: undefined,

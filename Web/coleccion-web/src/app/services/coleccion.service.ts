@@ -22,6 +22,9 @@ export class ColeccionService {
     getColecciones(filtro: FiltroColeccion | undefined): Observable<Coleccion[]> {
         let params = new HttpParams()
         if (filtro) {
+            if (filtro.tipo && filtro.tipo.toString() != 'undefined') {
+                params = params.set('tipo_base_id', filtro.tipo.toString());
+            }
             if (filtro.plataformaSeleccionada && filtro.plataformaSeleccionada.toString() != 'undefined') {
                 params = params.set('plataforma_id', filtro.plataformaSeleccionada.toString());
             }

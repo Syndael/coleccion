@@ -8,7 +8,6 @@ from app.utils import constantes
 from app.utils.datos import db
 from app.utils.config_parser_utils import ConfigParser
 
-
 _config = ConfigParser()
 
 
@@ -59,7 +58,8 @@ class FicheroService:
     def get_dato_fichero(self, id):
         if id:
             fichero = Fichero.query.get(id)
-            dato = DatoFichero(fichero.id, fichero.nombre_original, fichero.nombre_almacenado, fichero.tipo_fichero.descripcion)
+            dato = DatoFichero(fichero.id, fichero.nombre_original, fichero.nombre_almacenado,
+                               fichero.tipo_fichero.descripcion)
             result = self._datofichero_schema.dump(dato)
             return jsonify(result), 200
         else:

@@ -24,7 +24,8 @@ class Progreso(db.Model):
     plataforma = db.relationship('Plataforma', primaryjoin='Progreso.plataforma_id == Plataforma.id')
     estado_progreso = db.relationship('Estado', primaryjoin='Progreso.estado_progreso_id == Estado.id')
 
-    def __init__(self, base, plataforma, estado_progreso=None, porcentaje=None, horas=None, historia_completa=None, notas=None, fecha_inicio=None, fecha_fin=None):
+    def __init__(self, base, plataforma, estado_progreso=None, porcentaje=None, horas=None, historia_completa=None,
+                 notas=None, fecha_inicio=None, fecha_fin=None):
         self.base = base
         self.plataforma = plataforma
         self.estado_progreso = estado_progreso
@@ -39,8 +40,9 @@ class Progreso(db.Model):
 class ProgresoSchema(Schema):
     base = fields.Nested(BaseSchema)
     plataforma = fields.Nested(PlataformaSchema)
-    estado_jugado = fields.Nested(EstadoSchema)
+    estado_progreso = fields.Nested(EstadoSchema)
 
     class Meta:
-        fields = ('id', 'base', 'plataforma', 'estado_jugado', 'porcentaje', 'horas', 'historia_completa', 'notas', 'fecha_inicio', 'fecha_fin')
+        fields = ('id', 'base', 'plataforma', 'estado_progreso', 'porcentaje', 'horas', 'historia_completa', 'notas',
+                  'fecha_inicio', 'fecha_fin')
         include_relationships = True

@@ -1,26 +1,33 @@
 <div class="template" *ngIf="rom">
     <div class="detalles">
+        <br />
         <label for="rom-plataforma">Plataforma: </label>
-        <select [(ngModel)]="plataformaSeleccionada">
-            <option *ngFor="let plataforma of listaPlataformas" [value]="plataforma.id">{{ plataforma.corto ? '(' + plataforma.corto + ') ' : '' }}{{ plataforma.nombre }}</option>
+        <select [(ngModel)]="plataformaSeleccionada" (ngModelChange)="refreshBases()">
+            <option *ngFor="let plataforma of listaPlataformas" [value]="plataforma.id">{{ plataforma.corto ? '(' +
+                plataforma.corto + ') ' : '' }}{{ plataforma.nombre }}</option>
         </select>
         <br />
         <label for="rom-base">Nombre: </label>
-        <select [(ngModel)]="baseSeleccionado">
+        <select [(ngModel)]="baseSeleccionado" *ngIf="listaBases.length > 1">
             <option *ngFor="let base of listaBases" [value]="base.id">{{ base.nombre }}</option>
         </select>
+        <input id="rom-base-input" placeholder="Selecciona tipo y plataforma" *ngIf="listaBases.length <= 1"
+            disabled="true">
         <br />
         <label for="rom-rom">ROM: </label>
-        <input id="rom-rom" [(ngModel)]="rom.nombre_rom" placeholder="Nombre de la ROM (Autogenerado)" disabled="true" />
+        <input id="rom-rom" [(ngModel)]="rom.nombre_rom" placeholder="Nombre de la ROM (Autogenerado)"
+            disabled="true" />
         <br />
         <label for="rom-idioma">Idioma: </label>
         <select [(ngModel)]="idiomaSeleccionado">
-            <option *ngFor="let idioma of listaIdiomas" [value]="idioma.id">{{ idioma.corto ? '(' + idioma.corto + ') ' : '' }}{{ idioma.descripcion }}</option>
+            <option *ngFor="let idioma of listaIdiomas" [value]="idioma.id">{{ idioma.corto ? '(' + idioma.corto + ') '
+                : '' }}{{ idioma.descripcion }}</option>
         </select>
         <br />
         <label for="rom-region">Región: </label>
         <select [(ngModel)]="regionSeleccionada">
-            <option *ngFor="let region of listaRegiones" [value]="region.id">{{ region.corto ? '(' + region.corto + ') ' : '' }}{{ region.descripcion }}</option>
+            <option *ngFor="let region of listaRegiones" [value]="region.id">{{ region.corto ? '(' + region.corto + ') '
+                : '' }}{{ region.descripcion }}</option>
         </select>
         <br />
         <label for="rom-extension">Extensión: </label>

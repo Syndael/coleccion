@@ -6,6 +6,7 @@ import { Base } from '../../models/base.model';
 import { BasePlataforma } from '../../models/base-plataforma.model';
 import { Edicion } from '../../models/edicion.model';
 import { Plataforma } from '../../models/plataforma.model';
+import { TipoBase } from '../../models/tipo-base.model';
 
 import { BaseService } from '../../services/base.service';
 import { ErrorService } from '../../services/error.service';
@@ -27,24 +28,31 @@ export class BaseTemplateComponent {
   private modoAlta: Boolean | undefined;
   base: Base = {
     id: undefined,
+    tipo_base: undefined,
     nombre: undefined,
+    codigo: undefined,
     saga: undefined,
-    fecha_salida: undefined
+    fecha_salida: undefined,
+    plataformas: undefined
   };
-  listaPlataformas: Plataforma[] = [];
   listaBasesPlataforma: BasePlataforma[] = [];
   listaEdiciones: Edicion[] = [];
+  listaPlataformas: Plataforma[] = [];
+  listaTipos: TipoBase[] = [];
 
-  plataformaSeleccionada: number | undefined;
+  tipoSeleccionado: number | undefined;
+
   plataformaFechaSeleccionada: string | undefined;
+  plataformaSeleccionada: number | undefined;
 
-  edicionPlataformaSeleccionada: number | undefined;
   edicionNombreSeleccionado: string | undefined;
   edicionFechaSeleccionada: string | undefined;
+  edicionPlataformaSeleccionada: number | undefined;
 
   ngOnInit(): void {
     this.route.params.subscribe(params => {
       this.utilService.getListaPlataformas(true).subscribe(plataformas => this.listaPlataformas = plataformas);
+      this.utilService.getListaTiposBase(true).subscribe(tipo => this.listaTipos = tipo);
 
       const id = params['id'];
       if (id && id == "new") {
@@ -59,7 +67,10 @@ export class BaseTemplateComponent {
   }
 
   getBase(id: number): void {
-    this.baseService.getBase(id).subscribe(base => this.base = base);
+    this.baseService.getBase(id).subscribe(base => {
+      this.base = base;
+      this.tipoSeleccionado = this.base.tipo_base?.id;
+    });
   }
 
   addBasePlataforma(): void {
@@ -108,6 +119,11 @@ export class BaseTemplateComponent {
 
   save(): void {
     if (this.base) {
+      console.info(this.tipoSeleccionado)
+      console.info(this.listaTipos.find((tipo) => tipo.id == this.tipoSeleccionado))
+      console.info(this.base.tipo_base)
+      this.base.tipo_base = this.listaTipos.find((tipo) => tipo.id == this.tipoSeleccionado);
+      console.info(this.base.tipo_base)
       if (this.modoAlta) {
         this.baseService.addBase(this.base).subscribe(() => this.back());
       } else {
