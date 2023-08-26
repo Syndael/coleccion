@@ -3,7 +3,8 @@
         <br />
         <label for="progreso-plataforma">Plataforma: </label>
         <select [(ngModel)]="plataformaSeleccionada" (ngModelChange)="refreshBases()">
-            <option *ngFor="let plataforma of listaPlataformas" [value]="plataforma.id">{{ plataforma.corto ? '(' + plataforma.corto + ') ' : '' }}{{ plataforma.nombre }}</option>
+            <option *ngFor="let plataforma of listaPlataformas" [value]="plataforma.id">{{ plataforma.corto ? '(' +
+                plataforma.corto + ') ' : '' }}{{ plataforma.nombre }}</option>
         </select>
         <br />
         <label for="progreso-base">Nombre: </label>
@@ -36,10 +37,46 @@
         <label for="progreso-fin">Fin: </label>
         <input id="progreso-fin" type="date" [(ngModel)]="progreso.fecha_fin" placeholder="Fin" />
         <br />
+        <label for="progreso-fin">Últ. día: </label>
+        <input id="progreso-fin" type="date" [(ngModel)]="progreso.fecha_ultimo" placeholder="Último día de juego" />
+        <br />
+        <div class="subir-fichero-container">
+            <button class="subir-fichero" (click)="subirFoto()" [disabled]="!progreso.id || subiendoFotos">Añadir
+                fotos</button>
+            <div class="seleccion-fichero-container">
+                <button type="button" (click)="fotoInput.click()">Seleccionar fotos</button>
+                <label> {{ strFotosSeleccionadas | ellipsis: 40 }}</label>
+                <input type="file" multiple #fotoInput style="display: none" (change)="onFotosSeleccionadas($event)">
+            </div>
+        </div>
+        <br />
         <br />
         <div class="detalles-botones">
             <button type="button" (click)="back()">Atrás</button>
-            <button type="button" (click)="save()">Guardar</button>
+            <button type="button" (click)="save()">
+                {{ progreso.id ? 'Guardar' : 'Crear' }}
+            </button>
+        </div>
+    </div>
+    <div class="detalles-galeria" *ngIf="hayFotos()">
+        <div class="detalles-galeria-titulo">Galería</div>
+        <br />
+        <div class="detalles-fotos-videos">
+            <div class="detalles-foto-video" *ngFor="let foto of fotos">
+                <ng-container *ngIf="foto.nombre_original?.endsWith('.mp4'); else imagenTemplate">
+                    <button class="detalles-video-eliminar" (click)="eliminarFichero(foto.id)">×</button>
+                    <video controls width="300">
+                        <source [src]="foto.url" type="video/mp4">
+                        Tu navegador no soporta el elemento de video.
+                    </video>
+                </ng-container>
+                <ng-template #imagenTemplate>
+                    <button class="detalles-foto-eliminar" (click)="eliminarFichero(foto.id)">×</button>
+                    <a [href]="foto.url" target="_blank">
+                        <img [src]="foto.url" alt="Imagen">
+                    </a>
+                </ng-template>
+            </div>
         </div>
     </div>
 </div>

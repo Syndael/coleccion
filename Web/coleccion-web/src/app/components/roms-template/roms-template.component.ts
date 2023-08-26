@@ -73,6 +73,11 @@ export class RomsTemplateComponent {
     });
   }
 
+  modoModificacion(id: number): void {
+    this.modoAlta = false;
+    this.getRom(id);
+  }
+
   getRom(id: number): void {
     this.romService.getRom(id).subscribe(rom => {
       this.rom = rom;

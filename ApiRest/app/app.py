@@ -261,9 +261,13 @@ def get_fichero(id):
     return _fichero_service.get_fichero(id)
 
 
-@app.route('/api/datos_ficheros/<id>', methods=['GET'])
-def get_datos_ficheros(id):
-    return _fichero_service.get_datos_ficheros(id)
+@app.route('/api/datos_ficheros_coleccion/<id>', methods=['GET'])
+def get_datos_ficheros_coleccion(id):
+    return _fichero_service.get_datos_ficheros_coleccion(id)
+
+@app.route('/api/datos_ficheros_progreso/<id>', methods=['GET'])
+def get_datos_ficheros_progreso(id):
+    return _fichero_service.get_datos_ficheros_progreso(id)
 
 
 @app.route('/api/fichero', methods=['POST'])

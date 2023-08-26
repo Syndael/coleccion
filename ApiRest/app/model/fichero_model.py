@@ -1,6 +1,7 @@
 from marshmallow import Schema, fields
 from app.utils.datos import db
 from app.model.coleccion_model import ColeccionSchema
+from app.model.progreso_model import ProgresoSchema
 from app.model.tipo_fichero_model import TipoFicheroSchema
 
 
@@ -15,25 +16,29 @@ class Fichero(db.Model):
 
     tipo_fichero_id = db.Column(db.Integer, db.ForeignKey('TIPO_FICHERO.id'))
     coleccion_id = db.Column(db.Integer, db.ForeignKey('COLECCION.id'))
+    progreso_id = db.Column(db.Integer, db.ForeignKey('PROGRESO.id'))
 
     tipo_fichero = db.relationship('TipoFichero', primaryjoin='Fichero.tipo_fichero_id == TipoFichero.id')
     coleccion = db.relationship('Coleccion', primaryjoin='Fichero.coleccion_id == Coleccion.id')
+    progreso = db.relationship('Progreso', primaryjoin='Fichero.progreso_id == Progreso.id')
 
-    def __init__(self, ruta, nombre_original, nombre_almacenado, tipo_fichero, coleccion, activado=None):
+    def __init__(self, ruta, nombre_original, nombre_almacenado, tipo_fichero, coleccion=None, progreso=None, activado=None):
         self.ruta = ruta
         self.nombre_original = nombre_original
         self.nombre_almacenado = nombre_almacenado
         self.tipo_fichero = tipo_fichero
         self.coleccion = coleccion
+        self.progreso = progreso
         self.activado = activado
 
 
 class FicheroSchema(Schema):
     tipo_fichero = fields.Nested(TipoFicheroSchema)
     coleccion = fields.Nested(ColeccionSchema)
+    progreso = fields.Nested(ProgresoSchema)
 
     class Meta:
-        fields = ('id', 'ruta', 'nombre_original', 'nombre_almacenado', 'tipo_fichero', 'coleccion')
+        fields = ('id', 'ruta', 'nombre_original', 'nombre_almacenado', 'tipo_fichero', 'coleccion', 'progreso')
         include_relationships = True
 
 

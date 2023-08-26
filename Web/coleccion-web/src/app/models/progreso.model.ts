@@ -13,4 +13,5 @@ export class Progreso {
     notas: string | undefined;
     fecha_inicio: string | undefined;
     fecha_fin: string | undefined;
+    fecha_ultimo: string | undefined;
 }

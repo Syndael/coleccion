@@ -43,6 +43,7 @@
             <th>Notas</th>
             <th>Inicio</th>
             <th>Fin</th>
+            <th>Últ. jugado</th>
         </tr>
         <tr class="progreso" *ngFor="let progreso of progresos" routerLink="/progreso/{{progreso.id}}">
             <td class="plataforma">{{progreso.plataforma?.nombre}}</td>
@@ -54,6 +55,7 @@
             <td class="notas">{{progreso.notas}}</td>
             <td class="fecha_inicio">{{progreso.fecha_inicio | date: 'dd/MM/yyyy'}}</td>
             <td class="fecha_fin">{{progreso.fecha_fin | date: 'dd/MM/yyyy'}}</td>
+            <td class="fecha_ultimo">{{progreso.fecha_ultimo | date: 'dd/MM/yyyy'}}</td>
         </tr>
     </table>
 </div>

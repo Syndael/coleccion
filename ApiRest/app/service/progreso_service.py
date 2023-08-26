@@ -64,6 +64,8 @@ class ProgresoService:
             progreso.fecha_inicio = data['fecha_inicio']
         if 'fecha_fin' in data:
             progreso.fecha_fin = data['fecha_fin']
+        if 'fecha_ultimo' in data:
+            progreso.fecha_ultimo = data['fecha_ultimo']
 
         db.session.add(progreso)
         db.session.commit()
@@ -112,6 +114,10 @@ class ProgresoService:
             progreso.fecha_fin = data['fecha_fin']
         else:
             progreso.fecha_fin = None
+        if 'fecha_ultimo' in data and not data['fecha_ultimo'] == '':
+            progreso.fecha_ultimo = data['fecha_ultimo']
+        else:
+            progreso.fecha_ultimo = None
 
         db.session.commit()
         progreso_dict = self._progreso_schema.dump(progreso)

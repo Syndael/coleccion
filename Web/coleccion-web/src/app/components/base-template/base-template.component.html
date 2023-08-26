@@ -20,7 +20,7 @@
                 <div class="extra-plataformas-panel-add">
                     <label>Plataformas</label>
                     <br />
-                    <button class="extra-plataformas-add" (click)="addBasePlataforma()">+</button>
+                    <button class="extra-plataformas-add" (click)="addBasePlataforma()" [disabled]="!base.id">+</button>
                     <select [(ngModel)]="plataformaSeleccionada">
                         <option *ngFor="let plataforma of listaPlataformas" [value]="plataforma.id">{{ plataforma.corto
                             ?
@@ -41,7 +41,7 @@
                 <div class="extra-ediciones-panel-add">
                     <label>Ediciones</label>
                     <br />
-                    <button class="extra-ediciones-add" (click)="addEdicion()">+</button>
+                    <button class="extra-ediciones-add" (click)="addEdicion()" [disabled]="!base.id">+</button>
                     <input id="extra-edicion-nombre" [(ngModel)]="edicionNombreSeleccionado" placeholder="Nombre" />
                     <select [(ngModel)]="edicionPlataformaSeleccionada">
                         <option *ngFor="let plataforma of listaPlataformas" [value]="plataforma.id">

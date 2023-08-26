@@ -11,10 +11,13 @@ import { TipoEstado } from '../../models/tipo-estado';
 import { FiltroBase } from '../../filters/base.filter';
 
 import { BaseService } from '../../services/base.service';
+import { DatoFichero } from 'src/app/models/fichero.model';
 import { ErrorService } from '../../services/error.service';
+import { FicheroService } from '../../services/fichero.service';
 import { ProgresoService } from '../../services/progreso.service';
 import { UtilService } from '../../services/util.service';
 import { TipoBaseEnum } from 'src/app/models/tipo-base.model';
+import { TipoFicheroEnum } from 'src/app/models/tipo-fichero.model';
 
 @Component({
   selector: 'app-progreso-template',
@@ -25,9 +28,10 @@ export class ProgresoTemplateComponent {
     private route: ActivatedRoute,
     private location: Location,
     private baseService: BaseService,
+    private errorService: ErrorService,
+    private ficheroService: FicheroService,
     private progresoService: ProgresoService,
-    private utilService: UtilService,
-    private errorService: ErrorService
+    private utilService: UtilService
   ) { }
 
   private modoAlta: Boolean | undefined;
@@ -41,15 +45,22 @@ export class ProgresoTemplateComponent {
     historia_completa: undefined,
     notas: undefined,
     fecha_inicio: undefined,
-    fecha_fin: undefined
+    fecha_fin: undefined,
+    fecha_ultimo: undefined
   };
   listaEstados: Estado[] = [];
   listaBases: Base[] = [];
   listaPlataformas: Plataforma[] = [];
 
+  fotos: DatoFichero[] = [];
+
   estadoSeleccionado: number | undefined;
   baseSeleccionado: number | undefined;
   plataformaSeleccionada: number | undefined;
+
+  fotosSeleccionadas: File[] | undefined;
+  strFotosSeleccionadas: string | undefined;
+  subiendoFotos: boolean = false;
 
   ngOnInit(): void {
     this.route.params.subscribe(params => {
@@ -59,11 +70,61 @@ export class ProgresoTemplateComponent {
       const id = params['id'];
       if (id && id == "new") {
         this.modoAlta = true;
+        this.fotos = [];
       } else if (id) {
         this.modoAlta = false;
         this.getProgreso(id);
       }
     });
+  }
+
+  modoModificacion(id: number): void {
+    this.modoAlta = false;
+    this.getProgreso(id);
+    this.refreshFicheros(id);
+  }
+
+  hayFotos(): boolean {
+    return this.fotos.length > 0;
+  }
+
+  onFotosSeleccionadas(event: any) {
+    const fotos: FileList = event.target.files;
+    if (fotos.length > 0) {
+      this.fotosSeleccionadas = [];
+      for (let i = 0; i < fotos.length; i++) {
+        const foto: File = fotos[i];
+        this.fotosSeleccionadas.push(foto);
+      }
+    } else {
+      this.fotosSeleccionadas = undefined;
+    }
+    this.strFotosSeleccionadas = this.fotosSeleccionadas?.map(file => file.name).join(', ');
+  }
+
+  subirFoto() {
+    if (this.fotosSeleccionadas && this.progreso.id) {
+      for (let i = 0; i < this.fotosSeleccionadas.length; i++) {
+        this.subiendoFotos = true;
+        const foto: File = this.fotosSeleccionadas[i];
+        this.ficheroService.subirFicheroProgreso(this.progreso.id, TipoFicheroEnum.FOTO, foto).subscribe((fichero) => {
+          this.addFichero(fichero);
+          if (this.fotosSeleccionadas != undefined && i == this.fotosSeleccionadas.length - 1) {
+            this.fotosSeleccionadas = undefined;
+            this.strFotosSeleccionadas = '';
+            this.subiendoFotos = false;
+          }
+        });
+      }
+    }
+  }
+
+  addFichero(dato: DatoFichero) {
+    let url = this.utilService.buildUrlFichero(dato.id);
+    if (url && dato.tipo_fichero == TipoFicheroEnum.FOTO) {
+      dato.url = url;
+      this.fotos.push(dato);
+    }
   }
 
   getProgreso(id: number): void {
@@ -75,7 +136,27 @@ export class ProgresoTemplateComponent {
 
       this.progreso.horas = this.utilService.formatNumber(this.progreso.horas);
       this.refreshBases();
+      this.refreshFicheros(id);
     });
+  }
+
+  eliminarFichero(id: number | undefined): void {
+    if (id) {
+      this.ficheroService.eliminarFichero(id).subscribe(() => {
+        let indexFoto = this.fotos.findIndex((objeto) => objeto.id === id);
+        if (indexFoto !== -1) {
+          this.fotos.splice(indexFoto, 1);
+        }
+      });
+    }
+  }
+
+  refreshFicheros(id: number): void {
+    this.ficheroService.getDatosFicheroProgreso(id).subscribe(datos => {
+      datos.forEach((dato) => {
+        this.addFichero(dato);
+      });
+    })
   }
 
   refreshBases(): void {
@@ -100,9 +181,8 @@ export class ProgresoTemplateComponent {
 
       if (this.baseSeleccionado == undefined || this.progreso.base == undefined || this.plataformaSeleccionada == undefined || this.progreso.plataforma == undefined || this.estadoSeleccionado == undefined || this.progreso.estado_progreso == undefined) {
         this.errorService.printError('Plataforma, base y edtado deben estar rellenos');
-      }
-      else if (this.modoAlta) {
-        this.progresoService.addProgreso(this.progreso).subscribe(() => this.back());
+      } else if (this.modoAlta) {
+        this.progresoService.addProgreso(this.progreso).subscribe((pro) => this.modoModificacion(pro.id));
       } else {
         this.progresoService.updateProgreso(this.progreso).subscribe(() => this.back());
       }

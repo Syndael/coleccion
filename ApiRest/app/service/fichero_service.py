@@ -3,6 +3,7 @@ import os
 from flask import jsonify, send_from_directory
 from app.model.coleccion_model import Coleccion
 from app.model.fichero_model import Fichero, FicheroSchema, DatoFichero, DatoFicheroSchema
+from app.model.progreso_model import Progreso
 from app.model.tipo_fichero_model import TipoFichero
 from app.utils import constantes
 from app.utils.datos import db
@@ -43,7 +44,7 @@ class FicheroService:
         else:
             return {'mensaje': 'El fichero fue eliminado'}, 404
 
-    def get_datos_ficheros(self, id):
+    def get_datos_ficheros_coleccion(self, id):
         if id:
             ficheros = Fichero.query.filter(Fichero.coleccion_id == id, Fichero.activado == 1).all()
             datos = []
@@ -54,6 +55,18 @@ class FicheroService:
             return jsonify(result), 200
         else:
             return {'mensaje': 'Se necesita informar una colección para recuperar sus ficheros'}, 404
+
+    def get_datos_ficheros_progreso(self, id):
+        if id:
+            ficheros = Fichero.query.filter(Fichero.progreso_id == id, Fichero.activado == 1).all()
+            datos = []
+            for fichero in ficheros:
+                datos.append(DatoFichero(fichero.id, fichero.nombre_original, fichero.nombre_almacenado,
+                                         fichero.tipo_fichero.descripcion))
+            result = self._datosfichero_schema.dump(datos)
+            return jsonify(result), 200
+        else:
+            return {'mensaje': 'Se necesita informar un progreso para recuperar sus ficheros'}, 404
 
     def get_dato_fichero(self, id):
         if id:
@@ -68,8 +81,8 @@ class FicheroService:
     def subir_fichero(self, request):
         data = request.values
 
-        if 'coleccion' not in data:
-            return {'mensaje': 'No se ha proporcionado ninguna base asociada'}, 400
+        if 'coleccion' not in data and 'progreso' not in data:
+            return {'mensaje': 'No se ha proporcionado ninguna coleccion o progreso asociada'}, 400
         if 'fichero' not in request.files:
             return {'mensaje': 'No se ha proporcionado ningún fichero'}, 400
         if 'tipo' not in data:
@@ -87,10 +100,15 @@ class FicheroService:
         parts = nombre_original.split('.')
         extension = parts[-1]
 
-        coleccion = Coleccion.query.get(data['coleccion'])
+        coleccion = None
+        if 'coleccion' in data:
+            coleccion = Coleccion.query.get(data['coleccion'])
+        progreso = None
+        if 'progreso' in data:
+            progreso = Progreso.query.get(data['progreso'])
         ruta = os.path.abspath(self._path)
         nombre = str(uuid.uuid4()) + '.' + extension
-        fichero = Fichero(ruta, nombre_original, nombre, tipo, coleccion, 1)
+        fichero = Fichero(ruta, nombre_original, nombre, tipo, coleccion, progreso, 1)
         res = self._almacenar(archivo, ruta, nombre)
 
         if res:

@@ -67,20 +67,21 @@
         </select>
         <br />
         <div class="subir-fichero-container">
-            <button class="subir-fichero" (click)="subirFactura()">Añadir factura</button>
+            <button class="subir-fichero" (click)="subirFactura()" [disabled]="!coleccion.id || subiendoFacturas">Añadir facturas</button>
             <div class="seleccion-fichero-container">
-                <button type="button" (click)="facturaInput.click()">Sel. factura</button>
-                <label> {{facturaSeleccionada?.name | ellipsis: 30 }}</label>
-                <input type="file" #facturaInput style="display: none" (change)="onFacturaSeleccionada($event)">
+                <button type="button" (click)="facturaInput.click()">Seleccionar facturas</button>
+                <label> {{ strFacturasSeleccionadas | ellipsis: 40 }}</label>
+                <input type="file" multiple #facturaInput style="display: none"
+                    (change)="onFacturasSeleccionadas($event)">
             </div>
         </div>
         <br />
         <div class="subir-fichero-container">
-            <button class="subir-fichero" (click)="subirFoto()">Añadir foto</button>
+            <button class="subir-fichero" (click)="subirFoto()" [disabled]="!coleccion.id || subiendoFotos">Añadir fotos</button>
             <div class="seleccion-fichero-container">
-                <button type="button" (click)="fotoInput.click()">Sel. foto</button>
-                <label> {{fotoSeleccionada?.name | ellipsis: 30 }}</label>
-                <input type="file" #fotoInput style="display: none" (change)="onFotoSeleccionada($event)">
+                <button type="button" (click)="fotoInput.click()">Seleccionar fotos</button>
+                <label> {{ strFotosSeleccionadas | ellipsis: 40 }}</label>
+                <input type="file" multiple #fotoInput style="display: none" (change)="onFotosSeleccionadas($event)">
             </div>
         </div>
         <br />

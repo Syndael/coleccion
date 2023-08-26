@@ -16,12 +16,12 @@ import { TipoBase } from '../../models/tipo-base.model';
 import { FiltroBase } from '../../filters/base.filter';
 
 import { BaseService } from '../../services/base.service';
+import { DatoFichero } from 'src/app/models/fichero.model';
 import { ErrorService } from '../../services/error.service';
 import { ColeccionService } from '../../services/coleccion.service';
 import { FicheroService } from '../../services/fichero.service';
 import { UtilService } from '../../services/util.service';
 import { TipoFicheroEnum } from 'src/app/models/tipo-fichero.model';
-import { DatoFichero } from 'src/app/models/fichero.model';
 
 @Component({
   selector: 'app-coleccion-template',
@@ -34,11 +34,11 @@ export class ColeccionTemplateComponent {
   constructor(
     private route: ActivatedRoute,
     private location: Location,
+    private baseService: BaseService,
     private coleccionService: ColeccionService,
-    private ficheroService: FicheroService,
-    private utilService: UtilService,
     private errorService: ErrorService,
-    private baseService: BaseService
+    private ficheroService: FicheroService,
+    private utilService: UtilService
   ) { }
 
   private modoAlta: Boolean | undefined;
@@ -82,8 +82,13 @@ export class ColeccionTemplateComponent {
   tiendaSeleccionada: number | undefined;
   tipoSeleccionado: number | undefined;
 
-  facturaSeleccionada: File | null = null;
-  fotoSeleccionada: File | null = null;
+  facturasSeleccionadas: File[] | undefined;
+  strFacturasSeleccionadas: string | undefined;
+  subiendoFacturas: boolean = false;
+
+  fotosSeleccionadas: File[] | undefined;
+  strFotosSeleccionadas: string | undefined;
+  subiendoFotos: boolean = false;
 
   ngOnInit(): void {
     this.route.params.subscribe(params => {
@@ -102,11 +107,15 @@ export class ColeccionTemplateComponent {
         this.fotos = [];
         this.listaEdiciones = [];
       } else if (id) {
-        this.modoAlta = false;
-        this.getColeccion(id);
-        this.refreshFicheros(id);
+        this.modoModificacion(id);
       }
     });
+  }
+
+  modoModificacion(id: number): void {
+    this.modoAlta = false;
+    this.getColeccion(id);
+    this.refreshFicheros(id);
   }
 
   hayFacturas(): boolean {
@@ -117,35 +126,65 @@ export class ColeccionTemplateComponent {
     return this.fotos.length > 0;
   }
 
-  onFacturaSeleccionada(event: any) {
-    this.facturaSeleccionada = event.target.files[0];
+  onFacturasSeleccionadas(event: any) {
+    const facturas: FileList = event.target.files;
+    if (facturas.length > 0) {
+      this.facturasSeleccionadas = [];
+      for (let i = 0; i < facturas.length; i++) {
+        const factura: File = facturas[i];
+        this.facturasSeleccionadas.push(factura);
+      }
+    } else {
+      this.facturasSeleccionadas = undefined;
+    }
+    this.strFacturasSeleccionadas = this.facturasSeleccionadas?.map(file => file.name).join(', ');
   }
 
-  onFotoSeleccionada(event: any) {
-    this.fotoSeleccionada = event.target.files[0];
+  onFotosSeleccionadas(event: any) {
+    const fotos: FileList = event.target.files;
+    if (fotos.length > 0) {
+      this.fotosSeleccionadas = [];
+      for (let i = 0; i < fotos.length; i++) {
+        const foto: File = fotos[i];
+        this.fotosSeleccionadas.push(foto);
+      }
+    } else {
+      this.fotosSeleccionadas = undefined;
+    }
+    this.strFotosSeleccionadas = this.fotosSeleccionadas?.map(file => file.name).join(', ');
   }
 
   subirFactura() {
-    if (this.facturaSeleccionada && this.coleccion.id) {
-      this.ficheroService.subirFichero(this.coleccion.id, TipoFicheroEnum.FACTURA, this.facturaSeleccionada).subscribe((fichero) => {
-        this.facturaSeleccionada = null;
-        this.addFichero(fichero);
-        if (this.facturaInput) {
-          this.facturaInput.nativeElement.value = '';
-        }
-      });
+    if (this.facturasSeleccionadas && this.coleccion.id) {
+      for (let i = 0; i < this.facturasSeleccionadas.length; i++) {
+        this.subiendoFacturas = true;
+        const factura: File = this.facturasSeleccionadas[i];
+        this.ficheroService.subirFicheroColeccion(this.coleccion.id, TipoFicheroEnum.FACTURA, factura).subscribe((fichero) => {
+          this.addFichero(fichero);
+          if (this.facturasSeleccionadas != undefined && i == this.facturasSeleccionadas.length - 1) {
+            this.facturasSeleccionadas = undefined;
+            this.strFacturasSeleccionadas = '';
+            this.subiendoFacturas = false;
+          }
+        });
+      }
     }
   }
 
   subirFoto() {
-    if (this.fotoSeleccionada && this.coleccion.id) {
-      this.ficheroService.subirFichero(this.coleccion.id, TipoFicheroEnum.FOTO, this.fotoSeleccionada).subscribe((fichero) => {
-        this.fotoSeleccionada = null;
-        this.addFichero(fichero);
-        if (this.fotoInput) {
-          this.fotoInput.nativeElement.value = '';
-        }
-      });
+    if (this.fotosSeleccionadas && this.coleccion.id) {
+      for (let i = 0; i < this.fotosSeleccionadas.length; i++) {
+        this.subiendoFotos = true;
+        const foto: File = this.fotosSeleccionadas[i];
+        this.ficheroService.subirFicheroColeccion(this.coleccion.id, TipoFicheroEnum.FOTO, foto).subscribe((fichero) => {
+          this.addFichero(fichero);
+          if (this.fotosSeleccionadas != undefined && i == this.fotosSeleccionadas.length - 1) {
+            this.fotosSeleccionadas = undefined;
+            this.strFotosSeleccionadas = '';
+            this.subiendoFotos = false;
+          }
+        });
+      }
     }
   }
 
@@ -182,7 +221,7 @@ export class ColeccionTemplateComponent {
   }
 
   refreshFicheros(id: number): void {
-    this.ficheroService.getDatosFichero(id).subscribe(datos => {
+    this.ficheroService.getDatosFicheroColeccion(id).subscribe(datos => {
       datos.forEach((dato) => {
         this.addFichero(dato);
       });
@@ -261,7 +300,7 @@ export class ColeccionTemplateComponent {
         this.errorService.printError('Plataforma, base y estados deben estar rellenos');
       }
       else if (this.modoAlta) {
-        this.coleccionService.addColeccion(this.coleccion).subscribe(() => this.back());
+        this.coleccionService.addColeccion(this.coleccion).subscribe((col) => this.modoModificacion(col.id));
       } else {
         this.coleccionService.updateColeccion(this.coleccion).subscribe(() => this.back());
       }

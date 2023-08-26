@@ -59,11 +59,15 @@ export class BaseTemplateComponent {
         this.modoAlta = true;
         this.listaBasesPlataforma = [];
       } else if (id) {
-        this.modoAlta = false;
-        this.getBase(id);
-        this.refreshBase(id);
+        this.modoModificacion(id);
       }
     });
+  }
+
+  modoModificacion(id: number): void {
+    this.modoAlta = false;
+    this.getBase(id);
+    this.refreshBase(id);
   }
 
   getBase(id: number): void {
@@ -125,7 +129,7 @@ export class BaseTemplateComponent {
       this.base.tipo_base = this.listaTipos.find((tipo) => tipo.id == this.tipoSeleccionado);
       console.info(this.base.tipo_base)
       if (this.modoAlta) {
-        this.baseService.addBase(this.base).subscribe(() => this.back());
+        this.baseService.addBase(this.base).subscribe((base) => this.modoModificacion(base.id));
       } else {
         this.baseService.updateBase(this.base).subscribe(() => this.back());
       }

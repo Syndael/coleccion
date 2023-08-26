@@ -23,15 +23,28 @@ export class FicheroService {
         return this.http.get<Fichero>(url).pipe(catchError(this.error.handleError<Fichero>(`getFichero url=${url}`)));
     }
 
-    getDatosFichero(id_coleccion: number): Observable<DatoFichero[]> {
-        const url = `${Constantes.DATOS_FICHEROS_ID_URL}/${id_coleccion}`;
+    getDatosFicheroColeccion(id_coleccion: number): Observable<DatoFichero[]> {
+        const url = `${Constantes.DATOS_FICHEROS_COLECCION_ID_URL}/${id_coleccion}`;
         return this.http.get<DatoFichero[]>(url).pipe(catchError(this.error.handleError<DatoFichero[]>('getDatosFichero', [])));
     }
 
-    subirFichero(id_coleccion: number, tipo: string, file: File): Observable<DatoFichero> {
+    getDatosFicheroProgreso(id_progreso: number): Observable<DatoFichero[]> {
+        const url = `${Constantes.DATOS_FICHEROS_PROGRESO_ID_URL}/${id_progreso}`;
+        return this.http.get<DatoFichero[]>(url).pipe(catchError(this.error.handleError<DatoFichero[]>('getDatosFichero', [])));
+    }
+
+    subirFicheroColeccion(id_coleccion: number, tipo: string, file: File): Observable<DatoFichero> {
         const formData = new FormData();
         formData.append('fichero', file);
         formData.append('coleccion', id_coleccion.toString());
+        formData.append('tipo', tipo);
+        return this.http.post<DatoFichero>(Constantes.FICHERO_URL, formData).pipe(catchError(this.error.handleError<DatoFichero>('subirFichero')));
+    }
+
+    subirFicheroProgreso(id_progreso: number, tipo: string, file: File): Observable<DatoFichero> {
+        const formData = new FormData();
+        formData.append('fichero', file);
+        formData.append('progreso', id_progreso.toString());
         formData.append('tipo', tipo);
         return this.http.post<DatoFichero>(Constantes.FICHERO_URL, formData).pipe(catchError(this.error.handleError<DatoFichero>('subirFichero')));
     }

@@ -22,7 +22,8 @@ export class Constantes {
     static readonly FICHERO_URL = Constantes.URL_API_BASE + '/fichero';
     static readonly FICHERO_ID_URL = Constantes.FICHERO_URL + '/id';
 
-    static readonly DATOS_FICHEROS_ID_URL = Constantes.URL_API_BASE + '/datos_ficheros';
+    static readonly DATOS_FICHEROS_COLECCION_ID_URL = Constantes.URL_API_BASE + '/datos_ficheros_coleccion';
+    static readonly DATOS_FICHEROS_PROGRESO_ID_URL = Constantes.URL_API_BASE + '/datos_ficheros_progreso';
 
     static readonly ESTADOS_URL = Constantes.URL_API_BASE + '/estados';
 

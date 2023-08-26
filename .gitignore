@@ -3,6 +3,7 @@ __pycache__
 config.txt
 ApiRest/tmp
 ApiRest/files
+ApiRest/venv
 *.log
 backups/
 backup/
@@ -17,6 +18,8 @@ Web/coleccion-web/tsconfig.json
 Web/coleccion-web/tsconfig.app.json
 Web/coleccion-web/tsconfig.spec.json
 Web/coleccion-web/src/assets/.gitkeep
+Web/coleccion-web/node_modules/
+Web/coleccion-web/dist/
 
 Web/dist/
 Web/node_modules/

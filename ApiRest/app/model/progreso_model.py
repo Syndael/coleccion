@@ -19,13 +19,14 @@ class Progreso(db.Model):
     notas = db.Column(db.String(255))
     fecha_inicio = db.Column(db.Date)
     fecha_fin = db.Column(db.Date)
+    fecha_ultimo = db.Column(db.Date)
 
     base = db.relationship('Base', primaryjoin='Progreso.base_id == Base.id')
     plataforma = db.relationship('Plataforma', primaryjoin='Progreso.plataforma_id == Plataforma.id')
     estado_progreso = db.relationship('Estado', primaryjoin='Progreso.estado_progreso_id == Estado.id')
 
     def __init__(self, base, plataforma, estado_progreso=None, porcentaje=None, horas=None, historia_completa=None,
-                 notas=None, fecha_inicio=None, fecha_fin=None):
+                 notas=None, fecha_inicio=None, fecha_fin=None, fecha_ultimo=None):
         self.base = base
         self.plataforma = plataforma
         self.estado_progreso = estado_progreso
@@ -35,6 +36,7 @@ class Progreso(db.Model):
         self.notas = notas
         self.fecha_inicio = fecha_inicio
         self.fecha_fin = fecha_fin
+        self.fecha_ultimo = fecha_ultimo
 
 
 class ProgresoSchema(Schema):
@@ -44,5 +46,5 @@ class ProgresoSchema(Schema):
 
     class Meta:
         fields = ('id', 'base', 'plataforma', 'estado_progreso', 'porcentaje', 'horas', 'historia_completa', 'notas',
-                  'fecha_inicio', 'fecha_fin')
+                  'fecha_inicio', 'fecha_fin', 'fecha_ultimo')
         include_relationships = True
