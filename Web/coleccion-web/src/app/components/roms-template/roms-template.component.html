@@ -1,47 +1,50 @@
 <div class="template" *ngIf="rom">
     <div class="detalles">
+        <div class="detalles-eliminar">
+            <button type="button" (click)="delete()">×</button>
+        </div>
         <br />
         <label for="rom-plataforma">Plataforma: </label>
-        <select [(ngModel)]="plataformaSeleccionada" (ngModelChange)="refreshBases()">
+        <select [(ngModel)]="plataformaSeleccionada" (ngModelChange)="refreshBases();save(true)">
             <option *ngFor="let plataforma of listaPlataformas" [value]="plataforma.id">{{ plataforma.corto ? '(' +
                 plataforma.corto + ') ' : '' }}{{ plataforma.nombre }}</option>
         </select>
         <br />
         <label for="rom-base">Nombre: </label>
-        <select [(ngModel)]="baseSeleccionado" *ngIf="listaBases.length > 1">
+        <select [(ngModel)]="baseSeleccionado" *ngIf="listaBases.length > 1" (ngModelChange)="save(true)">
             <option *ngFor="let base of listaBases" [value]="base.id">{{ base.nombre }}</option>
         </select>
         <input id="rom-base-input" placeholder="Selecciona tipo y plataforma" *ngIf="listaBases.length <= 1"
             disabled="true">
         <br />
         <label for="rom-rom">ROM: </label>
-        <input id="rom-rom" [(ngModel)]="rom.nombre_rom" placeholder="Nombre de la ROM (Autogenerado)"
+        <input id="rom-rom" [(ngModel)]="rom.nombre_rom" placeholder="Nombre de la ROM (Autogenerado)" (ngModelChange)="save(true)"
             disabled="true" />
         <br />
         <label for="rom-idioma">Idioma: </label>
-        <select [(ngModel)]="idiomaSeleccionado">
+        <select [(ngModel)]="idiomaSeleccionado" (ngModelChange)="save(true)">
             <option *ngFor="let idioma of listaIdiomas" [value]="idioma.id">{{ idioma.corto ? '(' + idioma.corto + ') '
                 : '' }}{{ idioma.descripcion }}</option>
         </select>
         <br />
         <label for="rom-region">Región: </label>
-        <select [(ngModel)]="regionSeleccionada">
+        <select [(ngModel)]="regionSeleccionada" (ngModelChange)="save(true)">
             <option *ngFor="let region of listaRegiones" [value]="region.id">{{ region.corto ? '(' + region.corto + ') '
                 : '' }}{{ region.descripcion }}</option>
         </select>
         <br />
         <label for="rom-extension">Extensión: </label>
-        <select [(ngModel)]="tipoRomSeleccionado">
+        <select [(ngModel)]="tipoRomSeleccionado" (ngModelChange)="save(true)">
             <option *ngFor="let tipoRom of listaTiposRom" [value]="tipoRom.id">{{ tipoRom.extension }}</option>
         </select>
         <br />
         <label for="rom-descarga">Descarga: </label>
-        <input id="rom-descarga" type="date" [(ngModel)]="rom.fecha_descarga" placeholder="Descarga" />
+        <input id="rom-descarga" type="date" [(ngModel)]="rom.fecha_descarga" placeholder="Descarga" (ngModelChange)="save(true)" />
         <br />
         <br />
         <div class="detalles-botones">
             <button type="button" (click)="back()">Atrás</button>
-            <button type="button" (click)="save()">Guardar</button>
+            <button type="button" (click)="save(false)">Guardar</button>
         </div>
     </div>
 </div>

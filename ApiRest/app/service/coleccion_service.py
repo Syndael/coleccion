@@ -112,8 +112,6 @@ class ColeccionService:
         if 'edicion' in data and data['edicion']['id']:
             if coleccion.edicion is None or not coleccion.edicion.id == data['edicion']['id']:
                 coleccion.edicion = Edicion.query.get(data['edicion']['id'])
-            else:
-                coleccion.edicion = None
         else:
             coleccion.edicion = None
         if 'plataforma' in data and data['plataforma']['id']:
@@ -169,3 +167,16 @@ class ColeccionService:
         db.session.commit()
         coleccion_dict = self._coleccion_schema.dump(coleccion)
         return jsonify(coleccion_dict), 200
+
+    def delete_coleccion_by_id(self, id):
+        coleccion = Coleccion.query.get(id)
+        if coleccion:
+            try:
+                db.session.delete(coleccion)
+                db.session.commit()
+                return {'success': True}
+            except:
+                db.session.rollback()
+                return {'success': False}
+
+        return {'success': False}

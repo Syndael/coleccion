@@ -1,9 +1,10 @@
 from flask import jsonify
-from app.utils.datos import db
-from app.model.estado_model import Estado
+
 from app.model.base_model import Base
-from app.model.progreso_model import Progreso, ProgresoSchema
+from app.model.estado_model import Estado
 from app.model.plataforma_model import Plataforma
+from app.model.progreso_model import Progreso, ProgresoSchema
+from app.utils.datos import db
 
 
 class ProgresoService:
@@ -33,6 +34,14 @@ class ProgresoService:
         if not progreso:
             return jsonify({'message': 'Historial no encontrado'}), 404
         result = self._progreso_schema.dump(progreso)
+        return jsonify(result), 200
+
+    def get_ultimos_progresos(self):
+        progresos = Progreso.query.join(Progreso.estado_progreso).join(Progreso.plataforma).join(Progreso.base)
+        progresos = progresos.filter(Progreso.fecha_ultimo.isnot(None))
+        progresos = progresos.order_by(Progreso.fecha_ultimo.desc(), Estado.orden.asc(), Plataforma.nombre.asc(),
+                                       Plataforma.corto.asc(), Base.nombre.asc()).limit(5).all()
+        result = self._progresos_schema.dump(progresos)
         return jsonify(result), 200
 
     def add_progreso(self, request):
@@ -122,3 +131,16 @@ class ProgresoService:
         db.session.commit()
         progreso_dict = self._progreso_schema.dump(progreso)
         return jsonify(progreso_dict), 200
+
+    def delete_progreso_by_id(self, id):
+        progreso = Progreso.query.get(id)
+        if progreso:
+            try:
+                db.session.delete(progreso)
+                db.session.commit()
+                return {'success': True}
+            except:
+                db.session.rollback()
+                return {'success': False}
+
+        return {'success': False}

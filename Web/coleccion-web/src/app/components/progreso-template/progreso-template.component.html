@@ -1,44 +1,47 @@
 <div class="template" *ngIf="progreso">
     <div class="detalles">
+        <div class="detalles-eliminar">
+            <button type="button" (click)="delete()">×</button>
+        </div>
         <br />
         <label for="progreso-plataforma">Plataforma: </label>
-        <select [(ngModel)]="plataformaSeleccionada" (ngModelChange)="refreshBases()">
+        <select [(ngModel)]="plataformaSeleccionada" (ngModelChange)="refreshBases();save(true)">
             <option *ngFor="let plataforma of listaPlataformas" [value]="plataforma.id">{{ plataforma.corto ? '(' +
                 plataforma.corto + ') ' : '' }}{{ plataforma.nombre }}</option>
         </select>
         <br />
         <label for="progreso-base">Nombre: </label>
-        <select [(ngModel)]="baseSeleccionado" *ngIf="listaBases.length > 1">
+        <select [(ngModel)]="baseSeleccionado" *ngIf="listaBases.length > 1" (ngModelChange)="save(true)">
             <option *ngFor="let base of listaBases" [value]="base.id">{{ base.nombre }}</option>
         </select>
         <input id="progreso-base-input" placeholder="Selecciona tipo y plataforma" *ngIf="listaBases.length <= 1"
             disabled="true">
         <br />
         <label for="progreso-estado">Estado: </label>
-        <select [(ngModel)]="estadoSeleccionado">
+        <select [(ngModel)]="estadoSeleccionado" (ngModelChange)="save(true)">
             <option *ngFor="let estado of listaEstados" [value]="estado.id">{{ estado.descripcion }}</option>
         </select>
         <br />
         <label for="progreso-porcentaje">Porcentaje: </label>
-        <input id="progreso-porcentaje" [(ngModel)]="progreso.porcentaje" placeholder="%" />
+        <input id="progreso-porcentaje" [(ngModel)]="progreso.porcentaje" placeholder="%"  (ngModelChange)="save(true)"/>
         <br />
         <label for="progreso-horas">Horas: </label>
-        <input id="progreso-horas" [(ngModel)]="progreso.horas" placeholder="Horas" (input)="formatHoras($event)" />
+        <input id="progreso-horas" [(ngModel)]="progreso.horas" placeholder="Horas" (input)="formatHoras($event)"  (ngModelChange)="save(true)"/>
         <br />
         <label for="progreso-completo">Completo: </label>
-        <input id="progreso-completo" type="checkbox" [(ngModel)]="progreso.historia_completa" />
+        <input id="progreso-completo" type="checkbox" [(ngModel)]="progreso.historia_completa"  (ngModelChange)="save(true)"/>
         <br />
         <label for="progreso-notas">Notas: </label>
-        <input id="progreso-notas" [(ngModel)]="progreso.notas" placeholder="Notas" />
+        <input id="progreso-notas" [(ngModel)]="progreso.notas" placeholder="Notas"  (ngModelChange)="save(true)"/>
         <br />
         <label for="progreso-incio">Inicio: </label>
-        <input id="progreso-incio" type="date" [(ngModel)]="progreso.fecha_inicio" placeholder="Inicio" />
+        <input id="progreso-incio" type="date" [(ngModel)]="progreso.fecha_inicio" placeholder="Inicio"  (ngModelChange)="save(true)"/>
         <br />
         <label for="progreso-fin">Fin: </label>
-        <input id="progreso-fin" type="date" [(ngModel)]="progreso.fecha_fin" placeholder="Fin" />
+        <input id="progreso-fin" type="date" [(ngModel)]="progreso.fecha_fin" placeholder="Fin" (ngModelChange)="save(true)" />
         <br />
         <label for="progreso-fin">Últ. día: </label>
-        <input id="progreso-fin" type="date" [(ngModel)]="progreso.fecha_ultimo" placeholder="Último día de juego" />
+        <input id="progreso-fin" type="date" [(ngModel)]="progreso.fecha_ultimo" placeholder="Último día de juego"  (ngModelChange)="save(true)"/>
         <br />
         <div class="subir-fichero-container">
             <button class="subir-fichero" (click)="subirFoto()" [disabled]="!progreso.id || subiendoFotos">Añadir
@@ -53,7 +56,7 @@
         <br />
         <div class="detalles-botones">
             <button type="button" (click)="back()">Atrás</button>
-            <button type="button" (click)="save()">
+            <button type="button" (click)="save(false)">
                 {{ progreso.id ? 'Guardar' : 'Crear' }}
             </button>
         </div>

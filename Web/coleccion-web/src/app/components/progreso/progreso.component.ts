@@ -1,9 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 
-import { Estado } from '../../models/estado.model';
+import { Estado, TipoEstado } from '../../models/estado.model';
 import { Progreso } from '../../models/progreso.model';
 import { Plataforma } from '../../models/plataforma.model';
-import { TipoEstado } from '../../models/tipo-estado';
 
 import { FiltroProgreso } from '../../filters/progreso.filter';
 

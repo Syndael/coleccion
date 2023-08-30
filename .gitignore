@@ -14,6 +14,7 @@ Sheet/
 Web/coleccion-web/.gitignore
 Web/coleccion-web/.editorconfig
 Web/coleccion-web/.vscode
+Web/coleccion-web/.angular
 Web/coleccion-web/tsconfig.json
 Web/coleccion-web/tsconfig.app.json
 Web/coleccion-web/tsconfig.spec.json

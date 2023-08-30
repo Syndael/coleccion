@@ -81,9 +81,9 @@ export class RomsTemplateComponent {
   getRom(id: number): void {
     this.romService.getRom(id).subscribe(rom => {
       this.rom = rom;
+      this.plataformaSeleccionada = this.rom.plataforma?.id;
       this.idiomaSeleccionado = this.rom.idioma?.id;
       this.baseSeleccionado = this.rom.base?.id;
-      this.plataformaSeleccionada = this.rom.plataforma?.id;
       this.regionSeleccionada = this.rom.region?.id;
       this.tipoRomSeleccionado = this.rom.tipo_rom?.id;
       this.refreshBases();
@@ -91,6 +91,7 @@ export class RomsTemplateComponent {
   }
 
   refreshBases(): void {
+    this.listaBases = [];
     if (this.plataformaSeleccionada) {
       let filtro: FiltroBase = {
         id: undefined,
@@ -104,7 +105,7 @@ export class RomsTemplateComponent {
     }
   }
 
-  save(): void {
+  save(auto: boolean): void {
     if (this.rom) {
       this.rom.idioma = this.listaIdiomas.find((idioma) => idioma.id === Number(this.idiomaSeleccionado));
       this.rom.base = this.listaBases.find((base) => base.id === Number(this.baseSeleccionado));
@@ -113,12 +114,42 @@ export class RomsTemplateComponent {
       this.rom.tipo_rom = this.listaTiposRom.find((tipoRom) => tipoRom.id === Number(this.tipoRomSeleccionado));
 
       if (this.baseSeleccionado == undefined || this.rom.base == undefined || this.plataformaSeleccionada == undefined || this.rom.plataforma == undefined) {
-        this.errorService.printError('Plataforma y base deben estar rellenos');
+        if (auto == false) {
+          this.errorService.printError('Plataforma y base deben estar rellenos');
+        }
       }
       else if (this.modoAlta) {
-        this.romService.addRom(this.rom).subscribe(() => this.back());
+        this.modoAlta = false;
+        this.romService.addRom(this.rom).subscribe((rom) => {
+          if (auto == false) {
+            this.back();
+          }
+          this.modoModificacion(rom.id)
+        });
       } else {
-        this.romService.updateRom(this.rom).subscribe(() => this.back());
+        this.romService.updateRom(this.rom).subscribe((rom) => {
+          if (auto == false) {
+            this.back();
+          }
+          this.rom.nombre_rom = rom.nombre_rom;
+        });
+      }
+    }
+  }
+
+  delete(): void {
+    if (this.rom.id == undefined) {
+      this.errorService.printError('La rom no se ha genereado aún');
+    } else {
+      const confirmacion = window.confirm('¿Eliminar la rom?');
+      if (confirmacion) {
+        this.romService.deleteRom(this.rom.id).subscribe((res) => {
+          if (res.success) {
+            this.back();
+          } else {
+            this.errorService.printError('Se ha producido un error eliminando la rom ' + this.rom.id);
+          }
+        });
       }
     }
   }

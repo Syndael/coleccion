@@ -48,8 +48,6 @@ export class BaseService {
                 return of([]);
             })
         );
-
-        return this.getBasesDefault(filtro);
     }
 
     getBasesDefault(filtro: FiltroBase | undefined): Observable<Base[]> {
@@ -94,6 +92,11 @@ export class BaseService {
     updateBase(base: Base): Observable<any> {
         const url = `${Constantes.BASE_ID_URL}/${base.id}`;
         return this.http.put(url, base, this.httpOptions).pipe(catchError(this.error.handleError<any>('updateBase')));
+    }
+
+    deleteBase(id: number): Observable<any> {
+        const url = `${Constantes.BASE_ID_URL}/${id}`;
+        return this.http.delete(url).pipe(catchError(this.error.handleError<any>('deleteBase')));
     }
 
     getBasesPlataforma(base_id: number): Observable<BasePlataforma[]> {

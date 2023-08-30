@@ -86,3 +86,17 @@ class BaseService:
 
         base_dict = self._base_schema.dump(base)
         return jsonify(base_dict), 200
+
+    def delete_base_by_id(self, id):
+        base = Base.query.get(id)
+        if base:
+            try:
+                db.session.delete(base)
+                db.session.commit()
+                return {'success': True}
+            except Exception as ex:
+                db.session.rollback()
+                print(ex)
+                return {'success': False}
+
+        return {'success': False}

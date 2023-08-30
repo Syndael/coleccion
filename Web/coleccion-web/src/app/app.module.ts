@@ -16,6 +16,7 @@ import { RomsComponent } from './components/roms/roms.component';
 import { RomsTemplateComponent } from './components/roms-template/roms-template.component';
 import { ProgresoTemplateComponent } from './components/progreso-template/progreso-template.component';
 import { ColeccionTemplateComponent } from './components/coleccion-template/coleccion-template.component';
+import { EstadisticasComponent } from './components/estadisticas/estadisticas.component';
 
 @NgModule({
   declarations: [
@@ -29,7 +30,8 @@ import { ColeccionTemplateComponent } from './components/coleccion-template/cole
     ProgresoTemplateComponent,
     ColeccionTemplateComponent,
     EllipsisPipe,
-    FormatPipe
+    FormatPipe,
+    EstadisticasComponent
   ],
   imports: [
     BrowserModule,

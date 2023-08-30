@@ -1,11 +1,12 @@
 from flask import jsonify
-from app.utils.datos import db
-from app.model.rom_model import Rom, RomSchema
-from app.model.idioma_model import Idioma
+
 from app.model.base_model import Base
+from app.model.idioma_model import Idioma
 from app.model.plataforma_model import Plataforma
 from app.model.region_model import Region
+from app.model.rom_model import Rom, RomSchema
 from app.model.tipo_rom_model import TipoRom
+from app.utils.datos import db
 
 
 class RomService:
@@ -100,3 +101,16 @@ class RomService:
 
         rom_dict = self._rom_schema.dump(rom)
         return jsonify(rom_dict), 200
+
+    def delete_rom_by_id(self, id):
+        rom = Rom.query.get(id)
+        if rom:
+            try:
+                db.session.delete(rom)
+                db.session.commit()
+                return {'success': True}
+            except:
+                db.session.rollback()
+                return {'success': False}
+
+        return {'success': False}

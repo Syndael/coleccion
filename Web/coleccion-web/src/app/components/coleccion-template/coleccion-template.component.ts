@@ -4,13 +4,12 @@ import { Location } from '@angular/common';
 
 import { Coleccion } from '../../models/coleccion.model';
 import { Edicion } from '../../models/edicion.model';
-import { Estado } from '../../models/estado.model';
+import { Estado, TipoEstado } from '../../models/estado.model';
 import { Idioma } from '../../models/idioma.model';
 import { Base } from '../../models/base.model';
 import { Plataforma } from '../../models/plataforma.model';
 import { Region } from '../../models/region.model';
 import { Tienda } from '../../models/tienda.model';
-import { TipoEstado } from '../../models/tipo-estado';
 import { TipoBase } from '../../models/tipo-base.model';
 
 import { FiltroBase } from '../../filters/base.filter';
@@ -222,6 +221,12 @@ export class ColeccionTemplateComponent {
 
   refreshFicheros(id: number): void {
     this.ficheroService.getDatosFicheroColeccion(id).subscribe(datos => {
+      datos?.sort((a, b) => {
+        if (a.nombre_original && b.nombre_original) {
+          return a.nombre_original.localeCompare(b.nombre_original);
+        }
+        return 0;
+      });
       datos.forEach((dato) => {
         this.addFichero(dato);
       });
@@ -280,7 +285,7 @@ export class ColeccionTemplateComponent {
     }
   }
 
-  save(): void {
+  save(auto: boolean): void {
     if (this.coleccion) {
       this.coleccion.estado_general = this.listaEstadosGeneral.find((estado) => estado.id === Number(this.estadoGeneralSeleccionado));
       this.coleccion.estado_caja = this.listaEstadosCaja.find((estado) => estado.id === Number(this.estadoCajaSeleccionado));
@@ -297,12 +302,36 @@ export class ColeccionTemplateComponent {
         this.estadoGeneralSeleccionado == undefined || this.coleccion.estado_general == undefined ||
         this.estadoCajaSeleccionado == undefined || this.coleccion.estado_caja == undefined
       ) {
-        this.errorService.printError('Plataforma, base y estados deben estar rellenos');
-      }
-      else if (this.modoAlta) {
+        if (auto == false) {
+          this.errorService.printError('Plataforma, base y estados deben estar rellenos');
+        }
+      } else if (this.modoAlta) {
+        this.modoAlta = false;
         this.coleccionService.addColeccion(this.coleccion).subscribe((col) => this.modoModificacion(col.id));
       } else {
-        this.coleccionService.updateColeccion(this.coleccion).subscribe(() => this.back());
+        this.coleccionService.updateColeccion(this.coleccion).subscribe((col) => {
+          if (auto == false) {
+            this.back();
+          }
+          this.coleccion.codigo = col.codigo;
+        });
+      }
+    }
+  }
+
+  delete(): void {
+    if (this.coleccion.id == undefined) {
+      this.errorService.printError('La coleccion no se ha genereado aún');
+    } else {
+      const confirmacion = window.confirm('¿Eliminar la coleccion?');
+      if (confirmacion) {
+        this.coleccionService.deleteColeccion(this.coleccion.id).subscribe((res) => {
+          if (res.success) {
+            this.back();
+          } else {
+            this.errorService.printError('Se ha producido un error eliminando la coleccion ' + this.coleccion.id);
+          }
+        });
       }
     }
   }

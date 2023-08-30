@@ -1,13 +1,15 @@
-import uuid
 import os
+import uuid
+
 from flask import jsonify, send_from_directory
+
 from app.model.coleccion_model import Coleccion
 from app.model.fichero_model import Fichero, FicheroSchema, DatoFichero, DatoFicheroSchema
 from app.model.progreso_model import Progreso
 from app.model.tipo_fichero_model import TipoFichero
 from app.utils import constantes
-from app.utils.datos import db
 from app.utils.config_parser_utils import ConfigParser
+from app.utils.datos import db
 
 _config = ConfigParser()
 
@@ -46,7 +48,8 @@ class FicheroService:
 
     def get_datos_ficheros_coleccion(self, id):
         if id:
-            ficheros = Fichero.query.filter(Fichero.coleccion_id == id, Fichero.activado == 1).all()
+            ficheros = Fichero.query.filter(Fichero.coleccion_id == id, Fichero.activado == 1).order_by(
+                Fichero.nombre_original.asc()).all()
             datos = []
             for fichero in ficheros:
                 datos.append(DatoFichero(fichero.id, fichero.nombre_original, fichero.nombre_almacenado,
@@ -58,7 +61,8 @@ class FicheroService:
 
     def get_datos_ficheros_progreso(self, id):
         if id:
-            ficheros = Fichero.query.filter(Fichero.progreso_id == id, Fichero.activado == 1).all()
+            ficheros = Fichero.query.filter(Fichero.progreso_id == id, Fichero.activado == 1).order_by(
+                Fichero.nombre_original.asc()).all()
             datos = []
             for fichero in ficheros:
                 datos.append(DatoFichero(fichero.id, fichero.nombre_original, fichero.nombre_almacenado,

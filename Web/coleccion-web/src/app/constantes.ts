@@ -18,6 +18,10 @@ export class Constantes {
     static readonly EDICIONES_URL = Constantes.URL_API_BASE + '/ediciones';
     static readonly EDICION_URL = Constantes.URL_API_BASE + '/edicion';
     static readonly EDICION_ID_URL = Constantes.EDICION_URL + '/id';
+    
+    static readonly ESTADISITCAS_URL = Constantes.URL_API_BASE + '/estadisticas';
+    static readonly ESTADISITCAS_COMPLETOS_URL = Constantes.ESTADISITCAS_URL + '/completos';
+    static readonly ESTADISITCAS_GASTOS_URL = Constantes.ESTADISITCAS_URL + '/gastos';
 
     static readonly FICHERO_URL = Constantes.URL_API_BASE + '/fichero';
     static readonly FICHERO_ID_URL = Constantes.FICHERO_URL + '/id';
@@ -30,6 +34,7 @@ export class Constantes {
     static readonly PROGRESOS_URL = Constantes.URL_API_BASE + '/progresos';
     static readonly PROGRESO_URL = Constantes.URL_API_BASE + '/progreso';
     static readonly PROGRESO_ID_URL = Constantes.PROGRESO_URL + '/id';
+    static readonly ULTIMOS_PROGRESOS_ID_URL = Constantes.PROGRESOS_URL + '/ultimos';
 
     static readonly IDIOMAS_URL = Constantes.URL_API_BASE + '/idiomas';
 

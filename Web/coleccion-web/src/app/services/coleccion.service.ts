@@ -58,4 +58,9 @@ export class ColeccionService {
         const url = `${Constantes.COLECCION_ID_URL}/${coleccion.id}`;
         return this.http.put(url, coleccion, this.httpOptions).pipe(catchError(this.error.handleError<any>('updateColeccion')));
     }
+
+    deleteColeccion(id: number): Observable<any> {
+        const url = `${Constantes.COLECCION_ID_URL}/${id}`;
+        return this.http.delete(url).pipe(catchError(this.error.handleError<any>('deleteColeccion')));
+    }
 }

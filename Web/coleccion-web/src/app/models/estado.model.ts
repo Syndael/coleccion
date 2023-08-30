@@ -3,3 +3,9 @@ export class Estado {
     descripcion: string | undefined;
     tipo!: number;
 }
+
+export enum TipoEstado {
+    GENERAL,
+    CAJAS,
+    PROGRESO
+}

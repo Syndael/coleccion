@@ -49,4 +49,9 @@ export class RomService {
         const url = `${Constantes.ROM_ID_URL}/${rom.id}`;
         return this.http.put(url, rom, this.httpOptions).pipe(catchError(this.error.handleError<any>('updateRom')));
     }
+
+    deleteRom(id: number): Observable<any> {
+        const url = `${Constantes.ROM_ID_URL}/${id}`;
+        return this.http.delete(url).pipe(catchError(this.error.handleError<any>('deleteRom')));
+    }
 }

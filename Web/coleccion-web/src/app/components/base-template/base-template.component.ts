@@ -121,17 +121,47 @@ export class BaseTemplateComponent {
     }
   }
 
-  save(): void {
+  save(auto: boolean): void {
     if (this.base) {
       console.info(this.tipoSeleccionado)
       console.info(this.listaTipos.find((tipo) => tipo.id == this.tipoSeleccionado))
       console.info(this.base.tipo_base)
       this.base.tipo_base = this.listaTipos.find((tipo) => tipo.id == this.tipoSeleccionado);
       console.info(this.base.tipo_base)
-      if (this.modoAlta) {
+
+      if (
+        this.tipoSeleccionado == undefined || this.base.tipo_base == undefined ||
+        this.base.nombre == undefined
+      ) {
+        if (auto == false) {
+          this.errorService.printError('Tipo y nombre deben estar rellenos');
+        }
+      } else if (this.modoAlta) {
+        this.modoAlta = false;
         this.baseService.addBase(this.base).subscribe((base) => this.modoModificacion(base.id));
       } else {
-        this.baseService.updateBase(this.base).subscribe(() => this.back());
+        this.baseService.updateBase(this.base).subscribe(() =>  {
+          if (auto == false) {
+            this.back();
+          }
+        });
+      }
+    }
+  }
+
+  delete(): void {
+    if (this.base.id == undefined) {
+      this.errorService.printError('La base no se ha genereado aún');
+    } else {
+      const confirmacion = window.confirm('¿Eliminar la base?');
+      if (confirmacion) {
+        this.baseService.deleteBase(this.base.id).subscribe((res) => {
+          if (res.success) {
+            this.back();
+          } else {
+            this.errorService.printError('Se ha producido un error eliminando la base ' + this.base.id);
+          }
+        });
       }
     }
   }

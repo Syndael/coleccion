@@ -2,18 +2,18 @@
     <div class="detalles">
         <br />
         <label for="base-nombre">Tipo: </label>
-        <select [(ngModel)]="tipoSeleccionado">
+        <select [(ngModel)]="tipoSeleccionado" (ngModelChange)="save(true)">
             <option *ngFor="let tipo of listaTipos" [value]="tipo.id">{{ tipo.descripcion }}</option>
         </select>
         <br />
         <label for="base-nombre">Nombre: </label>
-        <input id="base-nombre" [(ngModel)]="base.nombre" placeholder="Nombre" />
+        <input id="base-nombre" [(ngModel)]="base.nombre" placeholder="Nombre"  (ngModelChange)="save(true)"/>
         <br />
         <label for="base-saga">Saga/Franquicia: </label>
-        <input id="base-saga" [(ngModel)]="base.saga" placeholder="Saga/Franquicia" />
+        <input id="base-saga" [(ngModel)]="base.saga" placeholder="Saga/Franquicia" (ngModelChange)="save(true)" />
         <br />
         <label for="base-fecha">Fecha de salida: </label>
-        <input id="base-fecha" type="date" [(ngModel)]="base.fecha_salida" placeholder="Fecha de salida" />
+        <input id="base-fecha" type="date" [(ngModel)]="base.fecha_salida" placeholder="Fecha de salida"  (ngModelChange)="save(true)"/>
         <br />
         <div class="extras">
             <div class="extras-plataformas">
@@ -63,7 +63,7 @@
         <br />
         <div class="detalles-botones">
             <button type="button" (click)="back()">Atrás</button>
-            <button type="button" (click)="save()">Guardar</button>
+            <button type="button" (click)="save(false)">Guardar</button>
         </div>
     </div>
 </div>

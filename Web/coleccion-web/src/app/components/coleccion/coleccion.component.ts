@@ -1,11 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 
 import { Coleccion } from '../../models/coleccion.model';
-import { Estado } from '../../models/estado.model';
+import { Estado, TipoEstado } from '../../models/estado.model';
 import { Plataforma } from '../../models/plataforma.model';
 import { Tienda } from '../../models/tienda.model';
 import { TipoBase } from '../../models/tipo-base.model';
-import { TipoEstado } from '../../models/tipo-estado';
 
 import { FiltroColeccion } from '../../filters/coleccion.filter';
 

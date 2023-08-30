@@ -10,6 +10,7 @@ from app.service.base_service import BaseService
 from app.service.base_plataforma_service import BasePlataformaService
 from app.service.coleccion_service import ColeccionService
 from app.service.edicion_service import EdicionService
+from app.service.estadistica_service import EstadisticasService
 from app.service.estado_service import EstadoService
 from app.service.fichero_service import FicheroService
 from app.service.idioma_service import IdiomaService
@@ -69,6 +70,11 @@ def update_base(id):
     return _base_service.update_base(request, id)
 
 
+@app.route('/api/base/id/<id>', methods=['DELETE'])
+def delete_base_by_id(id):
+    return _base_service.delete_base_by_id(id)
+
+
 # Bases Plataforma
 _base_plataforma_service = BasePlataformaService()
 
@@ -117,6 +123,11 @@ def update_coleccion(id):
     return _coleccion_service.update_coleccion(request, id)
 
 
+@app.route('/api/coleccion/id/<id>', methods=['DELETE'])
+def delete_coleccion_by_id(id):
+    return _coleccion_service.delete_coleccion_by_id(id)
+
+
 # Edicion
 _edicion_service = EdicionService()
 
@@ -139,6 +150,20 @@ def add_edicion():
 @app.route('/api/edicion/id/<id>', methods=['DELETE'])
 def delete_edicion_by_id(id):
     return _edicion_service.delete_edicion_by_id(id)
+
+
+# Estadísticas
+_estadisticas_service = EstadisticasService()
+
+
+@app.route('/api/estadisticas/completos', methods=['GET'])
+def get_completos():
+    return _estadisticas_service.get_completos()
+
+
+@app.route('/api/estadisticas/gastos', methods=['GET'])
+def get_gastos():
+    return _estadisticas_service.get_gastos()
 
 
 # Estados
@@ -173,6 +198,11 @@ def get_progreso_by_id(id):
     return _progreso_service.get_progreso_by_id(id)
 
 
+@app.route('/api/progresos/ultimos', methods=['GET'])
+def get_ultimos_progresos():
+    return _progreso_service.get_ultimos_progresos()
+
+
 @app.route('/api/progreso', methods=['POST'])
 def add_progreso():
     return _progreso_service.add_progreso(request)
@@ -181,6 +211,11 @@ def add_progreso():
 @app.route('/api/progreso/id/<id>', methods=['PUT'])
 def update_progreso(id):
     return _progreso_service.update_progreso(request, id)
+
+
+@app.route('/api/progreso/id/<id>', methods=['DELETE'])
+def delete_progreso_by_id(id):
+    return _progreso_service.delete_progreso_by_id(id)
 
 
 # Plataformas
@@ -223,6 +258,11 @@ def add_rom():
 @app.route('/api/rom/id/<id>', methods=['PUT'])
 def update_rom(id):
     return _rom_service.update_rom(request, id)
+
+
+@app.route('/api/rom/id/<id>', methods=['DELETE'])
+def delete_rom_by_id(id):
+    return _rom_service.delete_rom_by_id(id)
 
 
 # Tiendas

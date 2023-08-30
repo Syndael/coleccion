@@ -2,11 +2,10 @@ import { Component } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
 
-import { Estado } from '../../models/estado.model';
+import { Estado, TipoEstado } from '../../models/estado.model';
 import { Progreso } from '../../models/progreso.model';
 import { Base } from '../../models/base.model';
 import { Plataforma } from '../../models/plataforma.model';
-import { TipoEstado } from '../../models/tipo-estado';
 
 import { FiltroBase } from '../../filters/base.filter';
 
@@ -153,6 +152,12 @@ export class ProgresoTemplateComponent {
 
   refreshFicheros(id: number): void {
     this.ficheroService.getDatosFicheroProgreso(id).subscribe(datos => {
+      datos?.sort((a, b) => {
+        if (a.nombre_original && b.nombre_original) {
+          return a.nombre_original.localeCompare(b.nombre_original);
+        }
+        return 0;
+      });
       datos.forEach((dato) => {
         this.addFichero(dato);
       });
@@ -160,6 +165,7 @@ export class ProgresoTemplateComponent {
   }
 
   refreshBases(): void {
+    this.listaBases = [];
     if (this.plataformaSeleccionada) {
       let filtro: FiltroBase = {
         id: undefined,
@@ -173,18 +179,42 @@ export class ProgresoTemplateComponent {
     }
   }
 
-  save(): void {
+  save(auto: boolean): void {
     if (this.progreso) {
       this.progreso.estado_progreso = this.listaEstados.find((estado) => estado.id === Number(this.estadoSeleccionado));
       this.progreso.base = this.listaBases.find((base) => base.id === Number(this.baseSeleccionado));
       this.progreso.plataforma = this.listaPlataformas.find((plataforma) => plataforma.id === Number(this.plataformaSeleccionada));
 
       if (this.baseSeleccionado == undefined || this.progreso.base == undefined || this.plataformaSeleccionada == undefined || this.progreso.plataforma == undefined || this.estadoSeleccionado == undefined || this.progreso.estado_progreso == undefined) {
-        this.errorService.printError('Plataforma, base y edtado deben estar rellenos');
+        if (auto == false) {
+          this.errorService.printError('Plataforma, base y edtado deben estar rellenos');
+        }
       } else if (this.modoAlta) {
+        this.modoAlta = false;
         this.progresoService.addProgreso(this.progreso).subscribe((pro) => this.modoModificacion(pro.id));
       } else {
-        this.progresoService.updateProgreso(this.progreso).subscribe(() => this.back());
+        this.progresoService.updateProgreso(this.progreso).subscribe(() => {
+          if (auto == false) {
+            this.back();
+          }
+        });
+      }
+    }
+  }
+
+  delete(): void {
+    if (this.progreso.id == undefined) {
+      this.errorService.printError('El progreso no se ha genereado aún');
+    } else {
+      const confirmacion = window.confirm('¿Eliminar el progreso?');
+      if (confirmacion) {
+        this.progresoService.deleteProgreso(this.progreso.id).subscribe((res) => {
+          if (res.success) {
+            this.back();
+          } else {
+            this.errorService.printError('Se ha producido un error eliminando el progreso ' + this.progreso.id);
+          }
+        });
       }
     }
   }

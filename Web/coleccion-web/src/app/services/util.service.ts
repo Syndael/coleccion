@@ -4,13 +4,12 @@ import { catchError, map } from 'rxjs/operators';
 
 import { Constantes } from '../constantes';
 
-import { Estado } from '../models/estado.model';
+import { Estado, TipoEstado } from '../models/estado.model';
 import { Idioma } from '../models/idioma.model';
 import { Plataforma } from '../models/plataforma.model';
 import { Region } from '../models/region.model';
 import { Tienda } from '../models/tienda.model';
 import { TipoBase } from '../models/tipo-base.model';
-import { TipoEstado } from '../models/tipo-estado';
 import { TipoRom } from '../models/tipo-rom.model';
 
 import { FiltroColeccion } from '../filters/coleccion.filter';

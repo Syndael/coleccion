@@ -8,6 +8,7 @@ import { BaseComponent } from './components/base/base.component';
 import { BaseTemplateComponent } from './components/base-template/base-template.component';
 import { RomsTemplateComponent } from './components/roms-template/roms-template.component';
 import { RomsComponent } from './components/roms/roms.component';
+import { EstadisticasComponent } from './components/estadisticas/estadisticas.component';
 
 const routes: Routes = [
   { path: '', redirectTo: '/coleccion', pathMatch: 'full' },
@@ -22,7 +23,8 @@ const routes: Routes = [
   { path: 'base/new', component: BaseTemplateComponent },
   { path: 'rom/:id', component: RomsTemplateComponent },
   { path: 'rom/new', component: RomsTemplateComponent },
-  { path: 'roms', component: RomsComponent }
+  { path: 'roms', component: RomsComponent },
+  { path: 'estadisticas', component: EstadisticasComponent }
 ];
 
 @NgModule({

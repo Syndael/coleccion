@@ -43,6 +43,11 @@ export class ProgresoService {
         return this.http.get<Progreso>(url).pipe(catchError(this.error.handleError<Progreso>(`getProgreso url=${url}`)));
     }
 
+    getUltimosProgresos(): Observable<Progreso[]> {
+        const url = `${Constantes.ULTIMOS_PROGRESOS_ID_URL}`;
+        return this.http.get<Progreso[]>(url).pipe(catchError(this.error.handleError<Progreso[]>(`getUiltimosProgresos url=${url}`)));
+    }
+
     addProgreso(progreso: Progreso): Observable<any> {
         const url = `${Constantes.PROGRESO_URL}`;
         return this.http.post(url, progreso, this.httpOptions).pipe(catchError(this.error.handleError<any>('addProgreso')));
@@ -51,6 +56,11 @@ export class ProgresoService {
     updateProgreso(progreso: Progreso): Observable<any> {
         const url = `${Constantes.PROGRESO_ID_URL}/${progreso.id}`;
         return this.http.put(url, progreso, this.httpOptions).pipe(catchError(this.error.handleError<any>('updateProgreso')));
+    }
+
+    deleteProgreso(id: number): Observable<any> {
+        const url = `${Constantes.PROGRESO_ID_URL}/${id}`;
+        return this.http.delete(url).pipe(catchError(this.error.handleError<any>('deleteProgreso')));
     }
 
 }
