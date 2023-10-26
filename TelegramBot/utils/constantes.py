@@ -1,5 +1,10 @@
 # Config
 LOG_FILE = 'log_file'
+SYNNAS_CONTRASENA_COMUN = 'synnascontrasenacomun'
+SYNNAS_USUARIO_SUBIDA = 'synnasusuariosubida'
+SYNNAS_CONTRASENA_SUBIDA = 'synnascontrasenasubida'
+SYNNAS_URL_DESCARGA = 'synnasurldescarga'
+SYNNAS_URL_SUBIDA = 'synnasurlsubida'
 TOKEN = 'token'
 URL = 'url'
 VIPLIST = 'viplist'

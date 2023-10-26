@@ -15,7 +15,7 @@ class ConfigParser:
         if self._lector_config is None:
             self._lector_config = configparser.RawConfigParser()
             fichero_config = os.path.join(os.path.abspath(os.path.dirname(__file__)), '..', 'config.txt')
-            self._lector_config.read(fichero_config)
+            self._lector_config.read(fichero_config, encoding='utf-8')
 
         return self._lector_config
 

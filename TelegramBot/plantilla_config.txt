@@ -1,0 +1,11 @@
+[config]
+log_file = bot_telegram
+synnascontrasenacomun = pass
+synnasusuariosubida = user
+synnascontrasenasubida = pass
+synnasurldescarga = https://url
+synnasurlsubida = https://url
+token = tg_token
+url = http://localhost:5000/api/
+viplist = tg_user
+whitelist = tg_user,tg_user2
