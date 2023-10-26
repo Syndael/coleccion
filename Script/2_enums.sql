@@ -1,6 +1,6 @@
 -- --------------------------------------------------------
 -- Host:                         192.168.1.55
--- Versión del servidor:         10.3.37-MariaDB - Source distribution
+-- Versión del servidor:         10.11.2-MariaDB - Source distribution
 -- SO del servidor:              Linux
 -- HeidiSQL Versión:             12.5.0.6677
 -- --------------------------------------------------------
@@ -14,7 +14,7 @@
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
--- Volcando datos para la tabla coleccion.ESTADO: ~14 rows (aproximadamente)
+-- Volcando datos para la tabla coleccion.ESTADO: ~22 rows (aproximadamente)
 INSERT INTO `ESTADO` (`ID`, `DESCRIPCION`, `TIPO`, `ORDEN`) VALUES
 	(1, 'Buscado', 0, NULL),
 	(2, 'Cartucho', 0, NULL),
@@ -33,7 +33,11 @@ INSERT INTO `ESTADO` (`ID`, `DESCRIPCION`, `TIPO`, `ORDEN`) VALUES
 	(15, 'Terminado', 2, 4),
 	(16, 'Digital', 0, NULL),
 	(17, 'Incompleto', 0, NULL),
-	(18, 'Parado', 2, 3);
+	(18, 'Parado', 2, 3),
+	(19, 'Reservado', 0, NULL),
+	(20, 'Disco', 0, NULL),
+	(21, 'UMD', 0, NULL),
+	(22, 'Falsa', 1, NULL);
 
 -- Volcando datos para la tabla coleccion.IDIOMA: ~10 rows (aproximadamente)
 INSERT INTO `IDIOMA` (`ID`, `DESCRIPCION`, `CORTO`) VALUES
@@ -48,7 +52,7 @@ INSERT INTO `IDIOMA` (`ID`, `DESCRIPCION`, `CORTO`) VALUES
 	(9, 'Portugués', 'PT'),
 	(8, 'Ruso', 'RU');
 
--- Volcando datos para la tabla coleccion.PLATAFORMA: ~22 rows (aproximadamente)
+-- Volcando datos para la tabla coleccion.PLATAFORMA: ~26 rows (aproximadamente)
 INSERT INTO `PLATAFORMA` (`ID`, `NOMBRE`, `CORTO`) VALUES
 	(1, '3DS', NULL),
 	(2, 'Android', NULL),
@@ -73,15 +77,17 @@ INSERT INTO `PLATAFORMA` (`ID`, `NOMBRE`, `CORTO`) VALUES
 	(21, 'Xbox Series', NULL),
 	(22, 'Play Station 3', 'PS3'),
 	(23, 'Play Station 4', 'PS4'),
-	(24, 'Play Station 5', 'PS5');
+	(24, 'Play Station 5', 'PS5'),
+	(25, 'Play Station Vita', 'PSV'),
+	(26, 'Nintendo', NULL);
 
--- Volcando datos para la tabla coleccion.REGION: ~2 rows (aproximadamente)
+-- Volcando datos para la tabla coleccion.REGION: ~3 rows (aproximadamente)
 INSERT INTO `REGION` (`ID`, `DESCRIPCION`, `CORTO`) VALUES
 	(1, 'América', 'USA'),
 	(3, 'Asia', 'AS'),
 	(2, 'Europa', 'EU');
 
--- Volcando datos para la tabla coleccion.TIENDA: ~8 rows (aproximadamente)
+-- Volcando datos para la tabla coleccion.TIENDA: ~20 rows (aproximadamente)
 INSERT INTO `TIENDA` (`ID`, `NOMBRE`) VALUES
 	(1, 'Amazon'),
 	(2, 'Amazon JP'),
@@ -99,21 +105,26 @@ INSERT INTO `TIENDA` (`ID`, `NOMBRE`) VALUES
 	(14, 'Impact Game'),
 	(15, 'Vinted'),
 	(16, 'Xtralife'),
-	(17, 'Abacus Cooperativa');
+	(17, 'Abacus Cooperativa'),
+	(18, 'PS Store'),
+	(19, 'Videodis'),
+	(20, 'GoRetroid');
 
--- Volcando datos para la tabla coleccion.TIPO_BASE: ~4 rows (aproximadamente)
+-- Volcando datos para la tabla coleccion.TIPO_BASE: ~6 rows (aproximadamente)
 INSERT INTO `TIPO_BASE` (`ID`, `DESCRIPCION`) VALUES
 	(1, 'Juego'),
 	(2, 'Consola'),
 	(3, 'Mando'),
-	(4, 'Otros');
+	(4, 'Otros'),
+	(5, 'Steelbook'),
+	(6, 'Amiibo');
 
 -- Volcando datos para la tabla coleccion.TIPO_FICHERO: ~2 rows (aproximadamente)
 INSERT INTO `TIPO_FICHERO` (`ID`, `DESCRIPCION`) VALUES
 	(1, 'Foto'),
 	(2, 'Factura');
 
--- Volcando datos para la tabla coleccion.TIPO_ROM: ~11 rows (aproximadamente)
+-- Volcando datos para la tabla coleccion.TIPO_ROM: ~12 rows (aproximadamente)
 INSERT INTO `TIPO_ROM` (`ID`, `EXTENSION`) VALUES
 	(1, '3ds'),
 	(2, 'bin'),
@@ -125,7 +136,8 @@ INSERT INTO `TIPO_ROM` (`ID`, `EXTENSION`) VALUES
 	(8, 'iso'),
 	(9, 'nds'),
 	(10, 'nsp'),
-	(11, 'xci');
+	(11, 'xci'),
+	(12, 'cia');
 
 /*!40103 SET TIME_ZONE=IFNULL(@OLD_TIME_ZONE, 'system') */;
 /*!40101 SET SQL_MODE=IFNULL(@OLD_SQL_MODE, '') */;
