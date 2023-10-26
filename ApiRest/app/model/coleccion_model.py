@@ -1,12 +1,13 @@
 from marshmallow import Schema, fields
-from app.utils.datos import db
+
+from app.model.base_model import BaseSchema
 from app.model.edicion_model import EdicionSchema
 from app.model.estado_model import EstadoSchema
 from app.model.idioma_model import IdiomaSchema
-from app.model.base_model import BaseSchema
 from app.model.plataforma_model import PlataformaSchema
 from app.model.region_model import RegionSchema
 from app.model.tienda_model import TiendaSchema
+from app.utils.datos import db
 
 
 class Coleccion(db.Model):
@@ -20,14 +21,17 @@ class Coleccion(db.Model):
     region_id = db.Column(db.Integer, db.ForeignKey('REGION.id'))
     estado_general_id = db.Column(db.Integer, db.ForeignKey('ESTADO.id'))
     estado_caja_id = db.Column(db.Integer, db.ForeignKey('ESTADO.id'))
+    fecha_reserva = db.Column(db.Date)
     fecha_compra = db.Column(db.Date)
     fecha_recibo = db.Column(db.Date)
     unidades = db.Column(db.Integer)
     coste = db.Column(db.Float)
     tienda_id = db.Column(db.Integer, db.ForeignKey('TIENDA.id'))
+    url = db.Column(db.String(255))
     notas = db.Column(db.String(500))
     activado = db.Column(db.Boolean)
     codigo = db.Column(db.String(250))
+    mascara_aux = db.Column(db.String(50))
 
     base = db.relationship('Base', primaryjoin='Coleccion.base_id == Base.id')
     edicion = db.relationship('Edicion', primaryjoin='Coleccion.edicion_id == Edicion.id')
@@ -39,8 +43,8 @@ class Coleccion(db.Model):
     tienda = db.relationship('Tienda', primaryjoin='Coleccion.tienda_id == Tienda.id')
 
     def __init__(self, base, plataforma, edicion=None, idioma=None, region=None, estado_general=None, estado_caja=None,
-                 fecha_compra=None, fecha_recibo=None, unidades=None, coste=None, tienda=None, notas=None,
-                 activado=None, codigo=None):
+                 fecha_reserva=None, fecha_compra=None, fecha_recibo=None, unidades=None, coste=None, tienda=None,
+                 url=None, notas=None, activado=None, codigo=None, mascara_aux=None):
         self.base = base
         self.plataforma = plataforma
         self.edicion = edicion
@@ -48,14 +52,17 @@ class Coleccion(db.Model):
         self.region = region
         self.estado_general = estado_general
         self.estado_caja = estado_caja
+        self.fecha_reserva = fecha_reserva
         self.fecha_compra = fecha_compra
         self.fecha_recibo = fecha_recibo
         self.unidades = unidades
         self.coste = coste
         self.tienda = tienda
+        self.url = url
         self.notas = notas
         self.activado = activado
         self.codigo = codigo
+        self.mascara_aux = mascara_aux
 
 
 class ColeccionSchema(Schema):
@@ -70,6 +77,7 @@ class ColeccionSchema(Schema):
 
     class Meta:
         fields = (
-        'id', 'base', 'edicion', 'plataforma', 'idioma', 'region', 'estado_general', 'estado_caja', 'fecha_compra',
-        'fecha_recibo', 'unidades', 'coste', 'tienda', 'notas', 'activado', 'codigo')
+            'id', 'base', 'edicion', 'plataforma', 'idioma', 'region', 'estado_general', 'estado_caja', 'fecha_reserva',
+            'fecha_compra', 'fecha_recibo', 'unidades', 'coste', 'tienda', 'url', 'notas', 'activado', 'codigo',
+            'mascara_aux')
         include_relationships = True

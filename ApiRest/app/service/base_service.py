@@ -11,6 +11,7 @@ class BaseService:
 
     def get_bases(self, request):
         bases = Base.query.join(Base.tipo_base)
+        orden_seleccionado = None
         if request.args:
             if request.args.get('tipo_base_id'):
                 tipo_base_id = request.args.get('tipo_base_id')
@@ -26,7 +27,12 @@ class BaseService:
             if request.args.get('plataforma_id'):
                 plataforma = request.args.get('plataforma_id')
                 bases = bases.join(BasePlataforma).filter(BasePlataforma.plataforma_id == plataforma)
-        bases = bases.order_by(TipoBase.descripcion.asc(), Base.nombre.asc()).all()
+            if request.args.get('orden'):
+                orden_seleccionado = request.args.get('orden')
+        if orden_seleccionado == 'Nombre':
+            bases = bases.order_by(Base.nombre.asc()).all()
+        else:
+            bases = bases.order_by(Base.saga.asc(), Base.fecha_salida.asc(), TipoBase.descripcion.asc(), Base.nombre.asc()).all()
         result = self._bases_schema.dump(bases)
         return jsonify(result), 200
 
@@ -54,6 +60,8 @@ class BaseService:
         base = Base(tipo_base=tipo, nombre=data['nombre'])
         if 'saga' in data:
             base.saga = data['saga']
+        if 'url' in data:
+            base.url = data['url']
         if 'fecha_salida' in data:
             base.fecha_salida = data['fecha_salida']
         db.session.add(base)
@@ -77,6 +85,10 @@ class BaseService:
             base.saga = data['saga']
         else:
             base.saga = None
+        if 'url' in data:
+            base.url = data['url']
+        else:
+            base.url = None
         if 'fecha_salida' in data and not data['fecha_salida'] == '':
             base.fecha_salida = data['fecha_salida']
         else:

@@ -10,7 +10,7 @@ class Gasto(db.Model):
     tipo = db.Column(db.String(250))
     plataforma_nombre = db.Column(db.String(250))
     plataforma_corto = db.Column(db.String(250))
-    mes = db.Column(db.String(250))
+    descripcion = db.Column(db.String(250))
     cantidad = db.Column(db.Integer)
     fisico = db.Column(db.Integer)
     digital = db.Column(db.Integer)
@@ -18,13 +18,13 @@ class Gasto(db.Model):
     orden_desc = db.Column(db.String(250))
     orden_asc = db.Column(db.String(250))
 
-    def __init__(self, id, tipo, plataforma_nombre, plataforma_corto, mes, cantidad, fisico, digital, coste, orden_desc,
+    def __init__(self, id, tipo, plataforma_nombre, plataforma_corto, descripcion, cantidad, fisico, digital, coste, orden_desc,
                  orden_asc):
         self.id = id
         self.tipo = tipo
         self.plataforma_nombre = plataforma_nombre
         self.plataforma_corto = plataforma_corto
-        self.mes = mes
+        self.descripcion = descripcion
         self.cantidad = cantidad
         self.fisico = fisico
         self.digital = digital
@@ -36,5 +36,5 @@ class Gasto(db.Model):
 class GastoSchema(Schema):
     class Meta:
         fields = (
-        'id', 'tipo', 'plataforma_nombre', 'plataforma_corto', 'mes', 'cantidad', 'fisico', 'digital', 'coste',
+        'id', 'tipo', 'plataforma_nombre', 'plataforma_corto', 'descripcion', 'cantidad', 'fisico', 'digital', 'coste',
         'orden_desc', 'orden_asc')

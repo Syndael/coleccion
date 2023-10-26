@@ -40,6 +40,9 @@ export class ColeccionService {
             if (filtro.tiendaSeleccionada && filtro.tiendaSeleccionada.toString() != 'undefined') {
                 params = params.set('tienda_id', filtro.tiendaSeleccionada.toString());
             }
+            if (filtro.ordenSeleccionado && filtro.ordenSeleccionado.toString() != 'undefined') {
+                params = params.set('orden', filtro.ordenSeleccionado.toString());
+            }
         }
         return this.http.get<Coleccion[]>(Constantes.COLECCIONES_URL, { params: params }).pipe(catchError(this.error.handleError<Coleccion[]>('getColecciones', [])));
     }

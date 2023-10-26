@@ -5,4 +5,5 @@ export class FiltroBase {
     nombre: string | undefined;
     saga: string | undefined;
     plataforma: number | undefined;
+    ordenSeleccionado: string | undefined;
 }

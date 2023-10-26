@@ -12,6 +12,10 @@
         <label for="base-saga">Saga/Franquicia: </label>
         <input id="base-saga" [(ngModel)]="base.saga" placeholder="Saga/Franquicia" (ngModelChange)="save(true)" />
         <br />
+        <label for="base-url">URL: </label>
+        <input class="detalle-campo-url" id="base-url" [(ngModel)]="base.url" placeholder="URL" (ngModelChange)="save(true)" />
+        <button class="detalle-campo-btn-url" (click)="goUrl(base.url)" [disabled]="!urlValida(base.url)">►</button>
+        <br />
         <label for="base-fecha">Fecha de salida: </label>
         <input id="base-fecha" type="date" [(ngModel)]="base.fecha_salida" placeholder="Fecha de salida"  (ngModelChange)="save(true)"/>
         <br />

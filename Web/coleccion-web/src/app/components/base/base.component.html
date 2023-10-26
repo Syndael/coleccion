@@ -14,6 +14,14 @@
             </select>
         </div>
         <div class="campo">
+            Plataforma:
+            <br />
+            <select [(ngModel)]="filtro.plataforma" (change)="getBases()">
+                <option *ngFor="let plataforma of listaPlataformas" [value]="plataforma.id">{{ plataforma.corto ? '(' +
+                    plataforma.corto + ') ' : '' }}{{ plataforma.nombre }}</option>
+            </select>
+        </div>
+        <div class="campo">
             Nombre:
             <br />
             <input [(ngModel)]="filtro.nombre" placeholder="Nombre" (ngModelChange)="getBases()" />

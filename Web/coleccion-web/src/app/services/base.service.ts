@@ -31,6 +31,7 @@ export class BaseService {
             nombre: undefined,
             codigo: undefined,
             saga: undefined,
+            url: undefined,
             fecha_salida: undefined,
             plataformas: undefined
         };
@@ -67,6 +68,9 @@ export class BaseService {
             }
             if (filtro.plataforma && filtro.plataforma.toString() != 'undefined') {
                 params = params.set('plataforma_id', filtro.plataforma);
+            }
+            if (filtro.ordenSeleccionado && filtro.ordenSeleccionado.toString() != 'undefined') {
+                params = params.set('orden', filtro.ordenSeleccionado.toString());
             }
         }
         return this.http.get<Base[]>(Constantes.BASES_URL, { params: params }).pipe(catchError(this.error.handleError<Base[]>('getBases', [])));

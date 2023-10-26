@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 
 import { Base } from '../../models/base.model';
+import { Plataforma } from '../../models/plataforma.model';
 import { TipoBase } from '../../models/tipo-base.model';
 
 import { FiltroBase } from '../../filters/base.filter';
@@ -18,21 +19,24 @@ export class BaseComponent implements OnInit {
     private baseService: BaseService,
     private utilService: UtilService
   ) { }
+  listaTipos: TipoBase[] = [];
+  listaPlataformas: Plataforma[] = [];
+  tipoSeleccionado: number | undefined;
+
+  filtro: FiltroBase = this.getFiltroVacio();
 
   ngOnInit(): void {
+    this.utilService.getListaPlataformas(true).subscribe(plataformas => this.listaPlataformas = plataformas);
+    this.utilService.getListaTiposBase(true).subscribe(tipos => this.listaTipos = tipos);
+
     let filtro = this.utilService.getFiltroBase();
     if (filtro) {
       this.filtro = filtro;
     }
-    this.utilService.getListaTiposBase(true).subscribe(tipos => this.listaTipos = tipos);
     this.getBases();
   }
-
-  filtro: FiltroBase = this.getFiltroVacio();
-
+  
   bases: Base[] = [];
-  listaTipos: TipoBase[] = [];
-  tipoSeleccionado: number | undefined;
 
   setBase?: Base;
   onSelect(base: Base): void {
@@ -46,7 +50,8 @@ export class BaseComponent implements OnInit {
       tipoDescripcion: undefined,
       nombre: undefined,
       saga: undefined,
-      plataforma: undefined
+      plataforma: undefined,
+      ordenSeleccionado: undefined
     };
   }
 

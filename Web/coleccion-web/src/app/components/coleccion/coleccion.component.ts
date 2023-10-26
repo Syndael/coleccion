@@ -6,7 +6,7 @@ import { Plataforma } from '../../models/plataforma.model';
 import { Tienda } from '../../models/tienda.model';
 import { TipoBase } from '../../models/tipo-base.model';
 
-import { FiltroColeccion } from '../../filters/coleccion.filter';
+import { FiltroColeccion, OrdenEnum } from '../../filters/coleccion.filter';
 
 import { ColeccionService } from '../../services/coleccion.service';
 import { UtilService } from '../../services/util.service';
@@ -25,6 +25,7 @@ export class ColeccionComponent implements OnInit {
   listaPlataformas: Plataforma[] = [];
   listaTiendas: Tienda[] = [];
   listaTipos: TipoBase[] = [];
+  listaOrdenes: string[] = Object.values(OrdenEnum);
 
   filtro: FiltroColeccion = this.getFiltroVacio();
 
@@ -49,6 +50,18 @@ export class ColeccionComponent implements OnInit {
     this.setColeccion = coleccion;
   }
 
+  goUrl(url: string | undefined) {
+    this.utilService.goUrl(url);
+  }
+
+  getMascara(i: number, tipo: string | undefined, mascara: string | undefined) {
+    return this.utilService.getMascara(i, tipo, mascara);
+  }
+
+  urlValida(url: string | undefined): boolean {
+    return this.utilService.urlValida(url);
+  }
+
   getFiltroVacio(): FiltroColeccion {
     return {
       idColeccion: undefined,
@@ -57,13 +70,15 @@ export class ColeccionComponent implements OnInit {
       plataformaSeleccionada: undefined,
       nombreBase: undefined,
       saga: undefined,
-      tiendaSeleccionada: undefined
+      tiendaSeleccionada: undefined,
+      ordenSeleccionado: OrdenEnum.POKEMON
     };
   }
 
   limpiarFiltro(): void {
     this.filtro = this.getFiltroVacio();
-    this.getColecciones();
+    this.filtro.ordenSeleccionado = undefined,
+      this.getColecciones();
   }
 
   getColecciones(): void {

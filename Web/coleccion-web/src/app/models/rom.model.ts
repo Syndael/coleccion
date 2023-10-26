@@ -10,6 +10,7 @@ export class Rom {
     plataforma: Plataforma | undefined;
     nombre_rom: string | undefined;
     nombre_rom_ext: string | undefined;
+    update: string | undefined;
     idioma: Idioma | undefined;
     region: Region | undefined;
     tipo_rom: TipoRom | undefined;

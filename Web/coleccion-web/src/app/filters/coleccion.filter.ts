@@ -6,4 +6,13 @@ export class FiltroColeccion {
     nombreBase: string | undefined;
     saga: string | undefined;
     tiendaSeleccionada: number | undefined;
+    ordenSeleccionado: string | undefined;
+}
+
+export enum OrdenEnum {
+    NONE = '',
+    COLECCION = 'Colección',
+    COMPRAS = 'Compras',
+    EN_CURSO = 'En curso',
+    POKEMON = 'Pokémon'
 }

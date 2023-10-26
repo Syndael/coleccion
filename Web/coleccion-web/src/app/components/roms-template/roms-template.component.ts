@@ -38,6 +38,7 @@ export class RomsTemplateComponent {
     plataforma: undefined,
     nombre_rom: undefined,
     nombre_rom_ext: undefined,
+    update: undefined,
     idioma: undefined,
     region: undefined,
     tipo_rom: undefined,
@@ -54,6 +55,7 @@ export class RomsTemplateComponent {
   plataformaSeleccionada: number | undefined;
   regionSeleccionada: number | undefined;
   tipoRomSeleccionado: number | undefined;
+  nombreRomUpdate: string | undefined;
 
 
   ngOnInit(): void {
@@ -87,6 +89,7 @@ export class RomsTemplateComponent {
       this.regionSeleccionada = this.rom.region?.id;
       this.tipoRomSeleccionado = this.rom.tipo_rom?.id;
       this.refreshBases();
+      this.refreshUpdate();
     });
   }
 
@@ -99,10 +102,19 @@ export class RomsTemplateComponent {
         tipoDescripcion: TipoBaseEnum.JUEGO,
         nombre: undefined,
         saga: undefined,
-        plataforma: this.plataformaSeleccionada
+        plataforma: this.plataformaSeleccionada,
+        ordenSeleccionado: 'Nombre'
       };
       this.baseService.getBases(filtro, true).subscribe((bases) => this.listaBases = bases);
     }
+  }
+
+  refreshUpdate(): void {
+    let actual: string | undefined = undefined;
+    if (this.rom?.update && this.rom?.nombre_rom) {
+      actual = this.rom.nombre_rom.concat("_up").concat(this.rom.update);
+    }
+    this.nombreRomUpdate = actual;
   }
 
   save(auto: boolean): void {
@@ -112,6 +124,7 @@ export class RomsTemplateComponent {
       this.rom.plataforma = this.listaPlataformas.find((plataforma) => plataforma.id === Number(this.plataformaSeleccionada));
       this.rom.region = this.listaRegiones.find((region) => region.id === Number(this.regionSeleccionada));
       this.rom.tipo_rom = this.listaTiposRom.find((tipoRom) => tipoRom.id === Number(this.tipoRomSeleccionado));
+      this.refreshUpdate();
 
       if (this.baseSeleccionado == undefined || this.rom.base == undefined || this.plataformaSeleccionada == undefined || this.rom.plataforma == undefined) {
         if (auto == false) {

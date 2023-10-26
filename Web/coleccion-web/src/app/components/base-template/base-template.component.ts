@@ -32,6 +32,7 @@ export class BaseTemplateComponent {
     nombre: undefined,
     codigo: undefined,
     saga: undefined,
+    url: undefined,
     fecha_salida: undefined,
     plataformas: undefined
   };
@@ -62,6 +63,14 @@ export class BaseTemplateComponent {
         this.modoModificacion(id);
       }
     });
+  }
+
+  goUrl(url: string | undefined) {
+    this.utilService.goUrl(url);
+  }
+
+  urlValida(url: string | undefined): boolean {
+    return this.utilService.urlValida(url);
   }
 
   modoModificacion(id: number): void {
@@ -140,7 +149,7 @@ export class BaseTemplateComponent {
         this.modoAlta = false;
         this.baseService.addBase(this.base).subscribe((base) => this.modoModificacion(base.id));
       } else {
-        this.baseService.updateBase(this.base).subscribe(() =>  {
+        this.baseService.updateBase(this.base).subscribe(() => {
           if (auto == false) {
             this.back();
           }

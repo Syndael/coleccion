@@ -1,4 +1,5 @@
 from flask import jsonify
+from sqlalchemy import or_
 
 from app.model.base_model import Base
 from app.model.idioma_model import Idioma
@@ -18,6 +19,8 @@ class RomService:
         if request.args:
             if request.args.get('plataforma_id'):
                 roms = roms.filter(Rom.plataforma_id == request.args.get('plataforma_id'))
+            if request.args.get('plataforma'):
+                roms = roms.filter(or_(Plataforma.nombre == request.args.get('plataforma'), Plataforma.corto == request.args.get('plataforma')))
             if request.args.get('nombre'):
                 nombre = request.args.get('nombre')
                 roms = roms.filter(Base.nombre.ilike(f'%{nombre}%'))
@@ -50,6 +53,8 @@ class RomService:
 
         rom = Rom(base=base, plataforma=plataforma)
 
+        if 'update' in data and not data['update'] == '':
+            rom.update = data['update']
         if 'idioma' in data and data['idioma']['id']:
             rom.idioma = Idioma.query.get(data['idioma']['id'])
         if 'region' in data and data['region']['id']:
@@ -71,17 +76,21 @@ class RomService:
         if not rom:
             return jsonify({'message': 'ROM no encontrada'}), 404
 
-        if 'idioma' in data and data['idioma']['id']:
-            if rom.idioma is None or not rom.idioma.id == data['idioma']['id']:
-                rom.idioma = Idioma.query.get(data['idioma']['id'])
-        else:
-            rom.idioma = None
         if 'base' in data and data['base']['id']:
             if rom.base is None or not rom.base.id == data['base']['id']:
                 rom.base = Base.query.get(data['base']['id'])
         if 'plataforma' in data and data['plataforma']['id']:
             if rom.plataforma is None or not rom.plataforma.id == data['plataforma']['id']:
                 rom.plataforma = Plataforma.query.get(data['plataforma']['id'])
+        if 'update' in data and not data['update'] == '':
+            rom.update = data['update']
+        else:
+            rom.update = None
+        if 'idioma' in data and data['idioma']['id']:
+            if rom.idioma is None or not rom.idioma.id == data['idioma']['id']:
+                rom.idioma = Idioma.query.get(data['idioma']['id'])
+        else:
+            rom.idioma = None
         if 'region' in data and data['region']['id']:
             if rom.region is None or not rom.region.id == data['region']['id']:
                 rom.region = Region.query.get(data['region']['id'])

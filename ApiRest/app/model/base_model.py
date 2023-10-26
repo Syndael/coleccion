@@ -11,16 +11,18 @@ class Base(db.Model):
     nombre = db.Column(db.String(255))
     codigo = db.Column(db.String(255))
     saga = db.Column(db.String(255))
+    url = db.Column(db.String(255))
     fecha_salida = db.Column(db.Date)
     plataformas = db.Column(db.String(100))
 
     tipo_base = db.relationship('TipoBase', primaryjoin='Base.tipo_id == TipoBase.id')
 
-    def __init__(self, tipo_base, nombre, codigo=None, saga=None, fecha_salida=None, plataformas=None):
+    def __init__(self, tipo_base, nombre, codigo=None, saga=None, url=None, fecha_salida=None, plataformas=None):
         self.tipo_base = tipo_base
         self.nombre = nombre
         self.codigo = codigo
         self.saga = saga
+        self.url = url
         self.fecha_salida = fecha_salida
         self.plataformas = plataformas
 
@@ -28,5 +30,5 @@ class Base(db.Model):
 class BaseSchema(Schema):
     tipo_base = fields.Nested(TipoBaseSchema)
     class Meta:
-        fields = ('id', 'tipo_base', 'nombre', 'codigo', 'saga', 'fecha_salida', 'plataformas')
+        fields = ('id', 'tipo_base', 'nombre', 'codigo', 'saga', 'url', 'fecha_salida', 'plataformas')
         include_relationships = True

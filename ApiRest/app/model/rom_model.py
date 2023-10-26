@@ -15,6 +15,7 @@ class Rom(db.Model):
     plataforma_id = db.Column(db.Integer, db.ForeignKey('PLATAFORMA.id'))
     nombre_rom = db.Column(db.String(255))
     nombre_rom_ext = db.Column(db.String(255))
+    update = db.Column(db.String(255))
     idioma_id = db.Column(db.Integer, db.ForeignKey('IDIOMA.id'))
     region_id = db.Column(db.Integer, db.ForeignKey('REGION.id'))
     tipo_rom_id = db.Column(db.Integer, db.ForeignKey('TIPO_ROM.id'))
@@ -26,12 +27,13 @@ class Rom(db.Model):
     region = db.relationship('Region', primaryjoin='Rom.region_id == Region.id')
     tipo_rom = db.relationship('TipoRom', primaryjoin='Rom.tipo_rom_id == TipoRom.id')
 
-    def __init__(self, base, plataforma, nombre_rom=None, nombre_rom_ext=None, idioma=None, region=None, tipo_rom=None,
+    def __init__(self, base, plataforma, nombre_rom=None, nombre_rom_ext=None, update=None, idioma=None, region=None, tipo_rom=None,
                  fecha_descarga=None):
         self.base = base
         self.plataforma = plataforma
         self.nombre_rom = nombre_rom
         self.nombre_rom_ext = nombre_rom_ext
+        self.update = update
         self.idioma = idioma
         self.region = region
         self.tipo_rom = tipo_rom
@@ -47,5 +49,5 @@ class RomSchema(Schema):
 
     class Meta:
         fields = (
-        'id', 'base', 'plataforma', 'idioma', 'nombre_rom', 'nombre_rom_ext', 'region', 'tipo_rom', 'fecha_descarga')
+        'id', 'base', 'plataforma', 'idioma', 'nombre_rom', 'nombre_rom_ext', 'update', 'region', 'tipo_rom', 'fecha_descarga')
         include_relationships = True

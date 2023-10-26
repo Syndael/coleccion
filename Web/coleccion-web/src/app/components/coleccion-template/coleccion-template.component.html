@@ -16,9 +16,11 @@
         </select>
         <br />
         <label for="coleccion-base">Nombre: </label>
-        <select [(ngModel)]="baseSeleccionado" (ngModelChange)="refreshEdiciones(); save(true)" *ngIf="listaBases.length > 1">
+        <select class="detalle-campo-select-url" [(ngModel)]="baseSeleccionado" (ngModelChange)="refreshEdiciones(); save(true)"
+            *ngIf="listaBases.length > 1">
             <option *ngFor="let base of listaBases" [value]="base.id">{{ base.nombre }}</option>
         </select>
+        <button class="detalle-campo-btn-url" (click)="goUrlBase()" [disabled]="!urlValidaBase()">►</button>
         <input id="coleccion-base-input" placeholder="Selecciona tipo y plataforma" *ngIf="listaBases.length <= 1"
             disabled="true">
         <br />
@@ -52,17 +54,24 @@
             <option *ngFor="let estado of listaEstadosCaja" [value]="estado.id">{{ estado.descripcion }}</option>
         </select>
         <br />
+        <label for="coleccion-reserva">F. Reserva: </label>
+        <input id="coleccion-reserva" type="date" [(ngModel)]="coleccion.fecha_reserva" placeholder="Fecha reserva"
+            (ngModelChange)="save(true)" />
+        <br />
         <label for="coleccion-compra">F. Compra: </label>
-        <input id="coleccion-compra" type="date" [(ngModel)]="coleccion.fecha_compra" placeholder="Fecha compra"  (ngModelChange)="save(true)"/>
+        <input id="coleccion-compra" type="date" [(ngModel)]="coleccion.fecha_compra" placeholder="Fecha compra"
+            (ngModelChange)="save(true)" />
         <br />
         <label for="coleccion-entrega">F. Entrega: </label>
-        <input id="coleccion-entrega" type="date" [(ngModel)]="coleccion.fecha_recibo" placeholder="Fecha entrega"  (ngModelChange)="save(true)"/>
+        <input id="coleccion-entrega" type="date" [(ngModel)]="coleccion.fecha_recibo" placeholder="Fecha entrega"
+            (ngModelChange)="save(true)" />
         <br />
         <label for="coleccion-unidades">Unidades: </label>
-        <input id="coleccion-unidades" [(ngModel)]="coleccion.unidades" placeholder="Unidades"  (ngModelChange)="save(true)"/>
+        <input id="coleccion-unidades" [(ngModel)]="coleccion.unidades" placeholder="Unidades"
+            (ngModelChange)="save(true)" />
         <br />
         <label for="coleccion-coste">Coste: </label>
-        <input id="coleccion-coste" [(ngModel)]="coleccion.coste" placeholder="Coste"  (ngModelChange)="save(true)"/>
+        <input id="coleccion-coste" [(ngModel)]="coleccion.coste" placeholder="Coste" (ngModelChange)="save(true)" />
         <br />
         <label for="coleccion-tienda">Tienda: </label>
         <select [(ngModel)]="tiendaSeleccionada" (ngModelChange)="save(true)">
@@ -70,7 +79,8 @@
         </select>
         <br />
         <div class="subir-fichero-container">
-            <button class="subir-fichero" (click)="subirFactura()" [disabled]="!coleccion.id || subiendoFacturas">Añadir facturas</button>
+            <button class="subir-fichero" (click)="subirFactura()" [disabled]="!coleccion.id || subiendoFacturas">Añadir
+                facturas</button>
             <div class="seleccion-fichero-container">
                 <button type="button" (click)="facturaInput.click()">Seleccionar facturas</button>
                 <label> {{ strFacturasSeleccionadas | ellipsis: 40 }}</label>
@@ -80,13 +90,18 @@
         </div>
         <br />
         <div class="subir-fichero-container">
-            <button class="subir-fichero" (click)="subirFoto()" [disabled]="!coleccion.id || subiendoFotos">Añadir fotos</button>
+            <button class="subir-fichero" (click)="subirFoto()" [disabled]="!coleccion.id || subiendoFotos">Añadir
+                fotos</button>
             <div class="seleccion-fichero-container">
                 <button type="button" (click)="fotoInput.click()">Seleccionar fotos</button>
                 <label> {{ strFotosSeleccionadas | ellipsis: 40 }}</label>
                 <input type="file" multiple #fotoInput style="display: none" (change)="onFotosSeleccionadas($event)">
             </div>
         </div>
+        <br />
+        <label for="coleccion-url">URL: </label>
+        <input class="detalle-campo-url" id="coleccion-url" [(ngModel)]="coleccion.url" placeholder="URL" (ngModelChange)="save(true)" />
+        <button class="detalle-campo-btn-url" (click)="goUrl(coleccion.url)" [disabled]="!urlValida(coleccion.url)">►</button>
         <br />
         <label for="coleccion-notas">Notas: </label>
         <textarea id="coleccion-notas" [(ngModel)]="coleccion.notas">{{coleccion.notas}}</textarea>

@@ -30,6 +30,7 @@
             <th>Plataforma</th>
             <th>Nombre</th>
             <th>Nombre ROM</th>
+            <th>Update</th>
             <th>Idioma/Región</th>
             <th>Extension</th>
             <th>Descarga</th>
@@ -38,6 +39,7 @@
             <td class="plataforma">{{rom.plataforma?.nombre}}</td>
             <td class="base">{{rom.base?.nombre}}</td>
             <td class="rom">{{rom.nombre_rom}}</td>
+            <td class="update">{{rom.update}}</td>
             <td *ngIf="rom.idioma && rom.region" class="idioma-region">{{rom.idioma.descripcion}} / {{rom.region.descripcion}}</td>
             <td *ngIf="rom.idioma && !rom.region" class="idioma-region">{{rom.idioma.descripcion}}</td>
             <td *ngIf="!rom.idioma && rom.region" class="idioma-region">{{rom.region.descripcion}}</td>

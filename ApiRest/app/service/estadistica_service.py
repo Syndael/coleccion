@@ -9,7 +9,7 @@ class EstadisticasService:
     _gastos_schema = GastoSchema(many=True)
 
     def get_completos(self):
-        completos = Completo.query.order_by(Completo.mes.desc()).all()
+        completos = Completo.query.order_by(Completo.orden_desc.desc()).all()
         result = self._completos_schema.dump(completos)
         return jsonify(result), 200
 

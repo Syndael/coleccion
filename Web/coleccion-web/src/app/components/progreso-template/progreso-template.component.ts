@@ -173,7 +173,8 @@ export class ProgresoTemplateComponent {
         tipoDescripcion: TipoBaseEnum.JUEGO,
         nombre: undefined,
         saga: undefined,
-        plataforma: this.plataformaSeleccionada
+        plataforma: this.plataformaSeleccionada,
+        ordenSeleccionado: 'Nombre'
       };
       this.baseService.getBases(filtro, true).subscribe((bases) => this.listaBases = bases);
     }

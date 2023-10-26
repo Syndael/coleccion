@@ -9,7 +9,7 @@ import { Idioma } from '../models/idioma.model';
 import { Plataforma } from '../models/plataforma.model';
 import { Region } from '../models/region.model';
 import { Tienda } from '../models/tienda.model';
-import { TipoBase } from '../models/tipo-base.model';
+import { TipoBase, TipoBaseEnum } from '../models/tipo-base.model';
 import { TipoRom } from '../models/tipo-rom.model';
 
 import { FiltroColeccion } from '../filters/coleccion.filter';
@@ -71,11 +71,48 @@ export class UtilService {
     return Number(num.replace(/,/g, ''));
   }
 
+  goUrl(url: string | undefined) {
+    if (this.urlValida(url)) {
+      window.open(url, '_blank');
+    }
+  }
+
+  urlValida(url: string | undefined): boolean {
+    const urlPattern = /^(https?|ftp):\/\/[^\s/$.?#].[^\s]*$/i;
+    if (url && urlPattern.test(url)) {
+      return true;
+    }
+    return false;
+  }
+
   buildUrlFichero(id_fichero: number | undefined): string | undefined {
     if (id_fichero) {
       return Constantes.FICHERO_ID_URL + '/' + id_fichero;
     }
     return undefined;
+  }
+
+  getMascara(i: number, tipo: string | undefined, mascara: string | undefined): string {
+    let res = 'rojo';
+    if (tipo && tipo == TipoBaseEnum.JUEGO) {
+      if (i == 1 && mascara) {
+        let vMask = mascara.split(';')[i - 1];
+        if (vMask == '1') {
+          res = 'amarillo';
+        } else if (vMask == '2') {
+          res = 'verde';
+        }
+      }
+      if (i == 2 && mascara) {
+        let vMask = mascara.split(';')[i - 1];
+        if (vMask == '1') {
+          res = 'verde';
+        }
+      }
+    } else {
+      res = 'na';
+    }
+    return res;
   }
 
   getListaEstados(tipo: TipoEstado, incluirDefault: Boolean): Observable<Estado[]> {

@@ -1,14 +1,16 @@
 from flask import jsonify
-from app.utils.datos import db
+from sqlalchemy import or_, case
+
+from app.model.base_model import Base
 from app.model.coleccion_model import Coleccion, ColeccionSchema
 from app.model.edicion_model import Edicion
 from app.model.estado_model import Estado
 from app.model.idioma_model import Idioma
-from app.model.base_model import Base
 from app.model.plataforma_model import Plataforma
 from app.model.region_model import Region
 from app.model.tienda_model import Tienda
 from app.model.tipo_base_model import TipoBase
+from app.utils.datos import db
 
 
 class ColeccionService:
@@ -17,11 +19,14 @@ class ColeccionService:
 
     def get_colecciones(self, request):
         colecciones = Coleccion.query.join(Coleccion.plataforma).join(Coleccion.base).join(Base.tipo_base)
+        orden_seleccionado = None
         if request.args:
             if request.args.get('tipo_base_id'):
                 colecciones = colecciones.filter(Base.tipo_id == request.args.get('tipo_base_id'))
             if request.args.get('plataforma_id'):
                 colecciones = colecciones.filter(Coleccion.plataforma_id == request.args.get('plataforma_id'))
+            if request.args.get('plataforma'):
+                colecciones = colecciones.filter(or_(Plataforma.nombre == request.args.get('plataforma'), Plataforma.corto == request.args.get('plataforma')))
             if request.args.get('nombre'):
                 nombre = request.args.get('nombre')
                 colecciones = colecciones.filter(Base.nombre.ilike(f'%{nombre}%'))
@@ -32,11 +37,41 @@ class ColeccionService:
                 colecciones = colecciones.filter(Coleccion.estado_general_id == request.args.get('estado_gen_id'))
             if request.args.get('tienda_id'):
                 colecciones = colecciones.filter(Coleccion.tienda_id == request.args.get('tienda_id'))
+            if request.args.get('orden'):
+                orden_seleccionado = request.args.get('orden')
 
-        colecciones = colecciones.filter(Coleccion.activado == 1).order_by(TipoBase.descripcion.asc(),
-                                                                           Plataforma.nombre.asc(),
-                                                                           Plataforma.corto.asc(),
-                                                                           Base.nombre.asc()).all()
+        colecciones = colecciones.filter(Coleccion.activado == 1)
+        if orden_seleccionado == 'Pokémon':
+            colecciones = colecciones.order_by(TipoBase.descripcion.asc(), Plataforma.nombre.asc(),
+                                               case((Base.saga == "Pokémon", Base.fecha_salida), else_=1).asc(), Plataforma.corto.asc(),
+                                               Base.nombre.asc()).all()
+        elif orden_seleccionado == 'Colección':
+            colecciones = colecciones.join(Coleccion.estado_general)
+            estados_descripcion_excluidos = ['Buscado', 'Digital', 'N/A', 'Pedido', 'Reservado']
+            colecciones = colecciones.filter(Estado.descripcion.notin_(estados_descripcion_excluidos))
+            colecciones = colecciones.order_by(TipoBase.descripcion.asc(), Plataforma.nombre.asc(),
+                                               case((Base.saga == "Pokémon", Base.fecha_salida), else_=1).asc(), Plataforma.corto.asc(),
+                                               Base.nombre.asc()).all()
+        elif orden_seleccionado == 'En curso':
+            colecciones = colecciones.join(Coleccion.estado_general)
+            estados_descripcion_incluidos = ['Pedido', 'Reservado']
+            colecciones = colecciones.filter(Estado.descripcion.in_(estados_descripcion_incluidos))
+            colecciones = colecciones.order_by(TipoBase.descripcion.asc(), Plataforma.nombre.asc(),
+                                               Plataforma.corto.asc(), Base.nombre.asc()).all()
+        elif orden_seleccionado == 'Compras':
+            colecciones = colecciones.join(Coleccion.estado_general)
+            estados_descripcion_excluidos = ['Buscado', 'N/A']
+            colecciones = colecciones.filter(Estado.descripcion.notin_(estados_descripcion_excluidos))
+            colecciones = colecciones.order_by(Coleccion.fecha_compra.desc(), Base.nombre.asc()).all()
+        elif orden_seleccionado == 'telegram':
+            colecciones = colecciones.join(Coleccion.estado_general)
+            estados_descripcion_excluidos = ['Buscado', 'N/A']
+            colecciones = colecciones.filter(Estado.descripcion.notin_(estados_descripcion_excluidos))
+            colecciones = colecciones.order_by(Plataforma.nombre.asc(), Base.nombre.asc()).all()
+        else:
+            colecciones = colecciones.order_by(TipoBase.descripcion.asc(), Plataforma.nombre.asc(),
+                                               Plataforma.corto.asc(), Base.nombre.asc()).all()
+
         result = self._colecciones_schema.dump(colecciones)
         return jsonify(result), 200
 
@@ -80,6 +115,8 @@ class ColeccionService:
             coleccion.estado_general = Estado.query.get(data['estado_general']['id'])
         if 'estado_caja' in data and data['estado_caja']['id']:
             coleccion.estado_caja = Estado.query.get(data['estado_caja']['id'])
+        if 'fecha_reserva' in data:
+            coleccion.fecha_reserva = data['fecha_reserva']
         if 'fecha_compra' in data:
             coleccion.fecha_compra = data['fecha_compra']
         if 'fecha_recibo' in data:
@@ -90,6 +127,8 @@ class ColeccionService:
             coleccion.coste = data['coste']
         if 'tienda' in data and data['tienda']['id']:
             coleccion.tienda = Tienda.query.get(data['tienda']['id'])
+        if 'url' in data:
+            coleccion.url = data['url']
         if 'notas' in data:
             coleccion.notas = data['notas']
         coleccion.activado = 1
@@ -137,6 +176,10 @@ class ColeccionService:
                 coleccion.estado_caja = Estado.query.get(data['estado_caja']['id'])
         else:
             coleccion.estado_caja = None
+        if 'fecha_reserva' in data:
+            coleccion.fecha_reserva = data['fecha_reserva']
+        else:
+            coleccion.fecha_reserva = None
         if 'fecha_compra' in data and not data['fecha_compra'] == '':
             coleccion.fecha_compra = data['fecha_compra']
         else:
@@ -158,7 +201,10 @@ class ColeccionService:
                 coleccion.tienda = Tienda.query.get(data['tienda']['id'])
         else:
             coleccion.tienda = None
-        coleccion.notas = request.json['notas']
+        if 'url' in data and not data['url'] == '':
+            coleccion.url = data['url']
+        else:
+            coleccion.url = None
         if 'notas' in data and not data['notas'] == '':
             coleccion.notas = data['notas']
         else:

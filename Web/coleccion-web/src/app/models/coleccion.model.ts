@@ -15,11 +15,14 @@ export class Coleccion {
     region: Region | undefined;
     estado_general: Estado | undefined;
     estado_caja: Estado | undefined;
+    fecha_reserva: string | undefined;
     fecha_compra: string | undefined;
     fecha_recibo: string | undefined;
     unidades: number | undefined;
     coste: number | undefined;
     tienda: Tienda | undefined;
+    url: string | undefined;
     notas: string | undefined;
     codigo: string | undefined;
+    mascara_aux: string | undefined;
 }

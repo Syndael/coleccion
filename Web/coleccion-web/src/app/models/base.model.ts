@@ -6,6 +6,7 @@ export class Base {
     nombre: string | undefined;
     codigo: string | undefined;
     saga: string | undefined;
+    url: string | undefined;
     fecha_salida: string | undefined;
     plataformas: string | undefined;
 }

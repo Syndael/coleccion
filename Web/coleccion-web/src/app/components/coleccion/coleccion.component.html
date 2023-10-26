@@ -45,6 +45,13 @@
                 <option *ngFor="let tienda of listaTiendas" [value]="tienda.id">{{ tienda.nombre }}</option>
             </select>
         </div>
+        <div class="campo">
+            Orden:
+            <br />
+            <select [(ngModel)]="filtro.ordenSeleccionado" (change)="getColecciones()">
+                <option *ngFor="let orden of listaOrdenes" [value]="orden">{{ orden }}</option>
+            </select>
+        </div>
     </div>
     <table class="lista-colecciones">
         <tr class="encabezado-colecciones">
@@ -54,17 +61,21 @@
             <th>Idioma/Región</th>
             <th>Estado</th>
             <th>Caja</th>
-            <th>Fecha compra</th>
-            <th>Fecha entrega</th>
-            <th>Unidades</th>
+            <th>F. C/R</th>
+            <th>F. entrega</th>
+            <th>Uni.</th>
             <th>Coste</th>
             <th>Tienda</th>
+            <th></th>
+            <th></th>
+            <th>URL</th>
             <th>Notas</th>
         </tr>
         <tr class="coleccion" *ngFor="let coleccion of colecciones" routerLink="/coleccion/{{coleccion.id}}">
             <td class="tipo">{{coleccion.base?.tipo_base?.descripcion}}</td>
             <td class="plataforma">{{coleccion.plataforma?.nombre}}</td>
-            <td class="base">{{coleccion.base?.nombre}}{{coleccion.edicion && coleccion.edicion.nombre ? ': ' + coleccion.edicion.nombre : ''}}</td>
+            <td class="base">{{coleccion.base?.nombre}}{{coleccion.edicion && coleccion.edicion.nombre ? ': ' +
+                coleccion.edicion.nombre : ''}}</td>
             <td *ngIf="coleccion.idioma && coleccion.region" class="idioma-region">{{coleccion.idioma.descripcion}} /
                 {{coleccion.region.descripcion}}</td>
             <td *ngIf="coleccion.idioma && !coleccion.region" class="idioma-region">{{coleccion.idioma.descripcion}}
@@ -74,13 +85,21 @@
             <td *ngIf="!coleccion.idioma && !coleccion.region" class="idioma-region"></td>
             <td class="estado-general">{{coleccion.estado_general?.descripcion}}</td>
             <td class="estado-caja">{{coleccion.estado_caja?.descripcion}}</td>
-            <td class="fecha-compra">{{coleccion.fecha_compra | date: 'dd/MM/yyyy'}}</td>
-            <td class="fecha-entrega">{{coleccion.fecha_recibo | date: 'dd/MM/yyyy'}}</td>
-            <td class="unidades">{{coleccion.unidades}}</td>
-            <td *ngIf="coleccion.coste" class="coste">{{coleccion.coste | formateo:'€'}}</td>
+            <td class="fecha-compra derecha">{{ (coleccion.fecha_compra ? coleccion.fecha_compra : coleccion.fecha_reserva)  | date: 'dd/MM/yyyy' }}</td>
+            <td class="fecha-entrega derecha">{{coleccion.fecha_recibo | date: 'dd/MM/yyyy'}}</td>
+            <td class="unidades centro">{{coleccion.unidades}}</td>
+            <td *ngIf="coleccion.coste" class="coste derecha">{{coleccion.coste | formateo:'€'}}</td>
             <td *ngIf="!coleccion.coste" class="coste"></td>
             <td *ngIf="coleccion.tienda" class="tienda">{{coleccion.tienda.nombre}}</td>
             <td *ngIf="!coleccion.tienda" class="tienda"></td>
+            <td class="mascara">
+                <div class="punto-color {{getMascara(1, coleccion.base?.tipo_base?.descripcion, coleccion.mascara_aux)}}"></div>
+            </td>
+            <td class="mascara">
+                <div class="punto-color {{getMascara(2, coleccion.base?.tipo_base?.descripcion, coleccion.mascara_aux)}}"></div>
+            </td>
+            <td class="url centro"><button class="url" (click)="goUrl(coleccion.url)"
+                    [hidden]="!urlValida(coleccion.url)">►</button></td>
             <td class="notas">{{coleccion.notas | ellipsis: 50 }}</td>
         </tr>
     </table>

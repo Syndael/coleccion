@@ -18,8 +18,13 @@
             disabled="true">
         <br />
         <label for="rom-rom">ROM: </label>
-        <input id="rom-rom" [(ngModel)]="rom.nombre_rom" placeholder="Nombre de la ROM (Autogenerado)" (ngModelChange)="save(true)"
-            disabled="true" />
+        <input id="rom-rom" [(ngModel)]="rom.nombre_rom" placeholder="Nombre de la ROM (Autogenerado)" disabled="true" />
+        <br />
+        <label for="rom-rom">ROM Update: </label>
+        <input id="rom-rom-update" [(ngModel)]="nombreRomUpdate" placeholder="Update de la ROM (Autogenerado)" disabled="true" />
+        <br />
+        <label for="rom-update">Update: </label>
+        <input id="rom-update" [(ngModel)]="rom.update" placeholder="Update" (ngModelChange)="save(true)" />
         <br />
         <label for="rom-idioma">Idioma: </label>
         <select [(ngModel)]="idiomaSeleccionado" (ngModelChange)="save(true)">

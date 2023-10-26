@@ -50,13 +50,16 @@ export class ColeccionTemplateComponent {
     region: undefined,
     estado_general: undefined,
     estado_caja: undefined,
+    fecha_reserva: undefined,
     fecha_compra: undefined,
     fecha_recibo: undefined,
     unidades: undefined,
     coste: undefined,
     tienda: undefined,
+    url: undefined,
     notas: undefined,
-    codigo: undefined
+    codigo: undefined,
+    mascara_aux: undefined
   };
   listaEdiciones: Edicion[] = [];
   listaEstadosGeneral: Estado[] = [];
@@ -109,6 +112,30 @@ export class ColeccionTemplateComponent {
         this.modoModificacion(id);
       }
     });
+  }
+
+  goUrlBase() {
+    if (this.baseSeleccionado) {
+      let base = this.listaBases.find(elemento => elemento.id === this.baseSeleccionado);
+      this.utilService.goUrl(base?.url);
+    }
+  }
+
+  urlValidaBase(): boolean {
+    if (this.baseSeleccionado) {
+      let base = this.listaBases.find(elemento => elemento.id === this.baseSeleccionado);
+      return this.utilService.urlValida(base?.url);
+    } else {
+      return false;
+    }
+  }
+
+  goUrl(url: string | undefined) {
+    this.utilService.goUrl(url);
+  }
+
+  urlValida(url: string | undefined): boolean {
+    return this.utilService.urlValida(url);
   }
 
   modoModificacion(id: number): void {
@@ -262,7 +289,8 @@ export class ColeccionTemplateComponent {
         tipoDescripcion: undefined,
         nombre: undefined,
         saga: undefined,
-        plataforma: this.plataformaSeleccionada
+        plataforma: this.plataformaSeleccionada,
+        ordenSeleccionado: 'Nombre'
       };
       this.baseService.getBases(filtro, true).subscribe((bases) => {
         this.listaBases = bases;
