@@ -1,9 +1,9 @@
-import logging
-import os
+import logging, os, requests, zipfile
+import shutil
 from datetime import date, datetime
+from PIL import Image
 
-import requests
-from telegram import Update
+from telegram import Update, InputFile, InputMediaPhoto, InputMediaDocument
 from telegram.constants import ParseMode
 from telegram.ext import Application, CommandHandler, ContextTypes, MessageHandler, filters
 
@@ -29,12 +29,17 @@ url = None
 usuarios_amigo = None
 usuarios_vip = None
 
+directorio_imgs = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'imgs')
 
-def hacer_peticion(modulo, params=None):
+
+def hacer_peticion(modulo, paths=None, params=None):
     if params is None:
         params = []
     try:
         url = get_url() + modulo
+        if paths:
+            path_string = '/'.join([f'{path}' for path in paths])
+            url += '/' + path_string
         if params:
             param_string = '&'.join([f'{param}={valor}' for param, valor in params])
             url += '?' + param_string
@@ -76,6 +81,13 @@ def get_usuarios_vip():
     if not usuarios_vip:
         usuarios_vip = [f'@{usuario}' for usuario in _config.get_value(constantes.VIPLIST).split(',')]
     return usuarios_vip
+
+
+def get_ruta(nombre_fichero=None):
+    if nombre_fichero:
+        return os.path.join(directorio_imgs, nombre_fichero)
+    else:
+        return directorio_imgs
 
 
 def log_info(update, param):
@@ -138,8 +150,32 @@ async def subir(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         await update.message.reply_text(mensaje, disable_web_page_preview=True)
 
 
+def comprimir_imagen(input_path, output_path, calidad=85):
+    imagen = Image.open(input_path)
+    imagen.save(output_path, optimize=True, quality=calidad)
+
+
+def obtener_tamanio_imagen(imagen_path):
+    return os.path.getsize(imagen_path)
+
+
+def comprimir_hasta_maximo(input_path, output_path, max_size_mb):
+    calidad = 85
+    tamanio_maximo_bytes = max_size_mb * 1024 * 1024
+
+    while True:
+        comprimir_imagen(input_path, output_path, calidad)
+        tamanio_actual_bytes = obtener_tamanio_imagen(output_path)
+
+        if tamanio_actual_bytes <= tamanio_maximo_bytes:
+            break
+        calidad -= 5
+
+
 async def coleccion(update: Update, context: ContextTypes.DEFAULT_TYPE):
     global bot
+    local_bot = bot
+    local_bot_chat = update.effective_chat.id
 
     log_info(update, 'coleccion')
     try:
@@ -174,10 +210,13 @@ async def coleccion(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 saga = parametro_encontrado_saga
                 parametros_encontrados.append(parametro_encontrado)
 
+            parametro_encontrado = get_parametro_mensaje(mensaje_recibido, ' i ', constantes.PARAM_ID)
+            if parametro_encontrado:
+                parametros_encontrados.append(parametro_encontrado)
+
             if any(parametros_encontrados):
                 parametros_encontrados.append((constantes.PARAM_ORDEN, 'telegram'))
-                data = hacer_peticion(constantes.COLECCIONES, parametros_encontrados)
-
+                data = hacer_peticion(constantes.COLECCIONES, None, parametros_encontrados)
                 if data:
                     pre_mensaje = 'Juegos en la colección'
                     if contiene_plataforma:
@@ -201,7 +240,9 @@ async def coleccion(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         plataforma = item['plataforma']['corto']
                         if not plataforma:
                             plataforma = item['plataforma']['nombre']
-
+                        edicion = item['edicion']
+                        if edicion:
+                            edicion = edicion['nombre']
                         idioma = item['idioma']
                         if idioma:
                             idioma = idioma['corto']
@@ -218,12 +259,16 @@ async def coleccion(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         if not contiene_plataforma:
                             mensaje_rom = f'({plataforma}) '
                         mensaje_rom = f'{mensaje_rom}{nombre_base}'
+                        if edicion:
+                            mensaje_rom = f'{mensaje_rom}: {edicion}'
                         if idioma and region:
                             mensaje_rom = f'{mensaje_rom} ({idioma} / {region})'
                         elif idioma:
                             mensaje_rom = f'{mensaje_rom} ({idioma})'
                         elif region:
                             mensaje_rom = f'{mensaje_rom} ({region})'
+                        if usuario and usuario in get_usuarios_amigo():
+                            mensaje_rom = f'{mensaje_rom} | {item["id"]}'
                         mensaje_rom = f'{mensaje_rom} | {estado} {estado_caja}'
                         if usuario and usuario in get_usuarios_vip() and coste:
                             mensaje_rom = f'{mensaje_rom} | {coste}'
@@ -231,28 +276,71 @@ async def coleccion(update: Update, context: ContextTypes.DEFAULT_TYPE):
                         if item['base']['tipo_base']['descripcion'] == 'Juego':
                             mensaje_colecciones.append(mensaje_rom)
 
-                    bloques = 50
-                    tamanio_lista = len(mensaje_colecciones)
-                    total_bloques = tamanio_lista // bloques + (tamanio_lista % bloques > 0)
-                    for i in range(0, tamanio_lista, bloques):
-                        bloque_actual = mensaje_colecciones[i:i + bloques]
-                        mensaje_bloque = pre_mensaje + f', con un total de {tamanio_lista} juegos'
-                        if total_bloques > 1:
-                            mensaje_bloque = mensaje_bloque + f' ({i // bloques + 1}/{total_bloques}):'
-                        else:
-                            mensaje_bloque = mensaje_bloque + f':'
+                    data_ficheros = None
+                    if len(data) == 1 and usuario and usuario in get_usuarios_amigo():
+                        data_ficheros = hacer_peticion(constantes.DATOS_FICHEROS_COLECCION, [data[0]['id']], None)
 
-                        for item in bloque_actual:
-                            mensaje_bloque += f'\n' + constantes.SEP + f'{item}'
-                        await update.message.reply_text(mensaje_bloque, parse_mode=ParseMode.HTML)
+                    if data_ficheros:
+                        try:
+                            data_ficheros = [dato for dato in data_ficheros if dato['tipo_fichero'] == 'Foto' and (
+                                        '.jpg' in dato['nombre_original'] or '.png' in dato['nombre_original'])]
+                            media_group = []
+
+                            for data_fichero in data_ficheros:
+                                url_fichero = f'{get_url()}{constantes.URL_FILES}{data_fichero["id"]}'
+                                response = requests.get(url_fichero, verify=False)
+                                response.raise_for_status()
+                                with open(get_ruta(data_fichero['nombre_final']), 'wb') as imagen_local:
+                                        imagen_local.write(response.content)
+
+                                original = get_ruta(data_fichero['nombre_final'])
+                                comprimido = get_ruta(data_fichero['nombre_original'])
+                                shutil.copy(original, comprimido)
+                                comprimir_hasta_maximo(original, comprimido, 1)
+                                media_group.append(InputMediaPhoto(media=open(comprimido, 'rb')))
+
+                            mensaje = f'Encontrado un juego de {data[0]["plataforma"]["nombre"]}:\n{constantes.SEP}{mensaje_colecciones[0]}'
+                            await update.message.reply_text(mensaje, parse_mode=ParseMode.HTML)
+
+                            imagenes_por_album = 5
+                            try:
+                                for i in range(0, len(media_group), imagenes_por_album):
+                                    media_group_paginado = []
+
+                                    for media in media_group[i:i + imagenes_por_album]:
+                                        media_group_paginado.append(media)
+
+                                    await local_bot.send_media_group(chat_id=local_bot_chat, media=media_group_paginado)
+                            except Exception as e:
+                                logging.error('Error al enviar el mensaje multimedia', e)
+
+                        except Exception as e:
+                            logging.error('Error al descargar o enviar la imagen', e)
+                    else:
+                        bloques = 50
+                        tamanio_lista = len(mensaje_colecciones)
+                        total_bloques = tamanio_lista // bloques + (tamanio_lista % bloques > 0)
+                        for i in range(0, tamanio_lista, bloques):
+                            bloque_actual = mensaje_colecciones[i:i + bloques]
+                            mensaje_bloque = pre_mensaje + f', con un total de {tamanio_lista} juegos'
+                            if total_bloques > 1:
+                                mensaje_bloque = mensaje_bloque + f' ({i // bloques + 1}/{total_bloques}):'
+                            else:
+                                mensaje_bloque = mensaje_bloque + f':'
+
+                            for item in bloque_actual:
+                                mensaje_bloque += f'\n' + constantes.SEP + f'{item}'
+                            await update.message.reply_text(mensaje_bloque, parse_mode=ParseMode.HTML)
                 else:
                     await update.message.reply_text('No se han encontrado coincidencias, consulta la ayuda con /ayuda')
             else:
-                await update.message.reply_text('No se han especificado parámetros válidos, consulta la ayuda con /ayuda')
+                await update.message.reply_text(
+                    'No se han especificado parámetros válidos, consulta la ayuda con /ayuda')
     except Exception as e:
         logging.error(e)
         await bot.send_message(update.effective_chat.id,
                                'Se ha producido un error, puedes consultar la ayuda con /ayuda')
+    limpiar_imgs()
 
 
 async def roms(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -291,7 +379,7 @@ async def roms(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 parametros_encontrados.append(parametro_encontrado)
 
             if any(parametros_encontrados):
-                data = hacer_peticion(constantes.ROMS, parametros_encontrados)
+                data = hacer_peticion(constantes.ROMS, None, parametros_encontrados)
 
                 if data:
                     pre_mensaje = 'Búsqueda de roms'
@@ -342,7 +430,8 @@ async def roms(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 else:
                     await update.message.reply_text('No se han encontrado coincidencias, consulta la ayuda con /ayuda')
             else:
-                await update.message.reply_text('No se han especificado parámetros válidos, consulta la ayuda con /ayuda')
+                await update.message.reply_text(
+                    'No se han especificado parámetros válidos, consulta la ayuda con /ayuda')
     except Exception as e:
         logging.error(e)
         await bot.send_message(update.effective_chat.id,
@@ -351,7 +440,7 @@ async def roms(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def plataformas(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     log_info(update, 'plataformas')
-    data = hacer_peticion(constantes.PLATAFORMAS, None)
+    data = hacer_peticion(constantes.PLATAFORMAS, None, None)
     if not (data == constantes.ERROR_SOLICITUD or data == constantes.ERROR_VACIO):
         mensaje = 'Lista de plataformas:'
         for item in data:
@@ -383,7 +472,7 @@ async def estadisticas(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 
 
 async def estadisticas_completos(update: Update) -> None:
-    data = hacer_peticion(constantes.ESTADISTICAS_COMPLETOS, None)
+    data = hacer_peticion(constantes.ESTADISTICAS_COMPLETOS, None, None)
     if not (data == constantes.ERROR_SOLICITUD or data == constantes.ERROR_VACIO):
         anio_mes_max = date.today().replace(year=date.today().year - 1).replace(month=date.today().month + 1).strftime(
             "%Y%m")
@@ -403,7 +492,7 @@ async def estadisticas_completos(update: Update) -> None:
 
 
 async def estadisticas_gastos(update: Update, roms) -> None:
-    data = hacer_peticion(constantes.ESTADISTICAS_GASTOS, None)
+    data = hacer_peticion(constantes.ESTADISTICAS_GASTOS, None, None)
     if not (data == constantes.ERROR_SOLICITUD or data == constantes.ERROR_VACIO):
         mensaje_juegos_mes = 'Juegos por mes:'
         mensaje_juegos_plataforma = 'Juegos por plataforma:'
@@ -459,7 +548,7 @@ async def estadisticas_gastos(update: Update, roms) -> None:
 
 
 async def estadisticas_ultimos(update: Update) -> None:
-    data = hacer_peticion(constantes.ESTADISTICAS_ULTIMOS, None)
+    data = hacer_peticion(constantes.ESTADISTICAS_ULTIMOS, None, None)
     if not (data == constantes.ERROR_SOLICITUD or data == constantes.ERROR_VACIO):
         mensaje = 'Últimos jugados:'
         for item in data[:5]:
@@ -501,8 +590,25 @@ def get_parametro(texto, param):
         return None
 
 
+def limpiar_imgs():
+    try:
+        for archivo in os.listdir(get_ruta()):
+            ruta_completa = get_ruta(archivo)
+            if os.path.isfile(ruta_completa):
+                os.remove(ruta_completa)
+    except Exception as e:
+        logging.error('Error eliminando las imagenes')
+
+
 def main() -> None:
     global bot
+
+    try:
+        os.mkdir(get_ruta())
+    except FileExistsError:
+        logging.debug(f'El directorio {get_ruta()} ya existe.')
+    except Exception as e:
+        logging.error('Error al crear el directorio', e)
 
     application = Application.builder().token(get_token()).build()
     bot = application.bot

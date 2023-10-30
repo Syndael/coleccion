@@ -21,6 +21,8 @@ class ColeccionService:
         colecciones = Coleccion.query.join(Coleccion.plataforma).join(Coleccion.base).join(Base.tipo_base)
         orden_seleccionado = None
         if request.args:
+            if request.args.get('id'):
+                colecciones = colecciones.filter(Coleccion.id == request.args.get('id'))
             if request.args.get('tipo_base_id'):
                 colecciones = colecciones.filter(Base.tipo_id == request.args.get('tipo_base_id'))
             if request.args.get('plataforma_id'):

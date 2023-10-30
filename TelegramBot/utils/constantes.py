@@ -14,6 +14,7 @@ SEP = '        ○ '
 SEP_DOBLE = '                ● '
 
 COLECCIONES = 'colecciones'
+DATOS_FICHEROS_COLECCION = 'datos_ficheros_coleccion'
 ESTADISTICAS = 'estadisticas'
 ESTADISTICAS_GASTOS = 'estadisticas/gastos'
 ESTADISTICAS_COMPLETOS = 'estadisticas/completos'
@@ -21,10 +22,13 @@ ESTADISTICAS_ULTIMOS = 'progresos/ultimos'
 PLATAFORMAS = 'plataformas'
 ROMS = 'roms'
 
+PARAM_ID = 'id'
 PARAM_NOMBRE = 'nombre'
 PARAM_ORDEN = 'orden'
 PARAM_PLATAFORMA = 'plataforma'
 PARAM_SAGA = 'saga'
+
+URL_FILES = 'fichero/id/'
 
 ESTADISTICAS_TIPO_CONSOLAS_TOTAL = 'CONSOLAS_TOTAL'
 ESTADISTICAS_TIPO_JUEGOS_TOTAL = 'JUEGOS_TOTAL'
