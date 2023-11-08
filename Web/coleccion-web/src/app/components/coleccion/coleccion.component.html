@@ -68,6 +68,7 @@
             <th>Tienda</th>
             <th></th>
             <th></th>
+            <th></th>
             <th>URL</th>
             <th>Notas</th>
         </tr>
@@ -98,8 +99,12 @@
             <td class="mascara">
                 <div class="punto-color {{getMascara(2, coleccion.base?.tipo_base?.descripcion, coleccion.mascara_aux)}}"></div>
             </td>
-            <td class="url centro"><button class="url" (click)="goUrl(coleccion.url)"
-                    [hidden]="!urlValida(coleccion.url)">►</button></td>
+            <td class="url">
+                <button *ngIf="coleccion.ig" class="url" (click)="goUrl(coleccion.ig)" [disabled]="!urlValida(coleccion.ig)">📷</button>
+            </td>
+            <td class="url centro">
+                <button class="url" (click)="goUrl(coleccion.url)" [hidden]="!urlValida(coleccion.url)">►</button>
+            </td>
             <td class="notas">{{coleccion.notas | ellipsis: 50 }}</td>
         </tr>
     </table>

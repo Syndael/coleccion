@@ -57,6 +57,7 @@ export class ColeccionTemplateComponent {
     coste: undefined,
     tienda: undefined,
     url: undefined,
+    ig: undefined,
     notas: undefined,
     codigo: undefined,
     mascara_aux: undefined

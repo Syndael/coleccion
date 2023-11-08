@@ -65,6 +65,12 @@ class ColeccionService:
             estados_descripcion_excluidos = ['Buscado', 'N/A']
             colecciones = colecciones.filter(Estado.descripcion.notin_(estados_descripcion_excluidos))
             colecciones = colecciones.order_by(Coleccion.fecha_compra.desc(), Base.nombre.asc()).all()
+        elif orden_seleccionado == 'IG':
+            colecciones = colecciones.join(Coleccion.estado_general)
+            estados_descripcion_excluidos = ['Buscado', 'Digital', 'N/A', 'Pedido', 'Reservado']
+            colecciones = colecciones.filter(Estado.descripcion.notin_(estados_descripcion_excluidos))
+            colecciones = colecciones.order_by(case((Coleccion.ig.isnot(None), 0), else_=1), TipoBase.descripcion.asc(), Plataforma.nombre.asc(),
+                                               Plataforma.corto.asc(), Base.nombre.asc()).all()
         elif orden_seleccionado == 'telegram':
             colecciones = colecciones.join(Coleccion.estado_general)
             estados_descripcion_excluidos = ['Buscado', 'N/A']
@@ -131,6 +137,8 @@ class ColeccionService:
             coleccion.tienda = Tienda.query.get(data['tienda']['id'])
         if 'url' in data:
             coleccion.url = data['url']
+        if 'ig' in data:
+            coleccion.ig = data['ig']
         if 'notas' in data:
             coleccion.notas = data['notas']
         coleccion.activado = 1
@@ -207,6 +215,10 @@ class ColeccionService:
             coleccion.url = data['url']
         else:
             coleccion.url = None
+        if 'ig' in data and not data['ig'] == '':
+            coleccion.ig = data['ig']
+        else:
+            coleccion.ig = None
         if 'notas' in data and not data['notas'] == '':
             coleccion.notas = data['notas']
         else:

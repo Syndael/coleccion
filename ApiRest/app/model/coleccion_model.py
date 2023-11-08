@@ -28,6 +28,7 @@ class Coleccion(db.Model):
     coste = db.Column(db.Float)
     tienda_id = db.Column(db.Integer, db.ForeignKey('TIENDA.id'))
     url = db.Column(db.String(255))
+    ig = db.Column(db.String(255))
     notas = db.Column(db.String(500))
     activado = db.Column(db.Boolean)
     codigo = db.Column(db.String(250))
@@ -44,7 +45,7 @@ class Coleccion(db.Model):
 
     def __init__(self, base, plataforma, edicion=None, idioma=None, region=None, estado_general=None, estado_caja=None,
                  fecha_reserva=None, fecha_compra=None, fecha_recibo=None, unidades=None, coste=None, tienda=None,
-                 url=None, notas=None, activado=None, codigo=None, mascara_aux=None):
+                 url=None, ig=None, notas=None, activado=None, codigo=None, mascara_aux=None):
         self.base = base
         self.plataforma = plataforma
         self.edicion = edicion
@@ -59,6 +60,7 @@ class Coleccion(db.Model):
         self.coste = coste
         self.tienda = tienda
         self.url = url
+        self.ig = ig
         self.notas = notas
         self.activado = activado
         self.codigo = codigo
@@ -78,6 +80,6 @@ class ColeccionSchema(Schema):
     class Meta:
         fields = (
             'id', 'base', 'edicion', 'plataforma', 'idioma', 'region', 'estado_general', 'estado_caja', 'fecha_reserva',
-            'fecha_compra', 'fecha_recibo', 'unidades', 'coste', 'tienda', 'url', 'notas', 'activado', 'codigo',
+            'fecha_compra', 'fecha_recibo', 'unidades', 'coste', 'tienda', 'url', 'ig', 'notas', 'activado', 'codigo',
             'mascara_aux')
         include_relationships = True

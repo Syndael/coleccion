@@ -103,6 +103,10 @@
         <input class="detalle-campo-url" id="coleccion-url" [(ngModel)]="coleccion.url" placeholder="URL" (ngModelChange)="save(true)" />
         <button class="detalle-campo-btn-url" (click)="goUrl(coleccion.url)" [disabled]="!urlValida(coleccion.url)">►</button>
         <br />
+        <label for="coleccion-ig">IG: </label>
+        <input class="detalle-campo-ig" id="coleccion-ig" [(ngModel)]="coleccion.ig" placeholder="IG URL" (ngModelChange)="save(true)" />
+        <button class="detalle-campo-btn-ig" (click)="goUrl(coleccion.ig)" [disabled]="!urlValida(coleccion.ig)">►</button>
+        <br />
         <label for="coleccion-notas">Notas: </label>
         <textarea id="coleccion-notas" [(ngModel)]="coleccion.notas">{{coleccion.notas}}</textarea>
         <br />

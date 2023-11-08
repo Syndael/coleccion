@@ -138,16 +138,22 @@ async def subir(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     usuario = update.message.from_user.name
     if usuario and usuario in get_usuarios_amigo():
         url_subida = _config.get_value(constantes.SYNNAS_URL_SUBIDA)
-        mensaje = f'Subidas en {url_subida}'
+        sftp_subida = _config.get_value(constantes.SYNNAS_SFTP_SUBIDA)
+        mensaje = f'<b>Subidas:</b>'
+        mensaje = f'{mensaje}\n{constantes.SEP}Servicio:'
+        mensaje =f'{mensaje}\n{constantes.SEP_DOBLE}Web: {url_subida}'
+        mensaje =f'{mensaje}\n{constantes.SEP_DOBLE}SFTP: {sftp_subida}'
+
         synnas_usuario = _config.get_value(constantes.SYNNAS_USUARIO_SUBIDA)
         synnas_contra = _config.get_value(constantes.SYNNAS_CONTRASENA_SUBIDA)
-        mensaje = mensaje + '\n' + constantes.SEP + f'Usuario: {synnas_usuario}'
-        mensaje = mensaje + '\n' + constantes.SEP + f'Contraseña: {synnas_contra}'
+        mensaje = f'{mensaje}\n{constantes.SEP}Usuario:'
+        mensaje =f'{mensaje}\n{constantes.SEP_DOBLE}Usuario: {synnas_usuario}'
+        mensaje =f'{mensaje}\n{constantes.SEP_DOBLE}Contraseña: {synnas_contra}'
     else:
         mensaje = 'No tienes permisos para subir ficheros'
 
     if mensaje:
-        await update.message.reply_text(mensaje, disable_web_page_preview=True)
+        await update.message.reply_text(mensaje, disable_web_page_preview=True, parse_mode=ParseMode.HTML)
 
 
 def comprimir_imagen(input_path, output_path, calidad=85):

@@ -14,5 +14,6 @@ export enum OrdenEnum {
     COLECCION = 'Colección',
     COMPRAS = 'Compras',
     EN_CURSO = 'En curso',
-    POKEMON = 'Pokémon'
+    POKEMON = 'Pokémon',
+    IG = 'IG'
 }

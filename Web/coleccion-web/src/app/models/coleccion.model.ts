@@ -22,6 +22,7 @@ export class Coleccion {
     coste: number | undefined;
     tienda: Tienda | undefined;
     url: string | undefined;
+    ig: string | undefined;
     notas: string | undefined;
     codigo: string | undefined;
     mascara_aux: string | undefined;
