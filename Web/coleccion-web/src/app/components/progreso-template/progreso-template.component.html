@@ -22,27 +22,88 @@
             <option *ngFor="let estado of listaEstados" [value]="estado.id">{{ estado.descripcion }}</option>
         </select>
         <br />
-        <label for="progreso-porcentaje">Porcentaje: </label>
-        <input id="progreso-porcentaje" [(ngModel)]="progreso.porcentaje" placeholder="%"  (ngModelChange)="save(true)"/>
-        <br />
         <label for="progreso-horas">Horas: </label>
-        <input id="progreso-horas" [(ngModel)]="progreso.horas" placeholder="Horas" (input)="formatHoras($event)"  (ngModelChange)="save(true)"/>
-        <br />
-        <label for="progreso-completo">Completo: </label>
-        <input id="progreso-completo" type="checkbox" [(ngModel)]="progreso.historia_completa"  (ngModelChange)="save(true)"/>
-        <br />
-        <label for="progreso-notas">Notas: </label>
-        <input id="progreso-notas" [(ngModel)]="progreso.notas" placeholder="Notas"  (ngModelChange)="save(true)"/>
-        <br />
-        <label for="progreso-incio">Inicio: </label>
-        <input id="progreso-incio" type="date" [(ngModel)]="progreso.fecha_inicio" placeholder="Inicio"  (ngModelChange)="save(true)"/>
-        <br />
-        <label for="progreso-fin">Fin: </label>
-        <input id="progreso-fin" type="date" [(ngModel)]="progreso.fecha_fin" placeholder="Fin" (ngModelChange)="save(true)" />
+        <input id="progreso-horas" [(ngModel)]="progreso.horas" placeholder="Horas" (input)="formatHoras($event)"
+            (ngModelChange)="save(true)" />
         <br />
         <label for="progreso-fin">Últ. día: </label>
-        <input id="progreso-fin" type="date" [(ngModel)]="progreso.fecha_ultimo" placeholder="Último día de juego"  (ngModelChange)="save(true)"/>
+        <input id="progreso-fin" type="date" [(ngModel)]="progreso.fecha_ultimo" placeholder="Último día de juego"
+            (ngModelChange)="save(true)" />
         <br />
+        <label for="progreso-notas">Notas: </label>
+        <input id="progreso-notas" [(ngModel)]="progreso.notas" placeholder="Notas" (ngModelChange)="save(true)" />
+        <br />
+
+        <div class="crear-extra">
+            <button class="crear-sesion" (click)="addSesion()" [disabled]="!progreso.id">Añadir sesión</button>
+            <div class="extras-sesiones">
+                <table class="detalles-extras" *ngFor="let sesion of listaSesiones">
+                    <div class="detalles-eliminar">
+                        <button (click)="deleteSesion(sesion.id)">×</button>
+                    </div>
+                    <tr>
+                        <td colspan="4" *ngIf="listaBasesDlc.length > 1">
+                            <label for="sesion-dlc">DLC: </label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="4" *ngIf="listaBasesDlc.length > 1">
+                            <select [ngModel]="sesion.base_dlc?.id" (ngModelChange)="saveSesion(sesion, true, $event)">
+                                <option *ngFor="let dlc of listaBasesDlc" [value]="dlc.id">{{ dlc.nombre }}</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td>
+                            <label for="sesion-incio">Inicio: </label>
+                        </td>
+                        <td>
+                            <label for="sesion-fin">Fin: </label>
+                        </td>
+                        <td>
+                            <label for="sesion-fin">Horas: </label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Sesión:</td>
+                        <td>
+                            <input id="sesion-incio" type="date" [(ngModel)]="sesion.fecha_inicio" placeholder="Inicio"
+                                (ngModelChange)="saveSesion(sesion, false, $event)" />
+                        </td>
+                        <td>
+                            <input id="sesion-fin" type="date" [(ngModel)]="sesion.fecha_fin" placeholder="Fin"
+                                (ngModelChange)="saveSesion(sesion, false, $event)" />
+                        </td>
+                        <td>
+                            <input id="sesion-horas" [(ngModel)]="sesion.horas" placeholder="Horas"
+                                (ngModelChange)="saveSesion(sesion, false, $event)" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Historia:</td>
+                        <td>
+                            <input id="sesion-h-incio" type="date" [(ngModel)]="sesion.fecha_h_inicio" placeholder="H. Inicio"
+                                (ngModelChange)="saveSesion(sesion, false, $event)" />
+                        </td>
+                        <td>
+                            <input id="sesion-h-fin" type="date" [(ngModel)]="sesion.fecha_h_fin" placeholder="H. Fin"
+                                (ngModelChange)="saveSesion(sesion, false, $event)" />
+                        </td>
+                        <td>
+                            <input id="sesion-horas-h" [(ngModel)]="sesion.horas_h" placeholder="Horas H."
+                                (ngModelChange)="saveSesion(sesion, false, $event)" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td colspan="4">
+                            <input id="sesion-notas" [(ngModel)]="sesion.notas" placeholder="Notas"
+                                (ngModelChange)="saveSesion(sesion, false, $event)" />
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
         <div class="subir-fichero-container">
             <button class="subir-fichero" (click)="subirFoto()" [disabled]="!progreso.id || subiendoFotos">Añadir
                 fotos</button>

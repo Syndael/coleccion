@@ -188,7 +188,7 @@ async def coleccion(update: Update, context: ContextTypes.DEFAULT_TYPE):
         usuario = update.message.from_user.name
         mensaje_recibido = update.message.text
         if mensaje_recibido == '/colec' or mensaje_recibido == '/coleccion':
-            await update.message.reply_text('Todavía no se hacer eso :(')
+            await estadisticas_gastos(update, constantes.MODO_COLECCION)
         else:
             parametros_encontrados = []
             nombre = None
@@ -356,7 +356,7 @@ async def roms(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
         mensaje_recibido = update.message.text
         if mensaje_recibido == '/juegos' or mensaje_recibido == '/roms':
-            await estadisticas_gastos(update, True)
+            await estadisticas_gastos(update, constantes.MODO_ROMS)
         else:
             parametros_encontrados = []
             nombre = None
@@ -470,7 +470,7 @@ async def estadisticas(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
     if mensaje_recibido.find(' c') != -1:
         await estadisticas_completos(update)
     elif mensaje_recibido.find(' g') != -1 and usuario and usuario in get_usuarios_vip():
-        await estadisticas_gastos(update, None)
+        await estadisticas_gastos(update)
     elif mensaje_recibido.find(' u') != -1:
         await estadisticas_ultimos(update)
     else:
@@ -480,7 +480,10 @@ async def estadisticas(update: Update, context: ContextTypes.DEFAULT_TYPE) -> No
 async def estadisticas_completos(update: Update) -> None:
     data = hacer_peticion(constantes.ESTADISTICAS_COMPLETOS, None, None)
     if not (data == constantes.ERROR_SOLICITUD or data == constantes.ERROR_VACIO):
-        anio_mes_max = date.today().replace(year=date.today().year - 1).replace(month=date.today().month + 1).strftime(
+        mes_max = date.today().month + 1
+        if mes_max == 13:
+            mes_max = 1
+        anio_mes_max = date.today().replace(year=date.today().year - 1).replace(month=mes_max).strftime(
             "%Y%m")
         mensaje = 'Completos último año:'
         for item in data:
@@ -497,7 +500,7 @@ async def estadisticas_completos(update: Update) -> None:
         await update.message.reply_text('No se han podido recuperar las estadísticas')
 
 
-async def estadisticas_gastos(update: Update, roms) -> None:
+async def estadisticas_gastos(update: Update, modo = None) -> None:
     data = hacer_peticion(constantes.ESTADISTICAS_GASTOS, None, None)
     if not (data == constantes.ERROR_SOLICITUD or data == constantes.ERROR_VACIO):
         mensaje_juegos_mes = 'Juegos por mes:'
@@ -506,13 +509,29 @@ async def estadisticas_gastos(update: Update, roms) -> None:
         mensaje_total = 'Total:'
 
         mensaje_roms_plataforma = 'Roms:'
+        mensaje_colec_plataforma = 'Colección:'
 
-        if roms:
+        if modo == constantes.MODO_ROMS:
             for valor in sorted([item for item in data if item['tipo'] == constantes.ESTADISTICAS_TIPO_ROMS_PLATAFORMA],
                                 key=lambda x: (x['orden_asc'] if x['orden_asc'] is not None else '')):
                 mensaje_roms_plataforma = mensaje_roms_plataforma + f'\n' + constantes.SEP + valor.get(
                     'plataforma_nombre') + ' ' + str(valor.get('cantidad')) + ' juegos'
             await update.message.reply_text(mensaje_roms_plataforma)
+        elif modo == constantes.MODO_COLECCION:
+            for valor in sorted([item for item in data if item['tipo'] == constantes.ESTADISTICAS_TIPO_JUEGOS_PLATAFORMA], key=lambda x: (x['orden_asc'] if x['orden_asc'] is not None else '')):
+                plataforma = valor.get('plataforma_corto')
+                if not plataforma:
+                    plataforma = valor.get('plataforma_nombre')
+                msg_fisico_digital = f'(F: {valor.get("fisico")}'
+                digital = valor.get('digital')
+                if not digital == '0':
+                    msg_fisico_digital = f'{msg_fisico_digital} | D: {digital})'
+                else:
+                    msg_fisico_digital = f'{msg_fisico_digital})'
+
+                mensaje_colec_plataforma = f'{mensaje_colec_plataforma}\n{constantes.SEP}{plataforma}: {str(valor.get("cantidad"))}   {msg_fisico_digital}'
+
+            await update.message.reply_text(mensaje_colec_plataforma)
         else:
             for valor in sorted([item for item in data if item['tipo'] == constantes.ESTADISTICAS_TIPO_JUEGOS_MES],
                                 key=lambda x: (x['orden_desc'] if x['orden_desc'] is not None else ''), reverse=True)[
@@ -560,9 +579,11 @@ async def estadisticas_ultimos(update: Update) -> None:
         for item in data[:5]:
             nombre = item['base']['nombre']
             estado = item['estado_progreso']['descripcion']
-            horas = round(float(item['horas']), 2)
+            horas = ''
+            if item['horas']:
+                horas = f': {round(float(item["horas"]), 2)}h'
             plataforma = item['plataforma']['corto'] if item['plataforma']['corto'] else item['plataforma']['nombre']
-            mensaje = mensaje + f'\n' + constantes.SEP + f'({plataforma}) {nombre}: {horas}h - {estado}'
+            mensaje = mensaje + f'\n' + constantes.SEP + f'({plataforma}) {nombre}{horas} - {estado}'
 
         await update.message.reply_text(mensaje)
     else:

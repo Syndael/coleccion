@@ -15,6 +15,10 @@ export class Constantes {
     static readonly COLECCION_URL = Constantes.URL_API_BASE + '/coleccion';
     static readonly COLECCION_ID_URL = Constantes.COLECCION_URL + '/id';
     
+    static readonly BASES_DLC_URL = Constantes.URL_API_BASE + '/basesdlc';
+    static readonly BASE_DLC_URL = Constantes.URL_API_BASE + '/basedlc';
+    static readonly BASE_DLC_ID_URL = Constantes.BASE_DLC_URL + '/id';
+    
     static readonly EDICIONES_URL = Constantes.URL_API_BASE + '/ediciones';
     static readonly EDICION_URL = Constantes.URL_API_BASE + '/edicion';
     static readonly EDICION_ID_URL = Constantes.EDICION_URL + '/id';
@@ -35,6 +39,10 @@ export class Constantes {
     static readonly PROGRESO_URL = Constantes.URL_API_BASE + '/progreso';
     static readonly PROGRESO_ID_URL = Constantes.PROGRESO_URL + '/id';
     static readonly ULTIMOS_PROGRESOS_ID_URL = Constantes.PROGRESOS_URL + '/ultimos';
+
+    static readonly SESIONES_URL = Constantes.URL_API_BASE + '/sesiones';
+    static readonly SESION_URL = Constantes.URL_API_BASE + '/sesion';
+    static readonly SESION_ID_URL = Constantes.SESION_URL + '/id';
 
     static readonly IDIOMAS_URL = Constantes.URL_API_BASE + '/idiomas';
 

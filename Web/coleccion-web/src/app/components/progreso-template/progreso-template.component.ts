@@ -4,7 +4,9 @@ import { Location } from '@angular/common';
 
 import { Estado, TipoEstado } from '../../models/estado.model';
 import { Progreso } from '../../models/progreso.model';
+import { ProgresoSesion } from '../../models/progreso-sesion.model';
 import { Base } from '../../models/base.model';
+import { BaseDlc } from '../../models/base-dlc.model';
 import { Plataforma } from '../../models/plataforma.model';
 
 import { FiltroBase } from '../../filters/base.filter';
@@ -39,17 +41,15 @@ export class ProgresoTemplateComponent {
     base: undefined,
     plataforma: undefined,
     estado_progreso: undefined,
-    porcentaje: undefined,
     horas: undefined,
-    historia_completa: undefined,
     notas: undefined,
-    fecha_inicio: undefined,
-    fecha_fin: undefined,
     fecha_ultimo: undefined
   };
   listaEstados: Estado[] = [];
   listaBases: Base[] = [];
+  listaBasesDlc: BaseDlc[] = [];
   listaPlataformas: Plataforma[] = [];
+  listaSesiones: ProgresoSesion[] = [];
 
   fotos: DatoFichero[] = [];
 
@@ -126,6 +126,23 @@ export class ProgresoTemplateComponent {
     }
   }
 
+  addSesion() {
+    let ses: ProgresoSesion = {
+      id: undefined,
+      progreso: this.progreso,
+      base_dlc: undefined,
+      fecha_inicio: undefined,
+      fecha_fin: undefined,
+      horas: undefined,
+      fecha_h_inicio: undefined,
+      fecha_h_fin: undefined,
+      horas_h: undefined,
+      notas: undefined
+    };
+
+    this.listaSesiones.push(ses);
+  }
+
   getProgreso(id: number): void {
     this.progresoService.getProgreso(id).subscribe(progreso => {
       this.progreso = progreso;
@@ -136,6 +153,8 @@ export class ProgresoTemplateComponent {
       this.progreso.horas = this.utilService.formatNumber(this.progreso.horas);
       this.refreshBases();
       this.refreshFicheros(id);
+      this.refreshSesiones(id);
+      this.refreshBasesDlc();
     });
   }
 
@@ -164,6 +183,12 @@ export class ProgresoTemplateComponent {
     })
   }
 
+  refreshSesiones(id: number): void {
+    if (this.progreso.id != undefined) {
+      this.progresoService.getSesiones(this.progreso.id).subscribe((ses) => this.listaSesiones = ses);
+    }
+  }
+
   refreshBases(): void {
     this.listaBases = [];
     if (this.plataformaSeleccionada) {
@@ -177,6 +202,13 @@ export class ProgresoTemplateComponent {
         ordenSeleccionado: 'Nombre'
       };
       this.baseService.getBases(filtro, true).subscribe((bases) => this.listaBases = bases);
+    }
+  }
+
+  refreshBasesDlc(): void {
+    this.listaBasesDlc = [];
+    if (this.baseSeleccionado) {
+      this.baseService.getBasesDlc(this.baseSeleccionado, true).subscribe((dlcs) => this.listaBasesDlc = dlcs);
     }
   }
 
@@ -203,6 +235,27 @@ export class ProgresoTemplateComponent {
     }
   }
 
+  saveSesion(sesion: ProgresoSesion | undefined, base: boolean, base_id: number | undefined): void {
+    if (sesion) {
+      if (base) {
+        if (base_id) {
+          sesion.base_dlc = {
+            id: base_id,
+            base: undefined,
+            nombre: undefined
+          }
+        } else {
+          sesion.base_dlc = undefined;
+        }
+      }
+      if (sesion.id == undefined) {
+        this.progresoService.addSesion(sesion).subscribe((ses) => { this.refreshSesiones(ses.progreso.id); });
+      } else {
+        this.progresoService.updateSesion(sesion).subscribe(() => { });
+      }
+    }
+  }
+
   delete(): void {
     if (this.progreso.id == undefined) {
       this.errorService.printError('El progreso no se ha genereado aún');
@@ -214,6 +267,28 @@ export class ProgresoTemplateComponent {
             this.back();
           } else {
             this.errorService.printError('Se ha producido un error eliminando el progreso ' + this.progreso.id);
+          }
+        });
+      }
+    }
+  }
+
+  deleteSesion(sesion_id: number | undefined): void {
+    if (sesion_id == undefined) {
+      this.errorService.printError('Sesion no identificada');
+      if (this.progreso.id) {
+        this.refreshSesiones(this.progreso.id);
+      }
+    } else {
+      const confirmacion = window.confirm('¿Eliminar la sesion?');
+      if (confirmacion) {
+        this.progresoService.deleteSesion(sesion_id).subscribe((res) => {
+          if (res.success) {
+            if (this.progreso.id) {
+              this.refreshSesiones(this.progreso.id);
+            }
+          } else {
+            this.errorService.printError('Se ha producido un error eliminando la sesion ' + this.progreso.id);
           }
         });
       }

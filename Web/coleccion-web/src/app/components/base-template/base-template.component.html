@@ -7,17 +7,19 @@
         </select>
         <br />
         <label for="base-nombre">Nombre: </label>
-        <input id="base-nombre" [(ngModel)]="base.nombre" placeholder="Nombre"  (ngModelChange)="save(true)"/>
+        <input id="base-nombre" [(ngModel)]="base.nombre" placeholder="Nombre" (ngModelChange)="save(true)" />
         <br />
         <label for="base-saga">Saga/Franquicia: </label>
         <input id="base-saga" [(ngModel)]="base.saga" placeholder="Saga/Franquicia" (ngModelChange)="save(true)" />
         <br />
         <label for="base-url">URL: </label>
-        <input class="detalle-campo-url" id="base-url" [(ngModel)]="base.url" placeholder="URL" (ngModelChange)="save(true)" />
+        <input class="detalle-campo-url" id="base-url" [(ngModel)]="base.url" placeholder="URL"
+            (ngModelChange)="save(true)" />
         <button class="detalle-campo-btn-url" (click)="goUrl(base.url)" [disabled]="!urlValida(base.url)">►</button>
         <br />
         <label for="base-fecha">Fecha de salida: </label>
-        <input id="base-fecha" type="date" [(ngModel)]="base.fecha_salida" placeholder="Fecha de salida"  (ngModelChange)="save(true)"/>
+        <input id="base-fecha" type="date" [(ngModel)]="base.fecha_salida" placeholder="Fecha de salida"
+            (ngModelChange)="save(true)" />
         <br />
         <div class="extras">
             <div class="extras-plataformas">
@@ -57,9 +59,28 @@
                 <ul class="extra-edicion-panel-lista">
                     <li *ngFor="let edicion of listaEdiciones">
                         {{ edicion.nombre }}
-                        {{ edicion.plataforma && edicion.plataforma.nombre ? '(' + edicion.plataforma.nombre + ')': '' }}
+                        {{ edicion.plataforma && edicion.plataforma.nombre ? '(' + edicion.plataforma.nombre + ')': ''
+                        }}
                         {{ edicion.fecha ? ' - ' + edicion.fecha : '' | date: 'dd/MM/yyyy'}}
                         <button (click)="deleteEdicion(edicion.id)">×</button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+
+        <div class="extras">
+            <br />
+            <div class="extras-dlc">
+                <div class="extra-dlc-panel-add">
+                    <label>DLCs</label>
+                    <br />
+                    <button class="extra-dlc-add" (click)="addBaseDlc()" [disabled]="!base.id">+</button>
+                    <input id="extra-dlc-nombre" [(ngModel)]="dlcNombreSeleccionado" placeholder="Nombre" />
+                </div>
+                <ul class="extra-dlc-panel-lista">
+                    <li *ngFor="let baseDlc of listaBasesDlc">
+                        {{baseDlc.nombre}}
+                        <button (click)="deleteBaseDlc(baseDlc.id)">×</button>
                     </li>
                 </ul>
             </div>

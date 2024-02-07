@@ -61,18 +61,10 @@ class ProgresoService:
 
         if 'estado_progreso' in data and data['estado_progreso']['id']:
             progreso.estado_progreso = Estado.query.get(data['estado_progreso']['id'])
-        if 'porcentaje' in data:
-            progreso.porcentaje = data['porcentaje']
         if 'horas' in data:
             progreso.horas = data['horas']
-        if 'historia_completa' in data:
-            progreso.historia_completa = data['historia_completa']
         if 'notas' in data:
             progreso.notas = data['notas']
-        if 'fecha_inicio' in data:
-            progreso.fecha_inicio = data['fecha_inicio']
-        if 'fecha_fin' in data:
-            progreso.fecha_fin = data['fecha_fin']
         if 'fecha_ultimo' in data:
             progreso.fecha_ultimo = data['fecha_ultimo']
 
@@ -99,30 +91,14 @@ class ProgresoService:
         if 'plataforma' in data and data['plataforma']['id']:
             if progreso.plataforma is None or not progreso.plataforma.id == data['plataforma']['id']:
                 progreso.plataforma = Plataforma.query.get(data['plataforma']['id'])
-        if 'porcentaje' in data and not data['porcentaje'] == '':
-            progreso.porcentaje = data['porcentaje']
-        else:
-            progreso.porcentaje = None
         if 'horas' in data and not data['horas'] == '':
             progreso.horas = data['horas']
         else:
             progreso.horas = None
-        if 'historia_completa' in data and not data['historia_completa'] == '':
-            progreso.historia_completa = data['historia_completa']
-        else:
-            progreso.historia_completa = None
         if 'notas' in data and not data['notas'] == '':
             progreso.notas = data['notas']
         else:
             progreso.notas = None
-        if 'fecha_inicio' in data and not data['fecha_inicio'] == '':
-            progreso.fecha_inicio = data['fecha_inicio']
-        else:
-            progreso.fecha_inicio = None
-        if 'fecha_fin' in data and not data['fecha_fin'] == '':
-            progreso.fecha_fin = data['fecha_fin']
-        else:
-            progreso.fecha_fin = None
         if 'fecha_ultimo' in data and not data['fecha_ultimo'] == '':
             progreso.fecha_ultimo = data['fecha_ultimo']
         else:

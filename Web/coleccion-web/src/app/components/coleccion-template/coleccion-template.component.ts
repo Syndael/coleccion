@@ -131,6 +131,22 @@ export class ColeccionTemplateComponent {
     }
   }
 
+  goUrlTienda() {
+    if (this.tiendaSeleccionada) {
+      let tienda = this.listaTiendas.find(elemento => elemento.id === this.tiendaSeleccionada);
+      this.utilService.goUrl(tienda?.url);
+    }
+  }
+
+  urlValidaTienda(): boolean {
+    if (this.tiendaSeleccionada) {
+      let tienda = this.listaTiendas.find(elemento => elemento.id === this.tiendaSeleccionada);
+      return this.utilService.urlValida(tienda?.url);
+    } else {
+      return false;
+    }
+  }
+
   goUrl(url: string | undefined) {
     this.utilService.goUrl(url);
   }

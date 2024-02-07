@@ -74,9 +74,10 @@
         <input id="coleccion-coste" [(ngModel)]="coleccion.coste" placeholder="Coste" (ngModelChange)="save(true)" />
         <br />
         <label for="coleccion-tienda">Tienda: </label>
-        <select [(ngModel)]="tiendaSeleccionada" (ngModelChange)="save(true)">
+        <select class="detalle-campo-select-url" [(ngModel)]="tiendaSeleccionada" (ngModelChange)="save(true)">
             <option *ngFor="let tienda of listaTiendas" [value]="tienda.id">{{ tienda.nombre }}</option>
         </select>
+        <button class="detalle-campo-btn-url" (click)="goUrlTienda()" [disabled]="!urlValidaTienda()">►</button>
         <br />
         <div class="subir-fichero-container">
             <button class="subir-fichero" (click)="subirFactura()" [disabled]="!coleccion.id || subiendoFacturas">Añadir

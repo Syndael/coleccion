@@ -7,11 +7,7 @@ export class Progreso {
     base: Base | undefined;
     plataforma: Plataforma | undefined;
     estado_progreso: Estado | undefined;
-    porcentaje: number | undefined;
     horas: number | undefined;
-    historia_completa: Boolean | undefined;
     notas: string | undefined;
-    fecha_inicio: string | undefined;
-    fecha_fin: string | undefined;
     fecha_ultimo: string | undefined;
 }

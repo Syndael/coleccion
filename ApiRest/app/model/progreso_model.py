@@ -13,29 +13,20 @@ class Progreso(db.Model):
     base_id = db.Column(db.Integer, db.ForeignKey('BASE.id'))
     plataforma_id = db.Column(db.Integer, db.ForeignKey('PLATAFORMA.id'))
     estado_progreso_id = db.Column(db.Integer, db.ForeignKey('ESTADO.id'))
-    porcentaje = db.Column(db.Integer)
     horas = db.Column(Numeric(precision=20, scale=6))
-    historia_completa = db.Column(db.Boolean)
     notas = db.Column(db.String(255))
-    fecha_inicio = db.Column(db.Date)
-    fecha_fin = db.Column(db.Date)
     fecha_ultimo = db.Column(db.Date)
 
     base = db.relationship('Base', primaryjoin='Progreso.base_id == Base.id')
     plataforma = db.relationship('Plataforma', primaryjoin='Progreso.plataforma_id == Plataforma.id')
     estado_progreso = db.relationship('Estado', primaryjoin='Progreso.estado_progreso_id == Estado.id')
 
-    def __init__(self, base, plataforma, estado_progreso=None, porcentaje=None, horas=None, historia_completa=None,
-                 notas=None, fecha_inicio=None, fecha_fin=None, fecha_ultimo=None):
+    def __init__(self, base, plataforma, estado_progreso=None, horas=None, notas=None, fecha_ultimo=None):
         self.base = base
         self.plataforma = plataforma
         self.estado_progreso = estado_progreso
-        self.porcentaje = porcentaje
         self.horas = horas
-        self.historia_completa = historia_completa
         self.notas = notas
-        self.fecha_inicio = fecha_inicio
-        self.fecha_fin = fecha_fin
         self.fecha_ultimo = fecha_ultimo
 
 
@@ -45,6 +36,5 @@ class ProgresoSchema(Schema):
     estado_progreso = fields.Nested(EstadoSchema)
 
     class Meta:
-        fields = ('id', 'base', 'plataforma', 'estado_progreso', 'porcentaje', 'horas', 'historia_completa', 'notas',
-                  'fecha_inicio', 'fecha_fin', 'fecha_ultimo')
+        fields = ('id', 'base', 'plataforma', 'estado_progreso', 'horas', 'notas', 'fecha_ultimo')
         include_relationships = True

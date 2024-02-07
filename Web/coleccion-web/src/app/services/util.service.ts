@@ -251,7 +251,8 @@ export class UtilService {
   getListaTiendas(incluirDefault: Boolean): Observable<Tienda[]> {
     const tiendaNull: Tienda = {
       id: undefined,
-      nombre: ''
+      nombre: '',
+      url: ''
     }
 
     if (this.tiendas.length === 0) {

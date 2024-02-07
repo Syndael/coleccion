@@ -14,7 +14,7 @@
 /*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
--- Volcando datos para la tabla coleccion.ESTADO: ~22 rows (aproximadamente)
+-- Volcando datos para la tabla coleccion.ESTADO: ~27 rows (aproximadamente)
 INSERT INTO `ESTADO` (`ID`, `DESCRIPCION`, `TIPO`, `ORDEN`) VALUES
 	(1, 'Buscado', 0, NULL),
 	(2, 'Cartucho', 0, NULL),
@@ -37,7 +37,12 @@ INSERT INTO `ESTADO` (`ID`, `DESCRIPCION`, `TIPO`, `ORDEN`) VALUES
 	(19, 'Reservado', 0, NULL),
 	(20, 'Disco', 0, NULL),
 	(21, 'UMD', 0, NULL),
-	(22, 'Falsa', 1, NULL);
+	(22, 'Falsa', 1, NULL),
+	(23, 'N/A', 2, 5),
+	(24, 'Prestado', 0, NULL),
+	(25, 'Vendido', 0, NULL),
+	(26, 'Drop', 2, 6),
+	(27, 'CIAB', 0, NULL);
 
 -- Volcando datos para la tabla coleccion.IDIOMA: ~10 rows (aproximadamente)
 INSERT INTO `IDIOMA` (`ID`, `DESCRIPCION`, `CORTO`) VALUES
@@ -87,28 +92,31 @@ INSERT INTO `REGION` (`ID`, `DESCRIPCION`, `CORTO`) VALUES
 	(3, 'Asia', 'AS'),
 	(2, 'Europa', 'EU');
 
--- Volcando datos para la tabla coleccion.TIENDA: ~20 rows (aproximadamente)
-INSERT INTO `TIENDA` (`ID`, `NOMBRE`) VALUES
-	(1, 'Amazon'),
-	(2, 'Amazon JP'),
-	(3, 'Carrefour'),
-	(4, 'eShop'),
-	(5, 'Game'),
-	(6, 'Gamemas Santander'),
-	(7, 'MediaMarkt'),
-	(8, 'Nintendo Store'),
-	(9, 'Wakkap'),
-	(10, 'Worten'),
-	(11, 'Wallapop'),
-	(12, 'Steam'),
-	(13, 'Miravia'),
-	(14, 'Impact Game'),
-	(15, 'Vinted'),
-	(16, 'Xtralife'),
-	(17, 'Abacus Cooperativa'),
-	(18, 'PS Store'),
-	(19, 'Videodis'),
-	(20, 'GoRetroid');
+-- Volcando datos para la tabla coleccion.TIENDA: ~23 rows (aproximadamente)
+INSERT INTO `TIENDA` (`ID`, `NOMBRE`, `URL`) VALUES
+	(1, 'Amazon', 'https://www.amazon.es/'),
+	(2, 'Amazon JP', 'https://www.amazon.co.jp/'),
+	(3, 'Carrefour', 'https://www.carrefour.es/'),
+	(4, 'eShop', 'https://www.nintendo.es/'),
+	(5, 'Game', 'https://www.game.es/'),
+	(6, 'Gamemas Santander', NULL),
+	(7, 'MediaMarkt', 'https://www.mediamarkt.es/'),
+	(8, 'Nintendo Store', 'https://store.nintendo.es/'),
+	(9, 'Wakkap', 'https://wakkap.com/'),
+	(10, 'Worten', 'https://www.worten.es/'),
+	(11, 'Wallapop', 'https://es.wallapop.com/'),
+	(12, 'Steam', 'https://store.steampowered.com/'),
+	(13, 'Miravia', 'https://www.miravia.es/'),
+	(14, 'Impact Game', 'https://www.impactgame.es/'),
+	(15, 'Vinted', 'https://www.vinted.es/'),
+	(16, 'Xtralife', 'https://www.xtralife.com/'),
+	(17, 'Abacus Cooperativa', 'https://www.abacus.coop/'),
+	(18, 'PS Store', 'https://store.playstation.com/'),
+	(19, 'Videodis', 'https://videodis.es/'),
+	(20, 'GoRetroid', 'https://www.goretroid.com/'),
+	(21, 'Ubisoft (uplay)', 'https://ubisoftconnect.com/'),
+	(22, 'GOG', 'https://www.gog.com/'),
+	(23, 'Wallcade', 'https://wallcade.com/');
 
 -- Volcando datos para la tabla coleccion.TIPO_BASE: ~6 rows (aproximadamente)
 INSERT INTO `TIPO_BASE` (`ID`, `DESCRIPCION`) VALUES

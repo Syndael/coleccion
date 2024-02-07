@@ -37,25 +37,17 @@
             <th>Plataforma</th>
             <th>Nombre</th>
             <th>Estado</th>
-            <th>Porcentaje</th>
             <th>Horas</th>
-            <th>Completo</th>
-            <th>Notas</th>
-            <th>Inicio</th>
-            <th>Fin</th>
             <th>Últ. jugado</th>
+            <th>Notas</th>
         </tr>
         <tr class="progreso" *ngFor="let progreso of progresos" routerLink="/progreso/{{progreso.id}}">
             <td class="plataforma">{{progreso.plataforma?.nombre}}</td>
             <td class="base">{{progreso.base?.nombre}}</td>
             <td class="estado">{{progreso.estado_progreso?.descripcion}}</td>
-            <td class="porcentaje derecha">{{progreso.porcentaje | formateo: '%'}}</td>
             <td class="horas derecha">{{progreso.horas | number:'0.0-2'}}</td>
-            <td class="historia_completa">{{progreso.historia_completa ? 'Sí' : 'No'}}</td>
-            <td class="notas">{{progreso.notas}}</td>
-            <td class="fecha_inicio derecha">{{progreso.fecha_inicio | date: 'dd/MM/yyyy'}}</td>
-            <td class="fecha_fin derecha">{{progreso.fecha_fin | date: 'dd/MM/yyyy'}}</td>
             <td class="fecha_ultimo derecha">{{progreso.fecha_ultimo | date: 'dd/MM/yyyy'}}</td>
+            <td class="notas">{{progreso.notas}}</td>
         </tr>
     </table>
 </div>

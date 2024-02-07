@@ -3,6 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
 
 import { Base } from '../../models/base.model';
+import { BaseDlc } from '../../models/base-dlc.model';
 import { BasePlataforma } from '../../models/base-plataforma.model';
 import { Edicion } from '../../models/edicion.model';
 import { Plataforma } from '../../models/plataforma.model';
@@ -37,6 +38,7 @@ export class BaseTemplateComponent {
     plataformas: undefined
   };
   listaBasesPlataforma: BasePlataforma[] = [];
+  listaBasesDlc: BaseDlc[] = [];
   listaEdiciones: Edicion[] = [];
   listaPlataformas: Plataforma[] = [];
   listaTipos: TipoBase[] = [];
@@ -49,6 +51,8 @@ export class BaseTemplateComponent {
   edicionNombreSeleccionado: string | undefined;
   edicionFechaSeleccionada: string | undefined;
   edicionPlataformaSeleccionada: number | undefined;
+
+  dlcNombreSeleccionado: string | undefined;
 
   ngOnInit(): void {
     this.route.params.subscribe(params => {
@@ -94,6 +98,10 @@ export class BaseTemplateComponent {
     this.baseService.addEdicion(this.base.id, this.edicionPlataformaSeleccionada, this.edicionNombreSeleccionado, this.edicionFechaSeleccionada).subscribe(() => this.refreshBase(this.base.id));
   }
 
+  addBaseDlc(): void {
+    this.baseService.addBaseDlc(this.base.id, this.dlcNombreSeleccionado).subscribe(() => this.refreshBase(this.base.id));
+  }
+
   deleteBasePlataforma(id: number | undefined): void {
     if (id) {
       this.baseService.deleteBasePlataforma(id).subscribe(() => this.refreshBase(this.base.id));
@@ -110,9 +118,18 @@ export class BaseTemplateComponent {
     }
   }
 
+  deleteBaseDlc(id: number | undefined): void {
+    if (id) {
+      this.baseService.deleteBaseDlc(id).subscribe(() => this.refreshBase(this.base.id));
+    } else {
+      this.errorService.printError("Error eliminando la base, no tiene id");
+    }
+  }
+
   refreshBase(id: number | undefined): void {
     this.listaBasesPlataforma = [];
     this.listaEdiciones = [];
+    this.listaBasesDlc = [];
 
     if (id) {
       this.baseService.getBasesPlataforma(id).subscribe(datos => {
@@ -123,6 +140,11 @@ export class BaseTemplateComponent {
       this.baseService.getEdiciones(id).subscribe(datos => {
         datos.forEach((dato) => {
           this.listaEdiciones.push(dato);
+        });
+      });
+      this.baseService.getBasesDlc(id, false).subscribe(datos => {
+        datos.forEach((dato) => {
+          this.listaBasesDlc.push(dato);
         });
       });
     } else {

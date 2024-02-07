@@ -7,6 +7,7 @@ from flask_cors import CORS
 from app.utils.datos import db
 from app.utils.config_parser_utils import ConfigParser
 from app.service.base_service import BaseService
+from app.service.base_dlc_service import BaseDlcService
 from app.service.base_plataforma_service import BasePlataformaService
 from app.service.coleccion_service import ColeccionService
 from app.service.edicion_service import EdicionService
@@ -15,6 +16,7 @@ from app.service.estado_service import EstadoService
 from app.service.fichero_service import FicheroService
 from app.service.idioma_service import IdiomaService
 from app.service.progreso_service import ProgresoService
+from app.service.progreso_sesion_service import ProgresoSesionService
 from app.service.plataforma_service import PlataformaService
 from app.service.region_service import RegionService
 from app.service.rom_service import RomService
@@ -73,6 +75,30 @@ def update_base(id):
 @app.route('/api/base/id/<id>', methods=['DELETE'])
 def delete_base_by_id(id):
     return _base_service.delete_base_by_id(id)
+
+
+# Bases DLC
+_base_dlc_service = BaseDlcService()
+
+
+@app.route('/api/basesdlc', methods=['GET'])
+def get_bases_dlc():
+    return _base_dlc_service.get_bases_dlc(request)
+
+
+@app.route('/api/basedlc/id/<id>', methods=['GET'])
+def get_bases_dlc_by_id(id):
+    return _base_dlc_service.get_base_dlc_by_id(id)
+
+
+@app.route('/api/basedlc', methods=['POST'])
+def add_base_dlc():
+    return _base_dlc_service.add_base_dlc(request)
+
+
+@app.route('/api/basedlc/id/<id>', methods=['DELETE'])
+def delete_bases_dlc_by_id(id):
+    return _base_dlc_service.delete_base_dlc_by_id(id)
 
 
 # Bases Plataforma
@@ -216,6 +242,29 @@ def update_progreso(id):
 @app.route('/api/progreso/id/<id>', methods=['DELETE'])
 def delete_progreso_by_id(id):
     return _progreso_service.delete_progreso_by_id(id)
+
+
+# Progreso Sesiones
+_progreso_sesion_service = ProgresoSesionService()
+
+@app.route('/api/sesiones', methods=['GET'])
+def get_sesiones():
+    return _progreso_sesion_service.get_sesiones(request)
+
+
+@app.route('/api/sesion', methods=['POST'])
+def add_sesion():
+    return _progreso_sesion_service.add_sesion(request)
+
+
+@app.route('/api/sesion/id/<id>', methods=['PUT'])
+def update_sesion(id):
+    return _progreso_sesion_service.update_sesion(request, id)
+
+
+@app.route('/api/sesion/id/<id>', methods=['DELETE'])
+def delete_sesion_by_id(id):
+    return _progreso_sesion_service.delete_sesion_by_id(id)
 
 
 # Plataformas

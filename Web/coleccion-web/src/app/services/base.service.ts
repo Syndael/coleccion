@@ -6,6 +6,7 @@ import { catchError, map } from 'rxjs/operators';
 import { Constantes } from '../constantes';
 
 import { Base } from '../models/base.model';
+import { BaseDlc, BaseDlcBeanNew } from '../models/base-dlc.model';
 import { BasePlataforma, BasePlataformaBeanNew } from '../models/base-plataforma.model';
 import { Edicion, EdicionBeanNew } from '../models/edicion.model';
 
@@ -116,6 +117,28 @@ export class BaseService {
         return this.http.get<BasePlataforma>(url).pipe(catchError(this.error.handleError<BasePlataforma>(`getBasePlataforma url=${url}`)));
     }
 
+    getBasesDlc(base_id: number, incluirDefault: boolean): Observable<BaseDlc[]> {
+        const dlcDefault: BaseDlc = {
+            id: 0,
+            base: undefined,
+            nombre: undefined
+        };
+
+        let params = new HttpParams()
+        if (base_id) {
+            params = params.set('base_id', base_id);
+        }
+        return this.http.get<BaseDlc[]>(Constantes.BASES_DLC_URL, { params: params }).pipe(
+            map(dlcs => {
+                if (incluirDefault) {
+                    return [dlcDefault, ...dlcs];
+                } else {
+                    return dlcs;
+                }
+            }),
+            catchError(this.error.handleError<BaseDlc[]>(`getBasesDlc`)));
+    }
+
     addBasePlataforma(juego: number | undefined, plataforma: number | undefined, fecha: string | undefined): Observable<any> {
         if (juego && plataforma) {
             let basePlata: BasePlataformaBeanNew = {
@@ -165,10 +188,31 @@ export class BaseService {
         return of([]);
     }
 
+    addBaseDlc(juego: number | undefined, nombre: string | undefined): Observable<any> {
+        if (juego && nombre) {
+            let dlc: BaseDlcBeanNew = {
+                base: juego,
+                nombre: nombre
+            };
+            return this.http.post(Constantes.BASE_DLC_URL, dlc, this.httpOptions).pipe(catchError(this.error.handleError<any>('addBaseDlc')));
+        }
+        this.error.printError("No se ha encontrado la base o nombre");
+        return of([]);
+    }
+
     deleteEdicion(edicion: number | undefined): Observable<any> {
         if (edicion) {
             const url = `${Constantes.EDICION_ID_URL}/${edicion}`;
             return this.http.delete(url, this.httpOptions).pipe(catchError(this.error.handleError<any>('deleteEdicion')));
+        }
+        this.error.printError("No se ha encontrado la base");
+        return of([]);
+    }
+
+    deleteBaseDlc(dlc: number | undefined): Observable<any> {
+        if (dlc) {
+            const url = `${Constantes.BASE_DLC_ID_URL}/${dlc}`;
+            return this.http.delete(url, this.httpOptions).pipe(catchError(this.error.handleError<any>('deleteBaseDlc')));
         }
         this.error.printError("No se ha encontrado la base");
         return of([]);
