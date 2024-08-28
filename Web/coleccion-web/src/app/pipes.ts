@@ -24,3 +24,17 @@ export class FormatPipe implements PipeTransform {
     return valor.toString() + simbolo;
   }
 }
+
+@Pipe({ name: 'formateoDos' })
+export class FormateoDosPipe implements PipeTransform {
+  transform(valor: number | string | undefined, simbolo: string = ''): string {
+    if (valor === undefined || valor === null) {
+      return '';
+    }
+    const numero = typeof valor === 'string' ? parseFloat(valor) : valor;
+    if (isNaN(numero)) {
+      return '';
+    }
+    return numero.toFixed(2) + simbolo;
+  }
+}

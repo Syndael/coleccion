@@ -77,6 +77,39 @@ export class BaseTemplateComponent {
     return this.utilService.urlValida(url);
   }
 
+  urlVandalValida(url: string | undefined): boolean {
+    try {
+      if (url) {
+        const urlObject = new URL(url);
+        this.base.url = `${urlObject.protocol}//${urlObject.host}${urlObject.pathname}`;
+        return `${urlObject.host}`.includes('vandal')
+      }
+    } catch (e) {
+      console.error('Invalid URL');
+    }
+    return false;
+  }
+
+  rellenarDatosVandal(url: string | undefined): void {
+    try {
+      if (url) {
+        const urlObject = new URL(url);
+        this.base.url = `${urlObject.protocol}//${urlObject.host}${urlObject.pathname}`;
+        if (`${urlObject.host}`.includes('vandal'))
+          this.baseService.getValoresVandal(url).subscribe(base => {
+            if(!this.base.nombre){
+              this.base.nombre = base.nombre
+            }
+            if(!this.base.fecha_salida){
+              this.base.fecha_salida = base.fecha_salida
+            }
+          });
+      }
+    } catch (e) {
+      console.error('Invalid URL');
+    }
+  }
+
   modoModificacion(id: number): void {
     this.modoAlta = false;
     this.getBase(id);

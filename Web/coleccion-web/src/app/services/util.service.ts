@@ -4,6 +4,7 @@ import { catchError, map } from 'rxjs/operators';
 
 import { Constantes } from '../constantes';
 
+import { Empresa, TipoEmpresa } from '../models/empresa.model';
 import { Estado, TipoEstado } from '../models/estado.model';
 import { Idioma } from '../models/idioma.model';
 import { Plataforma } from '../models/plataforma.model';
@@ -17,6 +18,7 @@ import { FiltroProgreso } from '../filters/progreso.filter';
 import { FiltroBase } from '../filters/base.filter';
 import { FiltroRom } from '../filters/roms.filter';
 
+import { EmpresaService } from '../services/empresa.service';
 import { EstadoService } from '../services/estado.service';
 import { IdiomaService } from '../services/idioma.service';
 import { PlataformaService } from '../services/plataforma.service';
@@ -27,6 +29,7 @@ import { TipoRomService } from '../services/tipo-rom.service';
 
 @Injectable({ providedIn: 'root', })
 export class UtilService {
+  empresasReparto: Empresa[] = [];
   estadosGeneral: Estado[] = [];
   estadosCajas: Estado[] = [];
   estadosProgreso: Estado[] = [];
@@ -43,6 +46,7 @@ export class UtilService {
   filtroRom: FiltroRom | undefined;
 
   constructor(
+    private empresaService: EmpresaService,
     private estadoService: EstadoService,
     private idiomaService: IdiomaService,
     private plataformaService: PlataformaService,
@@ -85,6 +89,21 @@ export class UtilService {
     return false;
   }
 
+  buildUrlEmpresaReparto(url: string | undefined, codReparto: string | undefined): string | undefined {
+    if (url) {
+      let urlSeg = url
+      if (url.split(Constantes.EMPRESAS_REPARTO_COD_SEG).length - 1) {
+        if (codReparto) {
+          urlSeg = url.replace(Constantes.EMPRESAS_REPARTO_COD_SEG, codReparto);
+        } else {
+          return undefined;
+        }
+      }
+      return urlSeg;
+    }
+    return undefined;
+  }
+
   buildUrlFichero(id_fichero: number | undefined): string | undefined {
     if (id_fichero) {
       return Constantes.FICHERO_ID_URL + '/' + id_fichero;
@@ -94,7 +113,7 @@ export class UtilService {
 
   getMascara(i: number, tipo: string | undefined, mascara: string | undefined): string {
     let res = 'rojo';
-    if (tipo && tipo == TipoBaseEnum.JUEGO) {
+    if (tipo && tipo == TipoBaseEnum.JUEGO && (i == 1 || i == 2)) {
       if (i == 1 && mascara) {
         let vMask = mascara.split(';')[i - 1];
         if (vMask == '1') {
@@ -108,6 +127,13 @@ export class UtilService {
         if (vMask == '1') {
           res = 'verde';
         }
+      }
+    } else if (i == 3 && mascara) {
+      let vMask = mascara.split(';')[i - 1];
+      if (vMask == '1') {
+        res = 'factura';
+      } else {
+        res = 'vacio';
       }
     } else {
       res = 'na';
@@ -155,6 +181,45 @@ export class UtilService {
       return this.estadosCajas;
     } else if (tipo === TipoEstado.PROGRESO) {
       return this.estadosProgreso;
+    }
+    return [];
+  }
+
+  getListaEmpresas(tipo: TipoEmpresa, incluirDefault: Boolean): Observable<Empresa[]> {
+    const empresaNull: Empresa = {
+      id: 0,
+      nombre: '',
+      tipo: -1,
+      url: ''
+    }
+
+    if (this.getListaEmpresasByTipo(tipo).length === 0) {
+      return this.empresaService.getEmpresas().pipe(
+        map(empresas => {
+          this.empresasReparto = empresas.filter((empresa) => empresa.tipo === TipoEmpresa.REPARTO);
+
+          if (incluirDefault) {
+            return [empresaNull, ...this.getListaEmpresasByTipo(tipo)];
+          } else {
+            return this.getListaEmpresasByTipo(tipo);
+          }
+        }),
+        catchError(error => {
+          console.error('Error en la llamada a la API:', error);
+          return of([]);
+        })
+      );
+    } else {
+      if (incluirDefault) {
+        return of([empresaNull, ...this.getListaEmpresasByTipo(tipo)]);
+      } else {
+        return of(this.getListaEmpresasByTipo(tipo));
+      }
+    }
+  }
+  private getListaEmpresasByTipo(tipo: TipoEmpresa): Empresa[] {
+    if (tipo === TipoEmpresa.REPARTO) {
+      return this.empresasReparto;
     }
     return [];
   }

@@ -10,6 +10,7 @@ backup/
 Sheet/
 *.ffs_batch
 *.ffs_gui
+environment*
 
 Web/coleccion-web/.gitignore
 Web/coleccion-web/.editorconfig

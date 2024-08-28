@@ -42,11 +42,16 @@
                         <button (click)="deleteSesion(sesion.id)">×</button>
                     </div>
                     <tr>
+                        <td colspan="4" class="sesion-nombre">
+                            <label>{{sesion.nombre}}</label>
+                        </td>
+                    </tr>
+                    <tr *ngIf="listaBasesDlc.length > 1">
                         <td colspan="4" *ngIf="listaBasesDlc.length > 1">
                             <label for="sesion-dlc">DLC: </label>
                         </td>
                     </tr>
-                    <tr>
+                    <tr *ngIf="listaBasesDlc.length > 1">
                         <td colspan="4" *ngIf="listaBasesDlc.length > 1">
                             <select [ngModel]="sesion.base_dlc?.id" (ngModelChange)="saveSesion(sesion, true, $event)">
                                 <option *ngFor="let dlc of listaBasesDlc" [value]="dlc.id">{{ dlc.nombre }}</option>
@@ -105,6 +110,15 @@
             </div>
         </div>
         <div class="subir-fichero-container">
+            <button class="subir-fichero" (click)="subirPartida()" [disabled]="!progreso.id || subiendoPartidas">Añadir
+                partida</button>
+            <div class="seleccion-fichero-container">
+                <button type="button" (click)="partidaInput.click()">Seleccionar partida</button>
+                <label> {{ strPartidasSeleccionadas | ellipsis: 40 }}</label>
+                <input type="file" multiple #partidaInput style="display: none" (change)="onPartidasSeleccionadas($event)">
+            </div>
+        </div>
+        <div class="subir-fichero-container">
             <button class="subir-fichero" (click)="subirFoto()" [disabled]="!progreso.id || subiendoFotos">Añadir
                 fotos</button>
             <div class="seleccion-fichero-container">
@@ -121,6 +135,20 @@
                 {{ progreso.id ? 'Guardar' : 'Crear' }}
             </button>
         </div>
+    </div>
+    <div class="detalles-partidas" *ngIf="hayPartidas()">
+        <div class="detalles-partidas-titulo">Partidas</div>
+        <br />
+        <table class="detalles-lista-partidas">
+            <tr *ngFor="let partida of partidas">
+                <td>
+                    <li><a [href]="partida.url" target="_blank">{{partida.nombre_original}}</a></li>
+                </td>
+                <td>
+                    <button class="detalles-partida-eliminar" (click)="eliminarFichero(partida.id)">×</button>
+                </td>
+            </tr>
+        </table>
     </div>
     <div class="detalles-galeria" *ngIf="hayFotos()">
         <div class="detalles-galeria-titulo">Galería</div>

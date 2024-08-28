@@ -38,7 +38,7 @@ export class EstadisticasComponent implements OnInit {
   getGastos(): void {
     this.estadisticasService.getGastos().subscribe(gastos => {
       this.gastosJuegosMes = this.ordenarGastos(gastos.filter(gasto => gasto.tipo === TipoGasto.JUEGOS_MES)).slice(0, 11);
-      this.gastosTotales = this.ordenarGastos(gastos.filter(gasto => gasto.tipo === TipoGasto.JUEGOS_TOTAL || gasto.tipo === TipoGasto.CONSOLAS_TOTAL));
+      this.gastosTotales = this.ordenarGastos(gastos.filter(gasto => gasto.tipo === TipoGasto.TOTAL));
       this.gastosJuegosPlataforma = this.ordenarGastos(gastos.filter(gasto => gasto.tipo === TipoGasto.JUEGOS_PLATAFORMA));
       this.gastosJuegosTienda = this.ordenarGastos(gastos.filter(gasto => gasto.tipo === TipoGasto.JUEGOS_TIENDA));
       this.romsPlataforma = this.ordenarGastos(gastos.filter(gasto => gasto.tipo === TipoGasto.ROMS_PLATAFORMA));
@@ -47,15 +47,6 @@ export class EstadisticasComponent implements OnInit {
 
   getUltimosProgresos(): void {
     this.progresoService.getUltimosProgresos().subscribe(progresos => this.ultimosProgresos = progresos);
-  }
-
-  isTipoGastoJuegosTotal(tipo: string | undefined): boolean {
-    if (tipo && tipo === TipoGasto.JUEGOS_TOTAL) {
-      return true;
-    }
-    else {
-      return false;
-    }
   }
 
   ordenarCompletos(completos: Completo[]): Completo[] {

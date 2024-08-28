@@ -13,8 +13,9 @@
         <input id="base-saga" [(ngModel)]="base.saga" placeholder="Saga/Franquicia" (ngModelChange)="save(true)" />
         <br />
         <label for="base-url">URL: </label>
-        <input class="detalle-campo-url" id="base-url" [(ngModel)]="base.url" placeholder="URL"
+        <input class="detalle-base-url" id="base-url" [(ngModel)]="base.url" placeholder="URL"
             (ngModelChange)="save(true)" />
+        <button class="detalle-campo-btn-url" (click)="rellenarDatosVandal(base.url)" [disabled]="!urlVandalValida(base.url)">◊</button>
         <button class="detalle-campo-btn-url" (click)="goUrl(base.url)" [disabled]="!urlValida(base.url)">►</button>
         <br />
         <label for="base-fecha">Fecha de salida: </label>

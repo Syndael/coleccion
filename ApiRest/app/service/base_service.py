@@ -1,8 +1,11 @@
-from flask import jsonify
+import requests, re
 from app.utils.datos import db
 from app.model.base_model import Base, BaseSchema
 from app.model.base_plataforma_model import BasePlataforma
 from app.model.tipo_base_model import TipoBase
+from bs4 import BeautifulSoup
+from datetime import datetime
+from flask import jsonify
 
 
 class BaseService:
@@ -112,3 +115,26 @@ class BaseService:
                 return {'success': False}
 
         return {'success': False}
+
+
+    def get_valores_vandal(self, url):
+        try:
+            response = requests.get(url)
+            if response.status_code == 200:
+                soup = BeautifulSoup(response.content, 'html.parser')
+                titulo_element = soup.find('h1', class_='titulojuego')
+                if titulo_element and titulo_element.a:
+                    titulo_text = titulo_element.a.text
+                    base = Base(tipo_base=0, nombre=titulo_text)
+                    fichajuego = soup.find('div', class_='fichajuego')
+                    if fichajuego and 'Fecha de lanzamiento' in str(fichajuego.contents):
+                        pattern = r"Fecha de lanzamiento:\s*(\d{1,2}/\d{1,2}/\d{4})"
+                        match = re.search(pattern, str(fichajuego.contents))
+                        if match:
+                             base.fecha_salida = datetime.strptime(match.group(1), "%d/%m/%Y").date()
+
+                    base_dict = self._base_schema.dump(base)
+                    return jsonify(base_dict), 200
+
+        except requests.RequestException as e:
+            return jsonify({'error': f'Error al hacer la solicitud: {str(e)}'}), 500

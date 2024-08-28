@@ -12,4 +12,5 @@ export class ProgresoSesion {
     fecha_h_fin: string | undefined;
     horas_h: number | undefined;
     notas: string | undefined;
+    nombre: string | undefined;
 }

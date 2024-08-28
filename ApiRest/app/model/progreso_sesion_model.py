@@ -18,11 +18,12 @@ class ProgresoSesion(db.Model):
     fecha_h_fin = db.Column(db.Date)
     horas_h = db.Column(Numeric(precision=20, scale=6))
     notas = db.Column(db.String(255))
+    nombre = db.Column(db.String(255))
 
     progreso = db.relationship('Progreso', primaryjoin='ProgresoSesion.progreso_id == Progreso.id')
     base_dlc = db.relationship('BaseDlc', primaryjoin='ProgresoSesion.base_dlc_id == BaseDlc.id')
 
-    def __init__(self, progreso, base_dlc=None, fecha_inicio=None, fecha_fin=None, horas=None, notas=None, fecha_h_inicio=None, fecha_h_fin=None, horas_h=None):
+    def __init__(self, progreso, base_dlc=None, fecha_inicio=None, fecha_fin=None, horas=None, notas=None, nombre=None, fecha_h_inicio=None, fecha_h_fin=None, horas_h=None):
         self.progreso = progreso
         self.base_dlc = base_dlc
         self.fecha_inicio = fecha_inicio
@@ -32,6 +33,7 @@ class ProgresoSesion(db.Model):
         self.fecha_h_fin = fecha_h_fin
         self.horas_h = horas_h
         self.notas = notas
+        self.nombre = nombre
 
 
 class ProgresoSesionSchema(Schema):
@@ -39,5 +41,5 @@ class ProgresoSesionSchema(Schema):
     base_dlc = fields.Nested(BaseDlcSchema)
 
     class Meta:
-        fields = ('id', 'progreso', 'base_dlc', 'fecha_inicio', 'fecha_fin', 'horas', 'notas', 'fecha_h_inicio', 'fecha_h_fin', 'horas_h')
+        fields = ('id', 'progreso', 'base_dlc', 'fecha_inicio', 'fecha_fin', 'horas', 'notas', 'nombre', 'fecha_h_inicio', 'fecha_h_fin', 'horas_h')
         include_relationships = True

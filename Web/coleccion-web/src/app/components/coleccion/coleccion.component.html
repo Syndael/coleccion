@@ -58,7 +58,7 @@
             <th>Tipo</th>
             <th>Plataforma</th>
             <th>Nombre</th>
-            <th>Idioma/Región</th>
+            <th>Idioma</th>
             <th>Estado</th>
             <th>Caja</th>
             <th>F. C/R</th>
@@ -69,7 +69,8 @@
             <th></th>
             <th></th>
             <th></th>
-            <th>URL</th>
+            <th></th>
+            <th></th>
             <th>Notas</th>
         </tr>
         <tr class="coleccion" *ngFor="let coleccion of colecciones" routerLink="/coleccion/{{coleccion.id}}">
@@ -94,16 +95,19 @@
             <td *ngIf="coleccion.tienda" class="tienda">{{coleccion.tienda.nombre}}</td>
             <td *ngIf="!coleccion.tienda" class="tienda"></td>
             <td class="mascara">
-                <div class="punto-color {{getMascara(1, coleccion.base?.tipo_base?.descripcion, coleccion.mascara_aux)}}"></div>
+                <div class="mascara-icon {{getMascara(1, coleccion.base?.tipo_base?.descripcion, coleccion.mascara_aux)}}"></div>
             </td>
             <td class="mascara">
-                <div class="punto-color {{getMascara(2, coleccion.base?.tipo_base?.descripcion, coleccion.mascara_aux)}}"></div>
+                <div class="mascara-icon {{getMascara(2, coleccion.base?.tipo_base?.descripcion, coleccion.mascara_aux)}}"></div>
             </td>
-            <td class="url">
-                <button *ngIf="coleccion.ig" class="url" (click)="goUrl(coleccion.ig)" [disabled]="!urlValida(coleccion.ig)">📷</button>
+            <td class="mascara">
+                <div class="mascara-icon {{getMascara(3, coleccion.base?.tipo_base?.descripcion, coleccion.mascara_aux)}}"></div>
             </td>
-            <td class="url centro">
-                <button class="url" (click)="goUrl(coleccion.url)" [hidden]="!urlValida(coleccion.url)">►</button>
+            <td class="mascara">
+                <button *ngIf="coleccion.ig" class="mascara-icon-camara {{urlValida(coleccion.ig)}}" (click)="goUrl(coleccion.ig)"></button>
+            </td>
+            <td class="mascara">
+                <button class="mascara-icon-url {{urlValida(coleccion.url)}}" (click)="goUrl(coleccion.url)"></button>
             </td>
             <td class="notas">{{coleccion.notas | ellipsis: 50 }}</td>
         </tr>

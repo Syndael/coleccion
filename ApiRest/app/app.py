@@ -11,6 +11,7 @@ from app.service.base_dlc_service import BaseDlcService
 from app.service.base_plataforma_service import BasePlataformaService
 from app.service.coleccion_service import ColeccionService
 from app.service.edicion_service import EdicionService
+from app.service.empresa_service import EmpresaService
 from app.service.estadistica_service import EstadisticasService
 from app.service.estado_service import EstadoService
 from app.service.fichero_service import FicheroService
@@ -75,6 +76,12 @@ def update_base(id):
 @app.route('/api/base/id/<id>', methods=['DELETE'])
 def delete_base_by_id(id):
     return _base_service.delete_base_by_id(id)
+
+
+@app.route('/api/base/vandal', methods=['GET'])
+def get_valores_vandal():
+    url = request.args.get('url')
+    return _base_service.get_valores_vandal(url)
 
 
 # Bases DLC
@@ -190,6 +197,15 @@ def get_completos():
 @app.route('/api/estadisticas/gastos', methods=['GET'])
 def get_gastos():
     return _estadisticas_service.get_gastos()
+
+
+# Estados
+_empresa_service = EmpresaService()
+
+
+@app.route('/api/empresas', methods=['GET'])
+def get_empresas():
+    return _empresa_service.get_empresas()
 
 
 # Estados

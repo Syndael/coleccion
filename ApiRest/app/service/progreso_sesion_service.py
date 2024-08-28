@@ -43,6 +43,8 @@ class ProgresoSesionService:
             sesion.horas = data['horas']
         if 'notas' in data:
             sesion.notas = data['notas']
+        if 'nombre' in data:
+            sesion.nombre = data['nombre']
 
         db.session.add(sesion)
         db.session.commit()
@@ -95,6 +97,10 @@ class ProgresoSesionService:
             sesion.notas = data['notas']
         else:
             sesion.notas = None
+        if 'nombre' in data and not data['nombre'] == '':
+            sesion.nombre = data['nombre']
+        else:
+            sesion.nombre = None
 
         db.session.commit()
         sesion_dict = self._progreso_sesion_schema.dump(sesion)

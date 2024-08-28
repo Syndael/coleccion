@@ -1,9 +1,10 @@
-import { Component, ViewChild, ElementRef } from '@angular/core';
+import { Component, ViewChild, ElementRef, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { Location } from '@angular/common';
 
 import { Coleccion } from '../../models/coleccion.model';
 import { Edicion } from '../../models/edicion.model';
+import { Empresa, TipoEmpresa } from '../../models/empresa.model';
 import { Estado, TipoEstado } from '../../models/estado.model';
 import { Idioma } from '../../models/idioma.model';
 import { Base } from '../../models/base.model';
@@ -37,7 +38,8 @@ export class ColeccionTemplateComponent {
     private coleccionService: ColeccionService,
     private errorService: ErrorService,
     private ficheroService: FicheroService,
-    private utilService: UtilService
+    private utilService: UtilService,
+    private cdr: ChangeDetectorRef
   ) { }
 
   private modoAlta: Boolean | undefined;
@@ -50,11 +52,15 @@ export class ColeccionTemplateComponent {
     region: undefined,
     estado_general: undefined,
     estado_caja: undefined,
+    reparto: undefined,
     fecha_reserva: undefined,
     fecha_compra: undefined,
     fecha_recibo: undefined,
     unidades: undefined,
+    precio: undefined,
+    envio: undefined,
     coste: undefined,
+    reparto_seguimiento: undefined,
     tienda: undefined,
     url: undefined,
     ig: undefined,
@@ -63,6 +69,7 @@ export class ColeccionTemplateComponent {
     mascara_aux: undefined
   };
   listaEdiciones: Edicion[] = [];
+  listaEmpresasReparto: Empresa[] = [];
   listaEstadosGeneral: Estado[] = [];
   listaEstadosCaja: Estado[] = [];
   listaIdiomas: Idioma[] = [];
@@ -76,6 +83,7 @@ export class ColeccionTemplateComponent {
   fotos: DatoFichero[] = [];
 
   edicionSeleccionada: number | undefined;
+  empresaRepartoSeleccionada: number | undefined;
   estadoGeneralSeleccionado: number | undefined;
   estadoCajaSeleccionado: number | undefined;
   idiomaSeleccionado: number | undefined;
@@ -95,6 +103,7 @@ export class ColeccionTemplateComponent {
 
   ngOnInit(): void {
     this.route.params.subscribe(params => {
+      this.utilService.getListaEmpresas(TipoEmpresa.REPARTO, true).subscribe(empresas => this.listaEmpresasReparto = empresas);
       this.utilService.getListaEstados(TipoEstado.GENERAL, false).subscribe(estados => this.listaEstadosGeneral = estados);
       this.utilService.getListaEstados(TipoEstado.CAJAS, false).subscribe(estados => this.listaEstadosCaja = estados);
       this.utilService.getListaIdiomas(true).subscribe(idiomas => this.listaIdiomas = idiomas);
@@ -117,14 +126,14 @@ export class ColeccionTemplateComponent {
 
   goUrlBase() {
     if (this.baseSeleccionado) {
-      let base = this.listaBases.find(elemento => elemento.id === this.baseSeleccionado);
+      let base = this.listaBases.find(elemento => Number(elemento.id) === Number(this.baseSeleccionado));
       this.utilService.goUrl(base?.url);
     }
   }
 
   urlValidaBase(): boolean {
     if (this.baseSeleccionado) {
-      let base = this.listaBases.find(elemento => elemento.id === this.baseSeleccionado);
+      let base = this.listaBases.find(elemento => Number(elemento.id) === Number(this.baseSeleccionado));
       return this.utilService.urlValida(base?.url);
     } else {
       return false;
@@ -133,15 +142,32 @@ export class ColeccionTemplateComponent {
 
   goUrlTienda() {
     if (this.tiendaSeleccionada) {
-      let tienda = this.listaTiendas.find(elemento => elemento.id === this.tiendaSeleccionada);
+      let tienda = this.listaTiendas.find(elemento => Number(elemento.id) === Number(this.tiendaSeleccionada));
       this.utilService.goUrl(tienda?.url);
     }
   }
 
   urlValidaTienda(): boolean {
     if (this.tiendaSeleccionada) {
-      let tienda = this.listaTiendas.find(elemento => elemento.id === this.tiendaSeleccionada);
+      let tienda = this.listaTiendas.find(elemento => Number(elemento.id) === Number(this.tiendaSeleccionada));
       return this.utilService.urlValida(tienda?.url);
+    } else {
+      return false;
+    }
+  }
+
+  goUrlEmpresaReparto() {
+    if (this.empresaRepartoSeleccionada) {
+      let empresa = this.listaEmpresasReparto.find(elemento => Number(elemento.id) === Number(this.empresaRepartoSeleccionada));
+      this.utilService.goUrl(this.utilService.buildUrlEmpresaReparto(empresa?.url, this.coleccion.reparto_seguimiento));
+    }
+  }
+
+  urlValidaEmpresaReparto(): boolean {
+    if (this.empresaRepartoSeleccionada) {
+      let empresa = this.listaEmpresasReparto.find(elemento => Number(elemento.id) === Number(this.empresaRepartoSeleccionada));
+      let url = this.utilService.buildUrlEmpresaReparto(empresa?.url, this.coleccion.reparto_seguimiento);
+      return this.utilService.urlValida(url);
     } else {
       return false;
     }
@@ -244,6 +270,7 @@ export class ColeccionTemplateComponent {
       this.regionSeleccionada = this.coleccion.region?.id;
       this.tiendaSeleccionada = this.coleccion.tienda?.id;
       this.baseSeleccionado = this.coleccion.base?.id;
+      this.empresaRepartoSeleccionada = this.coleccion.reparto?.id;
       this.refreshBases();
       this.refreshEdiciones();
     });
@@ -331,6 +358,11 @@ export class ColeccionTemplateComponent {
   }
 
   save(auto: boolean): void {
+    let precio: string = this.coleccion.precio ? this.coleccion.precio.toString() : '0';
+    let envio: string = this.coleccion.envio ? this.coleccion.envio.toString() : '0';
+    let coste: number = parseFloat(precio) + parseFloat(envio);
+    this.coleccion.coste = coste;
+
     if (this.coleccion) {
       this.coleccion.estado_general = this.listaEstadosGeneral.find((estado) => estado.id === Number(this.estadoGeneralSeleccionado));
       this.coleccion.estado_caja = this.listaEstadosCaja.find((estado) => estado.id === Number(this.estadoCajaSeleccionado));
@@ -340,6 +372,7 @@ export class ColeccionTemplateComponent {
       this.coleccion.region = this.listaRegiones.find((region) => region.id === Number(this.regionSeleccionada));
       this.coleccion.tienda = this.listaTiendas.find((tienda) => tienda.id === Number(this.tiendaSeleccionada));
       this.coleccion.edicion = this.listaEdiciones.find((edicion) => edicion.id === Number(this.edicionSeleccionada));
+      this.coleccion.reparto = this.listaEmpresasReparto.find((empresa) => empresa.id === Number(this.empresaRepartoSeleccionada));
 
       if (
         this.baseSeleccionado == undefined || this.coleccion.base == undefined ||
@@ -357,6 +390,8 @@ export class ColeccionTemplateComponent {
         this.coleccionService.updateColeccion(this.coleccion).subscribe((col) => {
           if (auto == false) {
             this.back();
+          } else {
+            this.cdr.detectChanges();
           }
           this.coleccion.codigo = col.codigo;
         });

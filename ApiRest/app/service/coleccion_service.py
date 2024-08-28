@@ -4,6 +4,7 @@ from sqlalchemy import or_, case
 from app.model.base_model import Base
 from app.model.coleccion_model import Coleccion, ColeccionSchema
 from app.model.edicion_model import Edicion
+from app.model.empresa_model import Empresa
 from app.model.estado_model import Estado
 from app.model.idioma_model import Idioma
 from app.model.plataforma_model import Plataforma
@@ -123,6 +124,8 @@ class ColeccionService:
             coleccion.estado_general = Estado.query.get(data['estado_general']['id'])
         if 'estado_caja' in data and data['estado_caja']['id']:
             coleccion.estado_caja = Estado.query.get(data['estado_caja']['id'])
+        if 'reparto' in data and data['reparto']['id']:
+            coleccion.reparto = Empresa.query.get(data['reparto']['id'])
         if 'fecha_reserva' in data:
             coleccion.fecha_reserva = data['fecha_reserva']
         if 'fecha_compra' in data:
@@ -131,8 +134,14 @@ class ColeccionService:
             coleccion.fecha_recibo = data['fecha_recibo']
         if 'unidades' in data:
             coleccion.unidades = data['unidades']
+        if 'precio' in data:
+            coleccion.precio = data['precio']
+        if 'envio' in data:
+            coleccion.envio = data['envio']
         if 'coste' in data:
             coleccion.coste = data['coste']
+        if 'reparto_seguimiento' in data:
+            coleccion.reparto_seguimiento = data['reparto_seguimiento']
         if 'tienda' in data and data['tienda']['id']:
             coleccion.tienda = Tienda.query.get(data['tienda']['id'])
         if 'url' in data:
@@ -186,6 +195,11 @@ class ColeccionService:
                 coleccion.estado_caja = Estado.query.get(data['estado_caja']['id'])
         else:
             coleccion.estado_caja = None
+        if 'reparto' in data and data['reparto']['id']:
+            if coleccion.reparto is None or not coleccion.reparto.id == data['reparto']['id']:
+                coleccion.reparto = Empresa.query.get(data['reparto']['id'])
+        else:
+            coleccion.reparto = None
         if 'fecha_reserva' in data:
             coleccion.fecha_reserva = data['fecha_reserva']
         else:
@@ -202,10 +216,22 @@ class ColeccionService:
             coleccion.unidades = data['unidades']
         else:
             coleccion.unidades = None
+        if 'precio' in data and not data['precio'] == '':
+            coleccion.precio = data['precio']
+        else:
+            coleccion.precio = None
+        if 'envio' in data and not data['envio'] == '':
+            coleccion.envio = data['envio']
+        else:
+            coleccion.envio = None
         if 'coste' in data and not data['coste'] == '':
             coleccion.coste = data['coste']
         else:
             coleccion.coste = None
+        if 'reparto_seguimiento' in data and not data['reparto_seguimiento'] == '':
+            coleccion.reparto_seguimiento = data['reparto_seguimiento']
+        else:
+            coleccion.reparto_seguimiento = None
         if 'tienda' in data and data['tienda']['id']:
             if coleccion.tienda is None or not coleccion.tienda.id == data['tienda']['id']:
                 coleccion.tienda = Tienda.query.get(data['tienda']['id'])

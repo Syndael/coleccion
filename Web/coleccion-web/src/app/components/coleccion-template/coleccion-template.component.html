@@ -66,18 +66,41 @@
         <input id="coleccion-entrega" type="date" [(ngModel)]="coleccion.fecha_recibo" placeholder="Fecha entrega"
             (ngModelChange)="save(true)" />
         <br />
+        <label for="coleccion-reparto">Emp. Reparto: </label>
+        <select class="detalle-campo-select-url" [(ngModel)]="empresaRepartoSeleccionada" (ngModelChange)="save(true)">
+            <option *ngFor="let empresa of listaEmpresasReparto" [value]="empresa.id">{{ empresa.nombre }}</option>
+        </select>
+        <button class="detalle-campo-btn-url" (click)="goUrlEmpresaReparto()" [disabled]="!urlValidaEmpresaReparto()">►</button>
+        <br />
+        <label for="coleccion-seguimiento">Seg. Reparto: </label>
+        <input id="coleccion-seguimiento" [(ngModel)]="coleccion.reparto_seguimiento" placeholder="Código de seguimiento del reparto" (ngModelChange)="save(true)" />
+        <br />
+        <label for="coleccion-envio">Envío: </label>
+        <input id="coleccion-envio" [(ngModel)]="coleccion.envio" placeholder="Envío" (ngModelChange)="save(true)" />
+        <br />
+        <label for="coleccion-precio">Precio: </label>
+        <input id="coleccion-precio" [(ngModel)]="coleccion.precio" placeholder="Precio" (ngModelChange)="save(true)" />
+        <br />
+        <label for="coleccion-coste">Total: </label>
+        <input id="coleccion-coste" disabled="true" [(ngModel)]="coleccion.coste" (ngModelChange)="save(true)" />
+        <br />
         <label for="coleccion-unidades">Unidades: </label>
         <input id="coleccion-unidades" [(ngModel)]="coleccion.unidades" placeholder="Unidades"
             (ngModelChange)="save(true)" />
-        <br />
-        <label for="coleccion-coste">Coste: </label>
-        <input id="coleccion-coste" [(ngModel)]="coleccion.coste" placeholder="Coste" (ngModelChange)="save(true)" />
         <br />
         <label for="coleccion-tienda">Tienda: </label>
         <select class="detalle-campo-select-url" [(ngModel)]="tiendaSeleccionada" (ngModelChange)="save(true)">
             <option *ngFor="let tienda of listaTiendas" [value]="tienda.id">{{ tienda.nombre }}</option>
         </select>
         <button class="detalle-campo-btn-url" (click)="goUrlTienda()" [disabled]="!urlValidaTienda()">►</button>
+        <br />
+        <label for="coleccion-url">URL: </label>
+        <input class="detalle-campo-url" id="coleccion-url" [(ngModel)]="coleccion.url" placeholder="URL" (ngModelChange)="save(true)" />
+        <button class="detalle-campo-btn-url" (click)="goUrl(coleccion.url)" [disabled]="!urlValida(coleccion.url)">►</button>
+        <br />
+        <label for="coleccion-ig">IG: </label>
+        <input class="detalle-campo-ig" id="coleccion-ig" [(ngModel)]="coleccion.ig" placeholder="IG URL" (ngModelChange)="save(true)" />
+        <button class="detalle-campo-btn-ig" (click)="goUrl(coleccion.ig)" [disabled]="!urlValida(coleccion.ig)">►</button>
         <br />
         <div class="subir-fichero-container">
             <button class="subir-fichero" (click)="subirFactura()" [disabled]="!coleccion.id || subiendoFacturas">Añadir
@@ -99,14 +122,6 @@
                 <input type="file" multiple #fotoInput style="display: none" (change)="onFotosSeleccionadas($event)">
             </div>
         </div>
-        <br />
-        <label for="coleccion-url">URL: </label>
-        <input class="detalle-campo-url" id="coleccion-url" [(ngModel)]="coleccion.url" placeholder="URL" (ngModelChange)="save(true)" />
-        <button class="detalle-campo-btn-url" (click)="goUrl(coleccion.url)" [disabled]="!urlValida(coleccion.url)">►</button>
-        <br />
-        <label for="coleccion-ig">IG: </label>
-        <input class="detalle-campo-ig" id="coleccion-ig" [(ngModel)]="coleccion.ig" placeholder="IG URL" (ngModelChange)="save(true)" />
-        <button class="detalle-campo-btn-ig" (click)="goUrl(coleccion.ig)" [disabled]="!urlValida(coleccion.ig)">►</button>
         <br />
         <label for="coleccion-notas">Notas: </label>
         <textarea id="coleccion-notas" [(ngModel)]="coleccion.notas">{{coleccion.notas}}</textarea>

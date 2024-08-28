@@ -82,6 +82,12 @@ export class BaseService {
         return this.http.get<Base>(url).pipe(catchError(this.error.handleError<Base>(`getBase url=${url}`)));
     }
 
+    getValoresVandal(url: string): Observable<Base> {
+        const url_vandal = `${Constantes.BASE_VANDAL_URL}`;
+        const params = new HttpParams().set('url', url);
+        return this.http.get<Base>(url_vandal, { params }).pipe(catchError(this.error.handleError<Base>(`getValoresVandal url=${url_vandal}`)));
+    }
+
     getBasesByNombre(nombre: string): Observable<Base[]> {
         if (!nombre.trim()) {
             return of([]);

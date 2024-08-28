@@ -5,5 +5,6 @@ export class TipoFichero {
 
 export enum TipoFicheroEnum {
     FOTO = 'Foto',
-    FACTURA = 'Factura'
+    FACTURA = 'Factura',
+    PARTIDA = 'Partida'
 }

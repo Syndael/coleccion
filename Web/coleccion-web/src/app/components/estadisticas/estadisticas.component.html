@@ -1,56 +1,53 @@
-<div class="contenedor-progresos">
-    <p class="contenedor-titulo">Últimos jugados</p>
-    <table class="lista-progresos">
-        <tr class="encabezado-progresos">
-            <th>Plataforma</th>
-            <th>Nombre</th>
-            <th>Estado</th>
-            <th>Horas</th>
-            <th>Notas</th>
-            <th>Últ. jugado</th>
-        </tr>
-        <tr class="progreso" *ngFor="let progreso of ultimosProgresos" routerLink="/progreso/{{progreso.id}}">
-            <td class="plataforma">{{progreso.plataforma?.nombre}}</td>
-            <td class="base">{{progreso.base?.nombre}}</td>
-            <td class="estado">{{progreso.estado_progreso?.descripcion}}</td>
-            <td class="horas derecha">{{progreso.horas | number:'0.0-2'}}</td>
-            <td class="notas">{{progreso.notas}}</td>
-            <td class="fecha_ultimo derecha">{{progreso.fecha_ultimo | date: 'dd/MM/yyyy'}}</td>
-        </tr>
-    </table>
-</div>
-<div class="contenedor-completos">
-    <p class="contenedor-titulo">Completados</p>
-    <table class="lista-completos">
-        <tr class="encabezado-completos">
-            <th>Mes</th>
-            <th>Cantidad</th>
-            <th>Juegos</th>
-        </tr>
-        <tr class="completo" *ngFor="let completo of completos">
-            <td class="mes">{{completo.mes}}</td>
-            <td class="cantidad centro">{{completo.cantidad}}</td>
-            <td class="juegos">{{completo.juegos}}</td>
-        </tr>
-    </table>
+
+<div class="contenedor-gastos">
+    <div class="contenedor-gastos-izquierdo">
+        <p class="contenedor-titulo">Últimos jugados</p>
+        <table class="lista-progresos">
+            <tr class="encabezado-progresos">
+                <th>Plataforma</th>
+                <th>Nombre</th>
+                <th>Estado</th>
+                <th>Horas</th>
+                <th>Notas</th>
+                <th>Últ. jugado</th>
+            </tr>
+            <tr class="progreso" *ngFor="let progreso of ultimosProgresos" routerLink="/progreso/{{progreso.id}}">
+                <td class="plataforma">{{progreso.plataforma?.nombre}}</td>
+                <td class="base">{{progreso.base?.nombre}}</td>
+                <td class="estado">{{progreso.estado_progreso?.descripcion}}</td>
+                <td class="horas derecha">{{progreso.horas | number:'0.0-2'}}</td>
+                <td class="notas">{{progreso.notas}}</td>
+                <td class="fecha_ultimo derecha">{{progreso.fecha_ultimo | date: 'dd/MM/yyyy'}}</td>
+            </tr>
+        </table>
+    </div>
+    <div class="contenedor-gastos-derecho">
+        <p class="contenedor-titulo">Completados</p>
+        <table class="lista-completos">
+            <tr class="encabezado-completos">
+                <th>Mes</th>
+                <th>Cantidad</th>
+                <th>Juegos</th>
+            </tr>
+            <tr class="completo" *ngFor="let completo of completos">
+                <td class="mes">{{completo.mes}}</td>
+                <td class="cantidad centro">{{completo.cantidad}}</td>
+                <td class="juegos">{{completo.juegos}}</td>
+            </tr>
+        </table>
+    </div>
 </div>
 <div class="contenedor-gastos">
     <div class="contenedor-gastos-izquierdo">
-        <p class="contenedor-titulo">Juegos últ. año</p>
+        <p class="contenedor-titulo">Roms</p>
         <table class="lista-gastos">
             <tr class="encabezado-gastos">
-                <th>Mes</th>
+                <th>Plataforma</th>
                 <th>Cantidad</th>
-                <th>F</th>
-                <th>D</th>
-                <th>Coste</th>
             </tr>
-            <tr class="gasto" *ngFor="let gasto of gastosJuegosMes">
-                <td class="mes">{{gasto.descripcion}}</td>
+            <tr class="gasto" *ngFor="let gasto of romsPlataforma">
+                <td class="plataforma">{{gasto.plataforma_nombre}}</td>
                 <td class="cantidad centro">{{gasto.cantidad}}</td>
-                <td class="fisico centro">{{gasto.fisico}}</td>
-                <td class="digital centro">{{gasto.digital}}</td>
-                <td class="coste derecha">{{gasto.coste | number:'0.0-2' | formateo:'€'}}</td>
             </tr>
         </table>
         <p class="contenedor-titulo">Gastos totales</p>
@@ -63,7 +60,7 @@
                 <th>Coste</th>
             </tr>
             <tr class="gasto" *ngFor="let gasto of gastosTotales">
-                <td>{{isTipoGastoJuegosTotal(gasto.tipo) ? 'Juegos' : 'Consolas'}}</td>
+                <td>{{gasto.descripcion}}</td>
                 <td class="cantidad centro">{{gasto.cantidad}}</td>
                 <td class="fisico centro">{{gasto.fisico}}</td>
                 <td class="digital centro">{{gasto.digital}}</td>
@@ -89,6 +86,25 @@
                 <td class="coste derecha">{{gasto.coste | number:'0.0-2' | formateo:'€'}}</td>
             </tr>
         </table>
+        <p class="contenedor-titulo">Juegos últ. año</p>
+        <table class="lista-gastos">
+            <tr class="encabezado-gastos">
+                <th>Mes</th>
+                <th>Cantidad</th>
+                <th>F</th>
+                <th>D</th>
+                <th>Coste</th>
+            </tr>
+            <tr class="gasto" *ngFor="let gasto of gastosJuegosMes">
+                <td class="mes">{{gasto.descripcion}}</td>
+                <td class="cantidad centro">{{gasto.cantidad}}</td>
+                <td class="fisico centro">{{gasto.fisico}}</td>
+                <td class="digital centro">{{gasto.digital}}</td>
+                <td class="coste derecha">{{gasto.coste | number:'0.0-2' | formateo:'€'}}</td>
+            </tr>
+        </table>
+    </div>
+    <div class="contenedor-gastos-derecho">
         <p class="contenedor-titulo">Juegos x tienda</p>
         <table class="lista-gastos">
             <tr class="encabezado-gastos">
@@ -104,19 +120,6 @@
                 <td class="fisico centro">{{gasto.fisico}}</td>
                 <td class="digital centro">{{gasto.digital}}</td>
                 <td class="coste derecha">{{gasto.coste | number:'0.0-2' | formateo:'€'}}</td>
-            </tr>
-        </table>
-    </div>
-    <div class="contenedor-gastos-derecho">
-        <p class="contenedor-titulo">Roms</p>
-        <table class="lista-gastos">
-            <tr class="encabezado-gastos">
-                <th>Plataforma</th>
-                <th>Cantidad</th>
-            </tr>
-            <tr class="gasto" *ngFor="let gasto of romsPlataforma">
-                <td class="plataforma">{{gasto.plataforma_nombre}}</td>
-                <td class="cantidad centro">{{gasto.cantidad}}</td>
             </tr>
         </table>
     </div>

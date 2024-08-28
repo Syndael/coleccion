@@ -40,7 +40,7 @@ class ProgresoService:
         progresos = Progreso.query.join(Progreso.estado_progreso).join(Progreso.plataforma).join(Progreso.base)
         progresos = progresos.filter(Progreso.fecha_ultimo.isnot(None))
         progresos = progresos.order_by(Progreso.fecha_ultimo.desc(), Estado.orden.asc(), Plataforma.nombre.asc(),
-                                       Plataforma.corto.asc(), Base.nombre.asc()).limit(5).all()
+                                       Plataforma.corto.asc(), Base.nombre.asc()).limit(20).all()
         result = self._progresos_schema.dump(progresos)
         return jsonify(result), 200
 

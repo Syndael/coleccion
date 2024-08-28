@@ -52,6 +52,7 @@ export class ProgresoTemplateComponent {
   listaSesiones: ProgresoSesion[] = [];
 
   fotos: DatoFichero[] = [];
+  partidas: DatoFichero[] = [];
 
   estadoSeleccionado: number | undefined;
   baseSeleccionado: number | undefined;
@@ -60,6 +61,10 @@ export class ProgresoTemplateComponent {
   fotosSeleccionadas: File[] | undefined;
   strFotosSeleccionadas: string | undefined;
   subiendoFotos: boolean = false;
+
+  partidasSeleccionadas: File[] | undefined;
+  strPartidasSeleccionadas: string | undefined;
+  subiendoPartidas: boolean = false;
 
   ngOnInit(): void {
     this.route.params.subscribe(params => {
@@ -70,6 +75,7 @@ export class ProgresoTemplateComponent {
       if (id && id == "new") {
         this.modoAlta = true;
         this.fotos = [];
+        this.partidas = [];
       } else if (id) {
         this.modoAlta = false;
         this.getProgreso(id);
@@ -87,6 +93,10 @@ export class ProgresoTemplateComponent {
     return this.fotos.length > 0;
   }
 
+  hayPartidas(): boolean {
+    return this.partidas.length > 0;
+  }
+
   onFotosSeleccionadas(event: any) {
     const fotos: FileList = event.target.files;
     if (fotos.length > 0) {
@@ -99,6 +109,20 @@ export class ProgresoTemplateComponent {
       this.fotosSeleccionadas = undefined;
     }
     this.strFotosSeleccionadas = this.fotosSeleccionadas?.map(file => file.name).join(', ');
+  }
+
+  onPartidasSeleccionadas(event: any) {
+    const partidas: FileList = event.target.files;
+    if (partidas.length > 0) {
+      this.partidasSeleccionadas = [];
+      for (let i = 0; i < partidas.length; i++) {
+        const partida: File = partidas[i];
+        this.partidasSeleccionadas.push(partida);
+      }
+    } else {
+      this.partidasSeleccionadas = undefined;
+    }
+    this.strPartidasSeleccionadas = this.partidasSeleccionadas?.map(file => file.name).join(', ');
   }
 
   subirFoto() {
@@ -118,11 +142,32 @@ export class ProgresoTemplateComponent {
     }
   }
 
+  subirPartida() {
+    if (this.partidasSeleccionadas && this.progreso.id) {
+      for (let i = 0; i < this.partidasSeleccionadas.length; i++) {
+        this.subiendoPartidas = true;
+        const partida: File = this.partidasSeleccionadas[i];
+        this.ficheroService.subirFicheroProgreso(this.progreso.id, TipoFicheroEnum.PARTIDA, partida).subscribe((fichero) => {
+          this.addFichero(fichero);
+          if (this.partidasSeleccionadas != undefined && i == this.partidasSeleccionadas.length - 1) {
+            this.partidasSeleccionadas = undefined;
+            this.strPartidasSeleccionadas = '';
+            this.subiendoPartidas = false;
+          }
+        });
+      }
+    }
+  }
+
   addFichero(dato: DatoFichero) {
     let url = this.utilService.buildUrlFichero(dato.id);
     if (url && dato.tipo_fichero == TipoFicheroEnum.FOTO) {
       dato.url = url;
       this.fotos.push(dato);
+    }
+    else if (url && dato.tipo_fichero == TipoFicheroEnum.PARTIDA) {
+      dato.url = url;
+      this.partidas.push(dato);
     }
   }
 
@@ -137,7 +182,8 @@ export class ProgresoTemplateComponent {
       fecha_h_inicio: undefined,
       fecha_h_fin: undefined,
       horas_h: undefined,
-      notas: undefined
+      notas: undefined,
+      nombre: undefined
     };
 
     this.listaSesiones.push(ses);
@@ -161,8 +207,11 @@ export class ProgresoTemplateComponent {
   eliminarFichero(id: number | undefined): void {
     if (id) {
       this.ficheroService.eliminarFichero(id).subscribe(() => {
+        let indexPartida = this.partidas.findIndex((objeto) => objeto.id === id);
         let indexFoto = this.fotos.findIndex((objeto) => objeto.id === id);
-        if (indexFoto !== -1) {
+        if (indexPartida !== -1) {
+          this.partidas.splice(indexPartida, 1);
+        } else if (indexFoto !== -1) {
           this.fotos.splice(indexFoto, 1);
         }
       });

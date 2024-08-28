@@ -10,7 +10,7 @@ import { AppComponent } from './app.component';
 import { BaseComponent } from './components/base/base.component';
 import { BaseTemplateComponent } from './components/base-template/base-template.component';
 import { ColeccionComponent } from './components/coleccion/coleccion.component';
-import { EllipsisPipe, FormatPipe } from './pipes';
+import { EllipsisPipe, FormatPipe, FormateoDosPipe } from './pipes';
 import { ProgresoComponent } from './components/progreso/progreso.component';
 import { RomsComponent } from './components/roms/roms.component';
 import { RomsTemplateComponent } from './components/roms-template/roms-template.component';
@@ -31,6 +31,7 @@ import { EstadisticasComponent } from './components/estadisticas/estadisticas.co
     ColeccionTemplateComponent,
     EllipsisPipe,
     FormatPipe,
+    FormateoDosPipe,
     EstadisticasComponent
   ],
   imports: [

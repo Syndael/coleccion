@@ -6,6 +6,7 @@ export class Constantes {
     static readonly BASES_URL = Constantes.URL_API_BASE + '/bases';
     static readonly BASE_URL = Constantes.URL_API_BASE + '/base';
     static readonly BASE_ID_URL = Constantes.BASE_URL + '/id';
+    static readonly BASE_VANDAL_URL = Constantes.BASE_URL + '/vandal';
     
     static readonly BASES_PLATAFORMA_URL = Constantes.URL_API_BASE + '/basesplataforma';
     static readonly BASE_PLATAFORMA_URL = Constantes.URL_API_BASE + '/baseplataforma';
@@ -34,6 +35,9 @@ export class Constantes {
     static readonly DATOS_FICHEROS_PROGRESO_ID_URL = Constantes.URL_API_BASE + '/datos_ficheros_progreso';
 
     static readonly ESTADOS_URL = Constantes.URL_API_BASE + '/estados';
+
+    static readonly EMPRESAS_URL = Constantes.URL_API_BASE + '/empresas';
+    static readonly EMPRESAS_REPARTO_COD_SEG = '<SEGUIMIENTO>';
 
     static readonly PROGRESOS_URL = Constantes.URL_API_BASE + '/progresos';
     static readonly PROGRESO_URL = Constantes.URL_API_BASE + '/progreso';
