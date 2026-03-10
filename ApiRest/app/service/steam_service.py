@@ -11,9 +11,12 @@ from app.model.plataforma_model import Plataforma
 from app.model.tienda_model import Tienda
 from app.model.tipo_base_model import TipoBase
 from app.utils.datos import db
+from app.utils.config_parser_utils import ConfigParser
+
 
 
 class SteamService:
+    _config = ConfigParser()
     _api_url = 'https://api.steampowered.com'
 
     def import_owned_games(self, request):
@@ -22,10 +25,13 @@ class SteamService:
         if not steam_user:
             return jsonify({'message': 'steam_user es obligatorio'}), 400
 
-        api_key = os.getenv('STEAM_API_KEY')
+        # In case you want to use os/terminal environment
+        # api_key = os.getenv('STEAM_API_KEY')
+        api_key = self._config.get_value("steam_api_key")
         if not api_key:
             return jsonify({'message': 'No se ha configurado STEAM_API_KEY'}), 500
 
+        print("Steam API Key:", api_key)
         steam_id, error = self._resolve_steam_id(api_key, steam_user)
         if error:
             return jsonify({'message': error}), 400
