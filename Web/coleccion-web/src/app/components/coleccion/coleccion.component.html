@@ -4,6 +4,21 @@
     </div>
     <div class="params">
         <div class="campo">
+            Steam:
+            <br />
+            <input [(ngModel)]="steamUser" placeholder="SteamID64, vanity o URL" />
+            <button (click)="importarSteam()" [disabled]="steamImportando || !steamUser">Importar</button>
+            <div *ngIf="steamResultado && steamResultado.resumen">
+                Total: {{steamResultado.total_encontrados}} |
+                Importados: {{steamResultado.resumen.importados}} |
+                Duplicados: {{steamResultado.resumen.omitidos_duplicado}} |
+                Dudosos: {{steamResultado.resumen.omitidos_dudosos}} |
+                Errores: {{steamResultado.resumen.errores}}
+            </div>
+        </div>
+    </div>
+    <div class="params">
+        <div class="campo">
             <button class="limpiar-filtro" (click)="limpiarFiltro()">×</button>
         </div>
         <div class="campo">
