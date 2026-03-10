@@ -49,3 +49,13 @@ package-lock.json
 yarn.lock
 *.css
 *.css.map
+
+# Python virtual environment
+.venv/
+venv/
+env/
+ENV/
+
+# Environment variables
+.env
+.env.*

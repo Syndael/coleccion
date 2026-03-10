@@ -9,3 +9,4 @@ token = tg_token
 url = http://localhost:5000/api/
 viplist = tg_user
 whitelist = tg_user,tg_user2
+steam_api_key = TU_STEAM_API_KEY
