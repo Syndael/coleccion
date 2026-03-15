@@ -24,6 +24,7 @@ from app.service.rom_service import RomService
 from app.service.tienda_service import TiendaService
 from app.service.tipo_base_service import TipoBaseService
 from app.service.tipo_rom_service import TipoRomService
+from app.service.steam_service import SteamService
 
 _config = ConfigParser()
 mssql = {'host': _config.get_value(constantes.HOST),
@@ -383,6 +384,16 @@ def subir_fichero():
 @app.route('/api/fichero/id/<id>', methods=['DELETE'])
 def eliminar_fichero(id):
     return _fichero_service.eliminar_fichero(id)
+
+
+# Steam
+_steam_service = SteamService()
+
+
+@app.route('/api/steam/import', methods=['POST'])
+def import_steam_games():
+    return _steam_service.import_owned_games(request)
+
 
 
 # default

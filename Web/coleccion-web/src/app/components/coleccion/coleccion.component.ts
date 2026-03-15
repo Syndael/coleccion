@@ -45,6 +45,10 @@ export class ColeccionComponent implements OnInit {
 
   colecciones: Coleccion[] = [];
 
+  steamUser: string = '';
+  steamImportando: boolean = false;
+  steamResultado: any = undefined;
+
   setColeccion?: Coleccion;
   onSelect(coleccion: Coleccion): void {
     this.setColeccion = coleccion;
@@ -84,5 +88,20 @@ export class ColeccionComponent implements OnInit {
   getColecciones(): void {
     this.utilService.setFiltroColeccion(this.filtro);
     this.coleccionService.getColecciones(this.filtro).subscribe(colecciones => this.colecciones = colecciones);
+  }
+
+  importarSteam(): void {
+    if (!this.steamUser || this.steamUser.trim().length == 0) {
+      return;
+    }
+    this.steamImportando = true;
+    this.steamResultado = undefined;
+    this.coleccionService.importSteamGames(this.steamUser.trim()).subscribe((resultado) => {
+      this.steamResultado = resultado;
+      this.steamImportando = false;
+      this.getColecciones();
+    }, () => {
+      this.steamImportando = false;
+    });
   }
 }

@@ -15,6 +15,7 @@ export class Constantes {
     static readonly COLECCIONES_URL = Constantes.URL_API_BASE + '/colecciones';
     static readonly COLECCION_URL = Constantes.URL_API_BASE + '/coleccion';
     static readonly COLECCION_ID_URL = Constantes.COLECCION_URL + '/id';
+    static readonly STEAM_IMPORT_URL = Constantes.URL_API_BASE + '/steam/import';
     
     static readonly BASES_DLC_URL = Constantes.URL_API_BASE + '/basesdlc';
     static readonly BASE_DLC_URL = Constantes.URL_API_BASE + '/basedlc';
