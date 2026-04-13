@@ -59,3 +59,4 @@ ENV/
 # Environment variables
 .env
 .env.*
+/ApiRest/venv2/*
