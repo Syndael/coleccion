@@ -66,6 +66,7 @@ export class ColeccionService {
         const url = `${Constantes.COLECCION_ID_URL}/${id}`;
         return this.http.delete(url).pipe(catchError(this.error.handleError<any>('deleteColeccion')));
     }
+
     importSteamGames(steamUser: string): Observable<any> {
         const url = `${Constantes.STEAM_IMPORT_URL}`;
         return this.http.post<any>(url, { steam_user: steamUser }, this.httpOptions).pipe(catchError(this.error.handleError<any>('importSteamGames')));
