@@ -111,6 +111,9 @@ class FicheroService:
         if 'progreso' in data:
             progreso = Progreso.query.get(data['progreso'])
         ruta = os.path.abspath(self._path)
+        if coleccion:
+            if coleccion.codigo:
+                ruta = os.path.join(ruta, coleccion.codigo)
         nombre = str(uuid.uuid4()) + '.' + extension
         fichero = Fichero(ruta, nombre_original, nombre, tipo, coleccion, progreso, 1)
         res = self._almacenar(archivo, ruta, nombre)
