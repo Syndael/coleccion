@@ -1,14 +1,12 @@
-FROM python:3.11-slim
+FROM python:3.12-slim
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    wget ca-certificates fonts-dejavu-core \
-    && wget -q https://johnvansickle.com/ffmpeg/releases/ffmpeg-release-amd64-static.tar.xz \
-    && tar -xf ffmpeg-release-amd64-static.tar.xz \
-    && cp ffmpeg-*-static/ffmpeg ffmpeg-*-static/ffprobe /usr/local/bin/ \
-    && rm -rf ffmpeg-* ffmpeg-release-*.tar.xz wget \
-    && apt-get purge -y wget \
+    fonts-dejavu-core \
     && rm -rf /var/lib/apt/lists/*
+
+COPY install_ffmpeg.py .
+RUN python3 install_ffmpeg.py && rm install_ffmpeg.py
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt

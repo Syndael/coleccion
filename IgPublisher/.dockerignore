@@ -1,0 +1,9 @@
+music/
+gif/
+dev_output/
+config.txt
+ig_session.json
+plantilla_config.txt
+__pycache__/
+*.pyc
+.git/

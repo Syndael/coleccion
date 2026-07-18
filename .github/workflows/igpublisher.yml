@@ -1,0 +1,32 @@
+name: Build IgPublisher
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - IgPublisher/**
+      - .github/workflows/igpublisher.yml
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Login to ghcr.io
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: IgPublisher/
+          push: true
+          tags: ghcr.io/syndael/coleccion-igpublisher:latest

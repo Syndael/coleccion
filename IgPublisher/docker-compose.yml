@@ -1,13 +1,13 @@
 services:
   igpublisher:
-    build: .
+    image: ghcr.io/syndael/coleccion-igpublisher:latest
     container_name: igpublisher
     restart: unless-stopped
     volumes:
-      - ./config.txt:/app/config.txt:ro
-      - ./ig_session.json:/app/ig_session.json
-      - ./music:/app/music:ro
-      - ./gif:/app/gif:ro
-      - ./dev_output:/app/dev_output
+      - /volume1/ProgramacionNas/Coleccion/IgPublisher/config.txt:/app/config.txt:ro
+      - /volume1/ProgramacionNas/Coleccion/IgPublisher/ig_session.json:/app/ig_session.json
+      - /volume1/ProgramacionNas/Coleccion/IgPublisher/music:/app/music
+      - /volume1/ProgramacionNas/Coleccion/IgPublisher/gif:/app/gif
+      - /volume1/ProgramacionNas/Coleccion/IgPublisher/dev_output:/app/dev_output
     environment:
-      - TZ=America/Mexico_City
+      - TZ=Europe/Madrid
