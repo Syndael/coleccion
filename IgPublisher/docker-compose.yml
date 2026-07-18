@@ -1,0 +1,13 @@
+services:
+  igpublisher:
+    build: .
+    container_name: igpublisher
+    restart: unless-stopped
+    volumes:
+      - ./config.txt:/app/config.txt:ro
+      - ./ig_session.json:/app/ig_session.json
+      - ./music:/app/music:ro
+      - ./gif:/app/gif:ro
+      - ./dev_output:/app/dev_output
+    environment:
+      - TZ=America/Mexico_City

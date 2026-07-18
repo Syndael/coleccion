@@ -1,0 +1,1067 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gestión IG — Colección</title>
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #061014;
+  --surface: #0b1c22;
+  --surface-soft: #0f2830;
+  --surface-strong: #12343c;
+  --border: #1e5260;
+  --border-soft: rgba(70, 211, 230, 0.18);
+  --text: #d7fbff;
+  --muted: #7ab7c4;
+  --cyan: #42e8ff;
+  --cyan-strong: #00c7e6;
+  --cyan-soft: rgba(66, 232, 255, 0.12);
+  --manual: #ffd166;
+  --green: #22c55e;
+  --red: #ef4444;
+  --shadow: 0 18px 46px rgba(0, 0, 0, 0.36);
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  min-height: 100vh;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 15px;
+}
+button, input, select, textarea { font: inherit; }
+select { color-scheme: auto; }
+select option { background: #12343c !important; color: #d7fbff !important; }
+
+.app-shell { margin: 0 auto; padding: 24px 20px; max-width: calc(100vw - 40px); }
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+h1 { margin: 0; color: var(--cyan); font-size: 30px; line-height: 1.1; font-weight: 760; }
+h1 span { color: var(--cyan-strong); }
+
+.btn-primary {
+  padding: 10px 18px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--cyan-strong);
+  color: #021014;
+  font-weight: 640;
+  cursor: pointer;
+  font-size: 14px;
+  white-space: nowrap;
+}
+.btn-primary:hover { background: var(--cyan); }
+
+.btn-secondary {
+  padding: 8px 14px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--cyan);
+  cursor: pointer;
+  font-size: 14px;
+}
+.btn-secondary:hover { border-color: var(--cyan); background: var(--cyan-soft); }
+
+.btn-sm { padding: 4px 10px; font-size: 12px; border-radius: 4px; }
+.btn-danger {
+  padding: 6px 10px;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--red);
+  cursor: pointer;
+  font-size: 13px;
+}
+.btn-danger:hover { background: rgba(239, 68, 68, .12); }
+
+/* Stats */
+.stats-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; margin-bottom: 16px; }
+.stat-card {
+  background: var(--surface-strong);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 12px;
+  text-align: center;
+}
+.stat-card .stat-num { font-size: 20px; font-weight: 700; color: var(--text); }
+.stat-card .stat-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; margin-top: 2px; }
+
+/* Filters */
+.filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: flex-end;
+  margin-bottom: 14px;
+}
+.filter-group { display: flex; flex-direction: column; }
+.filter-group label {
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  margin-bottom: 4px;
+}
+.filter-group input, .filter-group select {
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 13px;
+  min-width: 120px;
+  height: 31px;
+  line-height: 15px;
+}
+.filter-group select option {
+  background: var(--surface-strong);
+  color: var(--text);
+}
+.filter-group .filter-btn {
+  padding: 6px 14px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: transparent;
+  color: var(--cyan);
+  font-size: 13px;
+  height: 31px;
+  line-height: 17px;
+  cursor: pointer;
+}
+.filter-group .filter-btn:hover { border-color: var(--cyan); background: var(--cyan-soft); }
+.filter-group input:focus, .filter-group select:focus { border-color: var(--cyan); outline: none; }
+.filter-group input::placeholder { color: #5b8d98; }
+
+/* Table */
+.table-wrap { overflow-x: auto; min-height: 200px; margin-bottom: 8px; }
+table { width: 100%; border-collapse: collapse; background: var(--surface); font-size: 13px; white-space: nowrap; }
+th {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid var(--border-soft);
+  color: var(--muted);
+  font-weight: 640;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  background: var(--surface-soft);
+}
+td {
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-soft);
+  max-width: 180px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+tr:hover td { background: var(--surface-soft); }
+
+/* Status badges */
+.estado-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 640;
+  border: 1px solid var(--border);
+}
+.estado-Revisar { background: transparent; color: var(--muted); }
+.estado-Publicar { background: var(--cyan-soft); color: var(--cyan); border-color: var(--cyan-strong); }
+.estado-Publicado { background: rgba(34, 197, 94, .12); color: var(--green); border-color: var(--green); }
+.estado-Error { background: rgba(239, 68, 68, .12); color: var(--red); border-color: var(--red); }
+.estado-Cancelada { background: rgba(255, 209, 102, .12); color: var(--manual); border-color: var(--manual); }
+.estado-Descartado { background: rgba(148, 163, 184, .12); color: var(--muted); border-color: var(--muted); }
+
+/* Links */
+a { color: var(--cyan); text-decoration: none; }
+a:hover { text-decoration: underline; }
+
+/* Pagination */
+.pagination { display: flex; justify-content: center; align-items: center; gap: 8px; padding: 16px; }
+.pagination span { color: var(--muted); font-size: 13px; }
+
+/* Modal */
+.modal-overlay { display: none; position: fixed; inset: 0; z-index: 1200; }
+.modal-overlay.active { display: grid; place-items: center; }
+.modal-backdrop { position: absolute; inset: 0; background: rgba(0, 0, 0, 0.55); }
+.modal-body {
+  position: relative;
+  background: var(--surface-strong);
+  border: 1px solid var(--border);
+  padding: 18px;
+  width: min(960px, calc(100% - 40px));
+  box-shadow: var(--shadow);
+  z-index: 1210;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+.modal-body h2 {
+  margin: 0 0 12px 0;
+  color: var(--cyan);
+  font-size: 18px;
+}
+.modal-body h2 span { color: var(--cyan-strong); }
+.modal-body h3 { margin: 12px 0 8px; color: var(--cyan); font-size: 14px; }
+
+.form-row { display: flex; gap: 12px; margin-bottom: 10px; }
+.form-group { flex: 1; }
+.form-group label {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  margin-bottom: 4px;
+}
+.form-group input, .form-group select, .form-group textarea {
+  width: 100%;
+  padding: 7px 10px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  border-radius: 4px;
+  font-size: 14px;
+}
+.form-group textarea { resize: vertical; min-height: 80px; }
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--cyan); outline: none; }
+
+/* AI section */
+.ai-section {
+  margin-top: 10px;
+  padding: 10px;
+  background: var(--surface-soft);
+  border: 1px solid var(--border-soft);
+  border-radius: 6px;
+}
+.ai-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.ai-label {
+  font-size: 12px;
+  color: var(--cyan);
+  font-weight: 640;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+.ai-section textarea {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 13px;
+  resize: vertical;
+  min-height: 80px;
+}
+.ai-section textarea:focus { border-color: var(--cyan); outline: none; }
+
+.modal-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-soft);
+}
+
+/* Fotos grid */
+.foto-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin-top: 10px; }
+.foto-card {
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  overflow: hidden;
+  cursor: pointer;
+  position: relative;
+  transition: border-color .15s;
+}
+.foto-card:hover { border-color: var(--cyan); }
+.foto-card.selected { border-color: var(--cyan); }
+.foto-card img { width: 100%; height: 110px; object-fit: cover; display: block; }
+.foto-card .foto-info { padding: 6px 8px; }
+.foto-card .foto-name { font-size: 11px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.foto-card .foto-orden {
+  position: absolute; top: 4px; right: 4px;
+  background: var(--cyan-strong); color: #021014;
+  width: 24px; height: 24px; border-radius: 50%;
+  display: none; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700;
+}
+.foto-card.selected .foto-orden { display: flex; }
+.foto-card .check-overlay {
+  position: absolute; top: 4px; left: 4px;
+  width: 20px; height: 20px; border-radius: 4px;
+  background: var(--surface); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+}
+.foto-card.selected .check-overlay { background: var(--cyan-strong); border-color: var(--cyan-strong); }
+.foto-card.selected .check-overlay::after { content: '✓'; color: #021014; font-size: 12px; font-weight: 700; }
+
+/* Foto preview on hover */
+.foto-preview {
+  display: none;
+  position: fixed;
+  z-index: 99999;
+  pointer-events: none;
+  border: 2px solid var(--cyan-strong);
+  border-radius: 6px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.6);
+  background: var(--surface-strong);
+  padding: 4px;
+}
+.foto-preview img {
+  display: block;
+  max-width: 360px;
+  max-height: 360px;
+  width: auto;
+  height: auto;
+  border-radius: 4px;
+  object-fit: contain;
+}
+
+/* Token section */
+.token-section { margin-bottom: 12px; }
+.token-display {
+  background: var(--surface);
+  padding: 10px;
+  border-radius: 4px;
+  font-family: monospace;
+  font-size: 12px;
+  word-break: break-all;
+  color: var(--muted);
+  margin-bottom: 6px;
+  display: none;
+  border: 1px solid var(--border);
+}
+.token-display.visible { display: block; }
+
+/* Empty/Loading */
+.loading-state, .empty-state {
+  padding: 36px 16px;
+  border: 1px solid var(--border-soft);
+  background: var(--surface);
+  color: var(--muted);
+  text-align: center;
+}
+
+/* Toasts */
+#toast-container {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: none;
+}
+.toast {
+  pointer-events: auto;
+  padding: 10px 18px;
+  border-radius: 8px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 14px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.35);
+  animation: toast-in .25s ease-out;
+  max-width: 400px;
+  word-wrap: break-word;
+}
+.toast-error { border-left: 4px solid var(--red); }
+.toast-success { border-left: 4px solid var(--green); }
+@keyframes toast-in { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: translateY(0); } }
+
+@media (max-width: 768px) {
+  .filters { flex-direction: column; }
+  .filter-group { width: 100%; }
+  .filter-group input, .filter-group select { min-width: 0; width: 100%; }
+  .form-row { flex-direction: column; }
+  .topbar { flex-direction: column; align-items: flex-start; }
+}
+</style>
+</head>
+<body>
+
+<div class="app-shell">
+  <header class="topbar">
+    <h1><span>IG</span> — Gestión de Publicaciones</h1>
+    <div style="display:flex;gap:8px">
+      <button class="btn-secondary btn-sm" onclick="showTokenModal()">Token IG</button>
+      <button class="btn-primary btn-sm" onclick="resetAndLoad()">Actualizar</button>
+    </div>
+  </header>
+
+  <div class="stats-bar" id="statsBar"></div>
+
+  <div class="filters">
+    <div class="filter-group">
+      <label>Tipo</label>
+      <select id="fTipo" onchange="resetAndLoad()"><option value="">Todos</option></select>
+    </div>
+    <div class="filter-group">
+      <label>Plataforma</label>
+      <select id="fPlataforma" onchange="resetAndLoad()"><option value="">Todas</option></select>
+    </div>
+    <div class="filter-group">
+      <label>Nombre</label>
+      <input type="text" id="fNombre" placeholder="Buscar juego..." onkeyup="debounceSearch()">
+    </div>
+    <div class="filter-group">
+      <label>Estado General</label>
+      <select id="fEstadoGen" onchange="resetAndLoad()"><option value="">Todos</option></select>
+    </div>
+    <div class="filter-group">
+      <label>Estado IG</label>
+      <select id="fEstadoIg" onchange="resetAndLoad()">
+        <option value="">Todos</option>
+        <option value="Revisar">Revisar</option>
+        <option value="Publicar">Publicar</option>
+        <option value="Publicado">Publicado</option>
+        <option value="Error">Error</option>
+        <option value="Cancelada">Cancelada</option>
+        <option value="Descartado">Descartado</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Fotos</label>
+      <select id="fConFotos" onchange="resetAndLoad()">
+        <option value="">Todos</option>
+        <option value="1">Solo con fotos</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>URL IG</label>
+      <select id="fUrlIg" onchange="resetAndLoad()">
+        <option value="">Todos</option>
+        <option value="con">Con URL</option>
+        <option value="sin">Sin URL</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Orden</label>
+      <select id="fOrden" onchange="resetAndLoad()">
+        <option value="tipo_asc">Tipo, Plataforma, Nombre</option>
+        <option value="id_desc">ID Desc</option>
+        <option value="id_asc">ID Asc</option>
+        <option value="fecha_pub_desc">F. Pub Desc</option>
+        <option value="fecha_pub_asc">F. Pub Asc</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>&nbsp;</label>
+      <button class="filter-btn" onclick="clearFilters()">Limpiar</button>
+    </div>
+  </div>
+
+  <div class="table-wrap">
+    <div id="tableContent"><div class="loading-state">Cargando...</div></div>
+  </div>
+  <div id="scrollSentinel" style="height:1px"></div>
+</div>
+
+<!-- Toast container -->
+<div id="toast-container"></div>
+
+<div class="foto-preview" id="fotoPreview"><img src="" alt=""></div>
+
+<!-- Modal Publicación -->
+<div class="modal-overlay" id="modalPublicacion">
+  <div class="modal-backdrop" onclick="closeModal('modalPublicacion')"></div>
+  <div class="modal-body">
+    <h2>Editar Publicación — <span id="mpNombre"></span></h2>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Estado IG</label>
+        <select id="mpEstado">
+          <option value="Revisar">Revisar</option>
+          <option value="Publicar">Publicar</option>
+          <option value="Publicado">Publicado</option>
+          <option value="Error">Error</option>
+          <option value="Cancelada">Cancelada</option>
+          <option value="Descartado">Descartado</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Fecha Pub. IG</label>
+        <input type="datetime-local" id="mpFecha">
+      </div>
+      <div class="form-group">
+        <label>Fecha Prevista</label>
+        <input type="datetime-local" id="mpFechaPrevista">
+      </div>
+      <div class="form-group">
+        <label>IG Post ID</label>
+        <input type="text" id="mpPostId" placeholder="ID del post...">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>URL Instagram</label>
+        <input type="text" id="mpIgUrl" placeholder="https://www.instagram.com/p/...">
+      </div>
+    </div>
+    <div class="form-group" style="margin-bottom:10px">
+      <label>Texto de la publicación</label>
+      <textarea id="mpTexto" rows="8" placeholder="Escribe el texto que acompañará la publicación..."></textarea>
+    </div>
+    <div style="margin-top:8px;display:flex;align-items:center;gap:8px">
+      <button class="btn-secondary btn-sm" onclick="openFotosModal(currentColeccionId)">Gestionar Fotos</button>
+      <span style="font-size:12px;color:var(--muted)" id="mpFotosInfo"></span>
+    </div>
+    <div class="ai-section">
+      <div class="ai-header">
+        <span class="ai-label">🤖 Descripción IA</span>
+        <button class="btn-primary btn-sm" onclick="generarDescripcionIA()" id="btnGenerarIA">Generar con Gemini</button>
+      </div>
+      <textarea id="mpIATexto" rows="12" placeholder="El texto generado por Gemini aparecerá aquí..." readonly></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('modalPublicacion')">Cancelar</button>
+      <button class="btn-primary" onclick="savePublicacion()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Fotos -->
+<div class="modal-overlay" id="modalFotos">
+  <div class="modal-backdrop" onclick="closeModal('modalFotos')"></div>
+  <div class="modal-body" style="max-width:960px">
+    <h2>Gestión de Fotos — <span id="mfNombre"></span></h2>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:10px">
+      Haz clic en las fotos para seleccionarlas. Usa los números en la esquina para ordenar el carrusel.
+    </p>
+    <div style="margin-bottom:10px;display:flex;gap:8px">
+      <button class="btn-secondary btn-sm" onclick="selectAllFotos()">Seleccionar todas</button>
+      <button class="btn-secondary btn-sm" onclick="deselectAllFotos()">Deseleccionar todas</button>
+      <button class="btn-primary btn-sm" onclick="autoOrderFotos()">Auto-ordenar</button>
+    </div>
+    <div class="foto-grid" id="fotoGrid"><div class="loading-state">Cargando fotos...</div></div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('modalFotos')">Cancelar</button>
+      <button class="btn-primary" onclick="saveFotos()">Guardar Selección</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Token -->
+<div class="modal-overlay" id="modalToken">
+  <div class="modal-backdrop" onclick="closeModal('modalToken')"></div>
+  <div class="modal-body" style="max-width:520px">
+    <h2>Token de Instagram</h2>
+    <div class="token-section">
+      <h3>Token Actual</h3>
+      <div class="token-display" id="currentTokenDisplay"></div>
+      <div style="font-size:12px;color:var(--muted)" id="currentTokenInfo"></div>
+    </div>
+    <div class="form-group" style="margin-bottom:10px">
+      <label>Access Token</label>
+      <input type="text" id="tkAccessToken" placeholder="Pega aquí el token de acceso...">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Expira en</label>
+        <input type="datetime-local" id="tkExpiresAt">
+      </div>
+      <div class="form-group">
+        <label>IG User ID</label>
+        <input type="text" id="tkIgUserId" placeholder="User ID...">
+      </div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-secondary" onclick="closeModal('modalToken')">Cerrar</button>
+      <button class="btn-primary" onclick="saveToken()">Guardar Token</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// URLs de la API. Si la web se sirve desde la misma API Flask usa relativas.
+const API = 'http://192.168.1.55:9501/api/ig';
+const API_BASE = 'http://192.168.1.55:9501/api';
+
+let currentPage = 1;
+let totalPages = 1;
+let currentColeccionId = null;
+let currentColeccionTipo = '';
+let currentColeccionPlataforma = '';
+let fotosEstado = {};
+let searchTimeout = null;
+let isLoading = false;
+let hasMore = true;
+let allItems = [];
+
+document.addEventListener('DOMContentLoaded', () => {
+  loadFilters();
+  loadToken();
+  loadMore();
+
+  // Infinite scroll: detecta scroll cerca del final
+  window.addEventListener('scroll', () => {
+    if (isLoading || !hasMore) return;
+    const scrollBottom = window.innerHeight + window.scrollY;
+    const docHeight = document.documentElement.offsetHeight;
+    if (docHeight - scrollBottom < 400) {
+      loadMore();
+    }
+  });
+});
+
+async function apiGet(url) {
+  const r = await fetch(url);
+  if (!r.ok) throw new Error(r.statusText);
+  return r.json();
+}
+
+async function apiPut(url, data) {
+  const r = await fetch(url, { method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) });
+  if (!r.ok) throw new Error(r.statusText);
+  return r.json();
+}
+
+async function apiPost(url, data) {
+  const r = await fetch(url, { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(data) });
+  if (!r.ok) throw new Error(r.statusText);
+  return r.json();
+}
+
+async function loadFilters() {
+  try {
+    const [plats, tipos, estados] = await Promise.all([
+      apiGet(API_BASE + '/plataformas'),
+      apiGet(API_BASE + '/tiposbase'),
+      apiGet(API_BASE + '/estados'),
+    ]);
+    fillSelect('fPlataforma', plats);
+    fillSelect('fTipo', tipos);
+    fillSelect('fEstadoGen', estados.filter(e => e.descripcion).map(e => ({id:e.id, nombre:e.descripcion})));
+  } catch(e) { console.error('Error cargando filtros', e); }
+}
+
+function fillSelect(id, items, valKey='id', txtKey='nombre') {
+  const sel = document.getElementById(id);
+  sel.querySelectorAll('option:not([value=""])').forEach(o => o.remove());
+  items.forEach(i => {
+    const o = document.createElement('option');
+    o.value = i[valKey];
+    o.textContent = i[txtKey];
+    sel.appendChild(o);
+  });
+}
+
+function debounceSearch() {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(resetAndLoad, 300);
+}
+
+function clearFilters() {
+  ['fNombre','fPlataforma','fTipo','fEstadoGen','fEstadoIg','fConFotos','fUrlIg'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('fOrden').value = 'tipo_asc';
+  resetAndLoad();
+}
+
+function resetAndLoad() {
+  currentPage = 1;
+  allItems = [];
+  hasMore = true;
+  document.getElementById('tableContent').innerHTML = '';
+  loadMore();
+}
+
+async function loadMore() {
+  if (isLoading || !hasMore) return;
+  isLoading = true;
+  if (currentPage === 1) {
+    document.getElementById('tableContent').innerHTML = '<div class="loading-state">Cargando...</div>';
+  }
+
+  const params = new URLSearchParams();
+  params.set('pagina', currentPage);
+  const nombre = document.getElementById('fNombre').value.trim();
+  if (nombre) params.set('nombre', nombre);
+  const plataforma = document.getElementById('fPlataforma').value;
+  if (plataforma) params.set('plataforma_id', plataforma);
+  const tipo = document.getElementById('fTipo').value;
+  if (tipo) params.set('tipo_base_id', tipo);
+  const estadoGen = document.getElementById('fEstadoGen').value;
+  if (estadoGen) params.set('estado_gen_id', estadoGen);
+  const estadoIg = document.getElementById('fEstadoIg').value;
+  if (estadoIg) params.set('ig_estado', estadoIg);
+  const orden = document.getElementById('fOrden').value;
+  if (orden) params.set('orden', orden);
+  if (document.getElementById('fConFotos').value) params.set('con_fotos', '1');
+  const urlIg = document.getElementById('fUrlIg').value;
+  if (urlIg === 'con') params.set('con_ig', '1');
+  if (urlIg === 'sin') params.set('sin_ig', '1');
+
+  try {
+    const data = await apiGet(API + '/publicaciones?' + params.toString());
+    allItems = allItems.concat(data.items);
+    totalPages = data.total_paginas;
+    hasMore = currentPage < totalPages;
+    currentPage++;
+
+    if (allItems.length === 0) {
+      document.getElementById('tableContent').innerHTML = '<div class="empty-state">No se encontraron resultados</div>';
+    } else {
+      renderTable(allItems);
+      // Remove old sentinel marker, re-add at end
+      const old = document.getElementById('scrollLoading');
+      if (old) old.remove();
+      if (hasMore) {
+        const tbody = document.querySelector('#tableContent table tbody');
+        if (tbody) {
+          const tr = document.createElement('tr');
+          tr.id = 'scrollLoading';
+          tr.innerHTML = '<td colspan="20" style="text-align:center;padding:16px;color:var(--muted)">Cargando más...</td>';
+          tbody.appendChild(tr);
+        }
+      }
+    }
+    updateStatsCount(data.total);
+    // Si la pantalla no se llena, cargar más automáticamente
+    isLoading = false;
+    setTimeout(() => {
+      if (!isLoading && hasMore && document.documentElement.offsetHeight <= window.innerHeight + 100) {
+        loadMore();
+      }
+    }, 100);
+  } catch(e) {
+    if (allItems.length === 0) {
+      document.getElementById('tableContent').innerHTML = '<div class="empty-state">Error al cargar datos</div>';
+    }
+  }
+  isLoading = false;
+}
+
+function updateStatsCount(total) {
+  // Stats basadas en el total real del servidor, aproximamos con lo que tenemos
+  const publicados = allItems.filter(i => i.ig_estado === 'Publicado').length;
+  const pendientes = allItems.filter(i => i.ig_estado === 'Publicar' || i.ig_estado === 'Error').length;
+  const sinIg = allItems.filter(i => !i.ig).length;
+  document.getElementById('statsBar').innerHTML = `
+    <div class="stat-card"><div class="stat-num">${total}</div><div class="stat-label">Total</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:var(--green)">${publicados}</div><div class="stat-label">Publicados</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:var(--manual)">${pendientes}</div><div class="stat-label">Pendientes</div></div>
+    <div class="stat-card"><div class="stat-num" style="color:var(--muted)">${sinIg}</div><div class="stat-label">Sin URL IG</div></div>
+  `;
+}
+
+function renderTable(items) {
+  if (!items.length) {
+    document.getElementById('tableContent').innerHTML = '<div class="empty-state">No se encontraron resultados</div>';
+    return;
+  }
+  const cols = [
+    {key:'tipo', label:'Tipo'},
+    {key:'plataforma', label:'Plataforma'},
+    {key:'nombre', label:'Nombre'},
+    {key:'edicion', label:'Edición'},
+    {key:'ig', label:'URL IG'},
+    {key:'ig_estado', label:'Estado IG'},
+    {key:'fecha_ig_publicacion', label:'F. Pub IG'},
+    {key:'idioma', label:'Idioma'},
+    {key:'region', label:'Región'},
+    {key:'estado_general', label:'Estado'},
+    {key:'estado_caja', label:'Caja'},
+    {key:'fecha_reserva', label:'Reserva'},
+    {key:'fecha_compra', label:'Compra'},
+    {key:'fecha_recibo', label:'Entrega'},
+    {key:'envio', label:'Envío'},
+    {key:'coste', label:'Total'},
+    {key:'unidades', label:'Uds'},
+    {key:'tienda', label:'Tienda'},
+    {key:'url', label:'URL'},
+    {key:'total_fotos', label:'Fotos'},
+  ];
+
+  let html = '<table><thead><tr>';
+  cols.forEach(c => html += `<th>${c.label}</th>`);
+  html += '</tr></thead><tbody>';
+
+  items.forEach(item => {
+    html += '<tr style="cursor:pointer" onclick="openPublicacionModal(' + item.id + ')">';
+    cols.forEach(c => {
+      if (c.key === 'ig_estado') {
+        html += `<td><span class="estado-badge estado-${item[c.key]}">${item[c.key]}</span></td>`;
+      } else if (c.key === 'url' && item[c.key]) {
+        html += `<td onclick="event.stopPropagation()"><a href="${esc(item[c.key])}" target="_blank">🔗</a></td>`;
+      } else if (c.key === 'ig' && item[c.key]) {
+        html += `<td onclick="event.stopPropagation()"><a href="${esc(item[c.key])}" target="_blank">🔗</a></td>`;
+      } else if (c.key === 'total_fotos') {
+        html += `<td style="text-align:center">${item[c.key] || 0}</td>`;
+      } else if (c.key === 'fecha_reserva' || c.key === 'fecha_compra' || c.key === 'fecha_recibo' || c.key === 'fecha_ig_publicacion') {
+        html += `<td>${formatDate(item[c.key])}</td>`;
+      } else if (c.key === 'envio' || c.key === 'coste') {
+        html += `<td>${item[c.key] != null ? parseFloat(item[c.key]).toFixed(2) + '€' : '-'}</td>`;
+      } else {
+        html += `<td>${item[c.key] || '-'}</td>`;
+      }
+    });
+    html += '</tr>';
+  });
+  html += '</tbody></table>';
+  document.getElementById('tableContent').innerHTML = html;
+}
+
+function openModal(id) { document.getElementById(id).classList.add('active'); }
+function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+
+async function openPublicacionModal(coleccionId) {
+  currentColeccionId = coleccionId;
+  try {
+    const data = await apiGet(API + '/publicacion/' + coleccionId);
+    const c = data.coleccion || {};
+    document.getElementById('mpNombre').textContent = c.base ? c.base.nombre : ('ID: ' + coleccionId);
+    document.getElementById('mpEstado').value = data.estado || 'Revisar';
+    document.getElementById('mpTexto').value = data.texto_publicacion || '';
+    document.getElementById('mpFecha').value = data.fecha_ig_publicacion ? data.fecha_ig_publicacion.slice(0,16) : '';
+    document.getElementById('mpFechaPrevista').value = data.fecha_prevista_publicacion ? data.fecha_prevista_publicacion.slice(0,16) : '';
+    document.getElementById('mpPostId').value = data.ig_post_id || '';
+    document.getElementById('mpIgUrl').value = (c.ig) || '';
+    currentColeccionTipo = c.base ? c.base.tipo || '' : '';
+    currentColeccionPlataforma = c.plataforma ? c.plataforma.nombre || '' : '';
+    document.getElementById('mpIATexto').value = '';
+    try {
+      const selFotos = await apiGet(API + '/fotos/' + coleccionId + '/seleccion');
+      document.getElementById('mpFotosInfo').textContent = selFotos.length ? `${selFotos.length} fotos seleccionadas` : 'Sin fotos seleccionadas';
+    } catch(e) { document.getElementById('mpFotosInfo').textContent = ''; }
+    openModal('modalPublicacion');
+  } catch(e) { toast('Error al cargar la publicación', 'error'); }
+}
+
+async function savePublicacion() {
+  const data = {
+    estado: document.getElementById('mpEstado').value,
+    texto_publicacion: document.getElementById('mpTexto').value,
+    fecha_ig_publicacion: document.getElementById('mpFecha').value || null,
+    fecha_prevista_publicacion: document.getElementById('mpFechaPrevista').value || null,
+    ig_post_id: document.getElementById('mpPostId').value || null,
+    ig: document.getElementById('mpIgUrl').value || null,
+  };
+  try {
+    await apiPut(API + '/publicacion/' + currentColeccionId, data);
+    closeModal('modalPublicacion');
+    toast('Publicación guardada correctamente', 'success');
+    resetAndLoad();
+  } catch(e) { toast('Error al guardar', 'error'); }
+}
+
+async function generarDescripcionIA() {
+  const nombre = document.getElementById('mpNombre').textContent.trim();
+  const btn = document.getElementById('btnGenerarIA');
+  const ta = document.getElementById('mpIATexto');
+  btn.disabled = true;
+  btn.textContent = 'Generando...';
+  ta.value = '';
+  try {
+    const data = await apiPost(API + '/generar-descripcion', {
+      nombre: nombre,
+      plataforma: currentColeccionPlataforma,
+      tipo: currentColeccionTipo,
+    });
+    if (data.error) {
+      toast('Error: ' + data.error, 'error');
+      ta.value = 'Error: ' + data.error;
+    } else {
+      ta.value = data.texto || '';
+      ta.style.color = 'var(--text)';
+    }
+  } catch(e) {
+    toast('Error al generar descripción', 'error');
+    ta.value = 'Error de conexión con el servidor';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Generar con Gemini';
+  }
+}
+
+async function openFotosModal(coleccionId) {
+  currentColeccionId = coleccionId;
+  openModal('modalFotos');
+  document.getElementById('fotoGrid').innerHTML = '<div class="loading-state">Cargando fotos...</div>';
+  document.getElementById('mfNombre').textContent = document.getElementById('mpNombre').textContent;
+  try {
+    const fotos = await apiGet(API + '/fotos/' + coleccionId);
+    fotosEstado = {};
+    fotos.forEach(f => {
+      fotosEstado[f.id] = { seleccionada: f.seleccionada, orden: f.orden, nombre: f.nombre_original, almacenado: f.nombre_almacenado };
+    });
+    renderFotosGrid(fotos);
+  } catch(e) { document.getElementById('fotoGrid').innerHTML = '<div class="empty-state">Error al cargar fotos</div>'; }
+}
+
+function renderFotosGrid(fotos) {
+  if (!fotos.length) {
+    document.getElementById('fotoGrid').innerHTML = '<div class="empty-state">Esta colección no tiene fotos</div>';
+    return;
+  }
+  let html = '';
+  fotos.forEach(f => {
+    const sel = fotosEstado[f.id];
+    html += `
+      <div class="foto-card${sel.seleccionada ? ' selected' : ''}" onclick="toggleFoto(${f.id})" id="fc_${f.id}"
+           onmouseenter="showFotoPreview(event, ${f.id})" onmousemove="moveFotoPreview(event)" onmouseleave="hideFotoPreview()">
+        <div class="check-overlay"></div>
+        <div class="foto-orden" id="fo_${f.id}">${sel.orden != null ? sel.orden : ''}</div>
+        <img src="${API_BASE}/fichero/id/${f.id}" alt="${esc(f.nombre_original)}">
+        <div class="foto-info"><div class="foto-name">${esc(f.nombre_original)}</div></div>
+      </div>`;
+  });
+  document.getElementById('fotoGrid').innerHTML = html;
+}
+
+function toggleFoto(ficheroId) {
+  const state = fotosEstado[ficheroId];
+  state.seleccionada = !state.seleccionada;
+  if (!state.seleccionada) state.orden = null;
+  const card = document.getElementById('fc_' + ficheroId);
+  if (state.seleccionada) {
+    card.classList.add('selected');
+  } else {
+    card.classList.remove('selected');
+    document.getElementById('fo_' + ficheroId).textContent = '';
+  }
+  renumberSelected();
+}
+
+function showFotoPreview(e, ficheroId) {
+  const preview = document.getElementById('fotoPreview');
+  const img = preview.querySelector('img');
+  img.src = API_BASE + '/fichero/id/' + ficheroId;
+  preview.style.display = 'block';
+  moveFotoPreview(e);
+}
+
+function moveFotoPreview(e) {
+  const preview = document.getElementById('fotoPreview');
+  let x = e.clientX + 18;
+  let y = e.clientY + 18;
+  if (x + 370 > window.innerWidth) x = e.clientX - 380;
+  if (y + 370 > window.innerHeight) y = e.clientY - 380;
+  preview.style.left = x + 'px';
+  preview.style.top = y + 'px';
+}
+
+function hideFotoPreview() {
+  document.getElementById('fotoPreview').style.display = 'none';
+}
+
+function selectAllFotos() {
+  Object.keys(fotosEstado).forEach(id => { fotosEstado[id].seleccionada = true; });
+  Object.keys(fotosEstado).forEach(id => document.getElementById('fc_' + id).classList.add('selected'));
+  renumberSelected();
+}
+
+function deselectAllFotos() {
+  Object.keys(fotosEstado).forEach(id => {
+    fotosEstado[id].seleccionada = false; fotosEstado[id].orden = null;
+    document.getElementById('fc_' + id).classList.remove('selected');
+    document.getElementById('fo_' + id).textContent = '';
+  });
+}
+
+function autoOrderFotos() { renumberSelected(); }
+
+function renumberSelected() {
+  let orden = 1;
+  const sorted = Object.entries(fotosEstado)
+    .filter(([_, s]) => s.seleccionada)
+    .sort((a, b) => (a[1].orden != null ? a[1].orden : 999999) - (b[1].orden != null ? b[1].orden : 999999));
+  sorted.forEach(([id, s]) => {
+    s.orden = orden;
+    const el = document.getElementById('fo_' + id);
+    if (el) el.textContent = orden;
+    orden++;
+  });
+}
+
+async function saveFotos() {
+  const payload = [];
+  Object.entries(fotosEstado).forEach(([ficheroId, state]) => {
+    if (state.seleccionada && state.orden != null) {
+      payload.push({ fichero_id: parseInt(ficheroId), orden: state.orden });
+    }
+  });
+  try {
+    await apiPut(API + '/fotos/' + currentColeccionId, payload);
+    closeModal('modalFotos');
+    toast('Selección de fotos guardada', 'success');
+    document.getElementById('mpFotosInfo').textContent = payload.length ? `${payload.length} fotos seleccionadas` : 'Sin fotos seleccionadas';
+  } catch(e) { toast('Error al guardar fotos', 'error'); }
+}
+
+async function loadToken() {
+  try {
+    const data = await apiGet(API + '/token');
+    if (data.access_token) {
+      document.getElementById('currentTokenDisplay').classList.add('visible');
+      document.getElementById('currentTokenDisplay').textContent = maskToken(data.access_token);
+      document.getElementById('currentTokenInfo').innerHTML =
+        `User ID: ${data.ig_user_id || '-'} | Expira: ${formatDate(data.expires_at)} | Creado: ${formatDate(data.fecha_creacion)}`;
+      document.getElementById('tkAccessToken').value = data.access_token;
+    }
+  } catch(e) { /* ignore */ }
+}
+
+function maskToken(t) {
+  if (!t) return '-';
+  if (t.length <= 20) return t.slice(0, 10) + '...';
+  return t.slice(0, 15) + '...' + t.slice(-5);
+}
+
+function showTokenModal() { loadToken(); openModal('modalToken'); }
+
+async function saveToken() {
+  const data = {
+    access_token: document.getElementById('tkAccessToken').value,
+    expires_at: document.getElementById('tkExpiresAt').value || null,
+    ig_user_id: document.getElementById('tkIgUserId').value || null,
+  };
+  if (!data.access_token) { toast('El token es obligatorio', 'error'); return; }
+  try {
+    await apiPost(API + '/token', data);
+    closeModal('modalToken');
+    toast('Token guardado correctamente', 'success');
+    loadToken();
+  } catch(e) { toast('Error al guardar el token', 'error'); }
+}
+
+function esc(str) {
+  if (!str) return '';
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function formatDate(d) {
+  if (!d) return '-';
+  const date = new Date(d);
+  if (isNaN(date.getTime())) return d.slice(0,10);
+  const dd = String(date.getDate()).padStart(2, '0');
+  const mm = String(date.getMonth() + 1).padStart(2, '0');
+  const yyyy = date.getFullYear();
+  return `${dd}/${mm}/${yyyy}`;
+}
+
+function toast(msg, type) {
+  const container = document.getElementById('toast-container');
+  const el = document.createElement('div');
+  el.className = `toast toast-${type}`;
+  el.textContent = msg;
+  container.appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+</script>
+</body>
+</html>

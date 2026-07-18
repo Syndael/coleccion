@@ -2,7 +2,7 @@ import logging
 import os
 from app.utils import constantes
 
-from flask import Flask, request
+from flask import Flask, request, send_from_directory
 from flask_cors import CORS
 from app.utils.datos import db
 from app.utils.config_parser_utils import ConfigParser
@@ -25,6 +25,7 @@ from app.service.tienda_service import TiendaService
 from app.service.tipo_base_service import TipoBaseService
 from app.service.tipo_rom_service import TipoRomService
 from app.service.steam_service import SteamService
+from app.service.ig_service import IgService
 
 _config = ConfigParser()
 mssql = {'host': _config.get_value(constantes.HOST),
@@ -396,7 +397,81 @@ def import_steam_games():
 
 
 
+# ── Instagram ──────────────────────────────────────────────────────
+_ig_service = IgService()
+
+
+@app.route('/api/ig/publicaciones', methods=['GET'])
+def get_ig_publicaciones():
+    return _ig_service.get_publicaciones(request)
+
+
+@app.route('/api/ig/publicacion/<id>', methods=['GET'])
+def get_ig_publicacion(id):
+    return _ig_service.get_publicacion(id)
+
+
+@app.route('/api/ig/publicacion/<id>', methods=['PUT'])
+def update_ig_publicacion(id):
+    return _ig_service.update_publicacion(request, id)
+
+
+@app.route('/api/ig/fotos/<coleccion_id>', methods=['GET'])
+def get_ig_fotos(coleccion_id):
+    return _ig_service.get_fotos_coleccion(coleccion_id)
+
+
+@app.route('/api/ig/fotos/<coleccion_id>', methods=['PUT'])
+def save_ig_fotos(coleccion_id):
+    return _ig_service.save_fotos_seleccion(request, coleccion_id)
+
+
+@app.route('/api/ig/fotos/<coleccion_id>/seleccion', methods=['GET'])
+def get_ig_fotos_seleccion(coleccion_id):
+    return _ig_service.get_fotos_seleccion(coleccion_id)
+
+
+@app.route('/api/ig/token', methods=['GET'])
+def get_ig_token():
+    return _ig_service.get_token()
+
+
+@app.route('/api/ig/token', methods=['POST'])
+def save_ig_token():
+    return _ig_service.save_token(request)
+
+
+@app.route('/api/ig/pendientes', methods=['GET'])
+def get_ig_pendientes():
+    return _ig_service.get_pendientes_publicar()
+
+
+@app.route('/api/ig/publicado/<coleccion_id>', methods=['POST'])
+def marcar_ig_publicado(coleccion_id):
+    data = request.get_json() or {}
+    return _ig_service.marcar_publicado(coleccion_id, data.get('ig_post_id'), data.get('ig_permalink'))
+
+
+@app.route('/api/ig/error/<coleccion_id>', methods=['POST'])
+def marcar_ig_error(coleccion_id):
+    data = request.get_json()
+    return _ig_service.marcar_error(coleccion_id, data.get('error', 'Error desconocido'))
+
+
+@app.route('/api/ig/generar-descripcion', methods=['POST'])
+def generar_descripcion_ia():
+    return _ig_service.generar_descripcion_ia(request)
+
+
 # default
 @app.route('/')
 def index():
     return "<span style='color:green'>ApiColeccion</span>"
+
+
+@app.route('/ig/')
+@app.route('/ig/<path:filename>')
+def serve_ig_web(filename='index.html'):
+    import os as _os
+    webig_dir = _os.path.join(_os.path.dirname(_os.path.abspath(__file__)), 'static', 'ig')
+    return send_from_directory(webig_dir, filename)
