@@ -9,7 +9,7 @@ class IgPublicacion(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     coleccion_id = db.Column(db.Integer, db.ForeignKey('COLECCION.id'))
-    estado = db.Column(db.Enum('Revisar', 'Publicar', 'Publicado', 'Error', 'Cancelada', 'Descartado'))
+    estado = db.Column(db.Enum('Revisar', 'Sacar Fotos', 'Publicar', 'Publicado', 'Error', 'Cancelada', 'Descartado'))
     texto_publicacion = db.Column(db.Text)
     fecha_ig_publicacion = db.Column(db.DateTime)
     fecha_prevista_publicacion = db.Column(db.DateTime)

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gestión IG — Colección</title>
+<title>Colección juegos publisher</title>
 <style>
 :root {
   color-scheme: dark;
@@ -84,18 +84,6 @@ h1 span { color: var(--cyan-strong); }
 }
 .btn-danger:hover { background: rgba(239, 68, 68, .12); }
 
-/* Stats */
-.stats-bar { display: grid; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); gap: 8px; margin-bottom: 16px; }
-.stat-card {
-  background: var(--surface-strong);
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  padding: 8px 12px;
-  text-align: center;
-}
-.stat-card .stat-num { font-size: 20px; font-weight: 700; color: var(--text); }
-.stat-card .stat-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; margin-top: 2px; }
-
 /* Filters */
 .filters {
   display: flex;
@@ -175,6 +163,7 @@ tr:hover td { background: var(--surface-soft); }
   border: 1px solid var(--border);
 }
 .estado-Revisar { background: transparent; color: var(--muted); }
+.estado-Sacar-Fotos { background: rgba(168, 85, 247, .12); color: #a855f7; border-color: #a855f7; }
 .estado-Publicar { background: var(--cyan-soft); color: var(--cyan); border-color: var(--cyan-strong); }
 .estado-Publicado { background: rgba(34, 197, 94, .12); color: var(--green); border-color: var(--green); }
 .estado-Error { background: rgba(239, 68, 68, .12); color: var(--red); border-color: var(--red); }
@@ -397,14 +386,12 @@ a:hover { text-decoration: underline; }
 
 <div class="app-shell">
   <header class="topbar">
-    <h1><span>IG</span> — Gestión de Publicaciones</h1>
+    <h1>Colección juegos publisher</h1>
     <div style="display:flex;gap:8px">
       <button class="btn-secondary btn-sm" onclick="showTokenModal()">Token IG</button>
       <button class="btn-primary btn-sm" onclick="resetAndLoad()">Actualizar</button>
     </div>
   </header>
-
-  <div class="stats-bar" id="statsBar"></div>
 
   <div class="filters">
     <div class="filter-group">
@@ -428,6 +415,7 @@ a:hover { text-decoration: underline; }
       <select id="fEstadoIg" onchange="resetAndLoad()">
         <option value="">Todos</option>
         <option value="Revisar">Revisar</option>
+        <option value="Sacar Fotos">Sacar Fotos</option>
         <option value="Publicar">Publicar</option>
         <option value="Publicado">Publicado</option>
         <option value="Error">Error</option>
@@ -456,6 +444,8 @@ a:hover { text-decoration: underline; }
         <option value="tipo_asc">Tipo, Plataforma, Nombre</option>
         <option value="id_desc">ID Desc</option>
         <option value="id_asc">ID Asc</option>
+        <option value="fecha_prevista_desc">F. Prevista Desc</option>
+        <option value="fecha_prevista_pub_desc">F. Prevista + F. Pub Desc</option>
         <option value="fecha_pub_desc">F. Pub Desc</option>
         <option value="fecha_pub_asc">F. Pub Asc</option>
       </select>
@@ -487,6 +477,7 @@ a:hover { text-decoration: underline; }
         <label>Estado IG</label>
         <select id="mpEstado">
           <option value="Revisar">Revisar</option>
+          <option value="Sacar Fotos">Sacar Fotos</option>
           <option value="Publicar">Publicar</option>
           <option value="Publicado">Publicado</option>
           <option value="Error">Error</option>
@@ -668,7 +659,7 @@ function debounceSearch() {
 
 function clearFilters() {
   ['fNombre','fPlataforma','fTipo','fEstadoGen','fEstadoIg','fConFotos','fUrlIg'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('fOrden').value = 'tipo_asc';
+  document.getElementById('fOrden').value = 'fecha_prevista_pub_desc';
   resetAndLoad();
 }
 
@@ -708,6 +699,7 @@ async function loadMore() {
 
   try {
     const data = await apiGet(API + '/publicaciones?' + params.toString());
+    await enrichPubTimes(data.items);
     allItems = allItems.concat(data.items);
     totalPages = data.total_paginas;
     hasMore = currentPage < totalPages;
@@ -725,13 +717,11 @@ async function loadMore() {
         if (tbody) {
           const tr = document.createElement('tr');
           tr.id = 'scrollLoading';
-          tr.innerHTML = '<td colspan="20" style="text-align:center;padding:16px;color:var(--muted)">Cargando más...</td>';
+          tr.innerHTML = '<td colspan="18" style="text-align:center;padding:16px;color:var(--muted)">Cargando más...</td>';
           tbody.appendChild(tr);
         }
       }
     }
-    updateStatsCount(data.total);
-    // Si la pantalla no se llena, cargar más automáticamente
     isLoading = false;
     setTimeout(() => {
       if (!isLoading && hasMore && document.documentElement.offsetHeight <= window.innerHeight + 100) {
@@ -746,19 +736,6 @@ async function loadMore() {
   isLoading = false;
 }
 
-function updateStatsCount(total) {
-  // Stats basadas en el total real del servidor, aproximamos con lo que tenemos
-  const publicados = allItems.filter(i => i.ig_estado === 'Publicado').length;
-  const pendientes = allItems.filter(i => i.ig_estado === 'Publicar' || i.ig_estado === 'Error').length;
-  const sinIg = allItems.filter(i => !i.ig).length;
-  document.getElementById('statsBar').innerHTML = `
-    <div class="stat-card"><div class="stat-num">${total}</div><div class="stat-label">Total</div></div>
-    <div class="stat-card"><div class="stat-num" style="color:var(--green)">${publicados}</div><div class="stat-label">Publicados</div></div>
-    <div class="stat-card"><div class="stat-num" style="color:var(--manual)">${pendientes}</div><div class="stat-label">Pendientes</div></div>
-    <div class="stat-card"><div class="stat-num" style="color:var(--muted)">${sinIg}</div><div class="stat-label">Sin URL IG</div></div>
-  `;
-}
-
 function renderTable(items) {
   if (!items.length) {
     document.getElementById('tableContent').innerHTML = '<div class="empty-state">No se encontraron resultados</div>';
@@ -771,20 +748,18 @@ function renderTable(items) {
     {key:'edicion', label:'Edición'},
     {key:'ig', label:'URL IG'},
     {key:'ig_estado', label:'Estado IG'},
+    {key:'total_fotos', label:'Fotos'},
+    {key:'fecha_prevista_publicacion', label:'F. Prevista'},
     {key:'fecha_ig_publicacion', label:'F. Pub IG'},
     {key:'idioma', label:'Idioma'},
     {key:'region', label:'Región'},
     {key:'estado_general', label:'Estado'},
     {key:'estado_caja', label:'Caja'},
-    {key:'fecha_reserva', label:'Reserva'},
-    {key:'fecha_compra', label:'Compra'},
-    {key:'fecha_recibo', label:'Entrega'},
-    {key:'envio', label:'Envío'},
+    {key:'fecha_recibo', label:'Recibido'},
     {key:'coste', label:'Total'},
     {key:'unidades', label:'Uds'},
     {key:'tienda', label:'Tienda'},
     {key:'url', label:'URL'},
-    {key:'total_fotos', label:'Fotos'},
   ];
 
   let html = '<table><thead><tr>';
@@ -795,16 +770,18 @@ function renderTable(items) {
     html += '<tr style="cursor:pointer" onclick="openPublicacionModal(' + item.id + ')">';
     cols.forEach(c => {
       if (c.key === 'ig_estado') {
-        html += `<td><span class="estado-badge estado-${item[c.key]}">${item[c.key]}</span></td>`;
+        html += `<td><span class="estado-badge estado-${item[c.key].replace(/ /g, '-')}">${item[c.key]}</span></td>`;
       } else if (c.key === 'url' && item[c.key]) {
         html += `<td onclick="event.stopPropagation()"><a href="${esc(item[c.key])}" target="_blank">🔗</a></td>`;
       } else if (c.key === 'ig' && item[c.key]) {
         html += `<td onclick="event.stopPropagation()"><a href="${esc(item[c.key])}" target="_blank">🔗</a></td>`;
       } else if (c.key === 'total_fotos') {
         html += `<td style="text-align:center">${item[c.key] || 0}</td>`;
-      } else if (c.key === 'fecha_reserva' || c.key === 'fecha_compra' || c.key === 'fecha_recibo' || c.key === 'fecha_ig_publicacion') {
+      } else if (c.key === 'fecha_prevista_publicacion' || c.key === 'fecha_ig_publicacion') {
         html += `<td>${formatDate(item[c.key])}</td>`;
-      } else if (c.key === 'envio' || c.key === 'coste') {
+      } else if (c.key === 'fecha_recibo') {
+        html += `<td>${formatDate(item[c.key], true)}</td>`;
+      } else if (c.key === 'coste') {
         html += `<td>${item[c.key] != null ? parseFloat(item[c.key]).toFixed(2) + '€' : '-'}</td>`;
       } else {
         html += `<td>${item[c.key] || '-'}</td>`;
@@ -814,6 +791,19 @@ function renderTable(items) {
   });
   html += '</tbody></table>';
   document.getElementById('tableContent').innerHTML = html;
+}
+
+async function enrichPubTimes(items) {
+  const needsTime = items.filter(i => i.ig_estado === 'Publicado' && i.fecha_ig_publicacion && !i.fecha_ig_publicacion.includes('T'));
+  if (!needsTime.length) return;
+  const results = await Promise.all(needsTime.map(p =>
+    apiGet(API + '/publicacion/' + p.id).catch(() => null)
+  ));
+  results.forEach((detail, idx) => {
+    if (detail && detail.fecha_ig_publicacion) {
+      needsTime[idx].fecha_ig_publicacion = detail.fecha_ig_publicacion;
+    }
+  });
 }
 
 function openModal(id) { document.getElementById(id).classList.add('active'); }
@@ -1044,14 +1034,19 @@ function esc(str) {
   return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-function formatDate(d) {
+function formatDate(d, dateOnly) {
   if (!d) return '-';
+  if (typeof d === 'string' && !d.includes('T') && dateOnly) return d.slice(0, 10).split('-').reverse().join('/');
+  if (typeof d === 'string' && !d.includes('T')) d = d + 'T00:00';
   const date = new Date(d);
-  if (isNaN(date.getTime())) return d.slice(0,10);
+  if (isNaN(date.getTime())) return d.length >= 16 ? d.slice(0,10) + ' ' + d.slice(11,16) : d.slice(0,10);
   const dd = String(date.getDate()).padStart(2, '0');
   const mm = String(date.getMonth() + 1).padStart(2, '0');
   const yyyy = date.getFullYear();
-  return `${dd}/${mm}/${yyyy}`;
+  const hh = String(date.getHours()).padStart(2, '0');
+  const min = String(date.getMinutes()).padStart(2, '0');
+  if (dateOnly) return `${dd}/${mm}/${yyyy}`;
+  return `${dd}/${mm}/${yyyy} ${hh}:${min}`;
 }
 
 function toast(msg, type) {

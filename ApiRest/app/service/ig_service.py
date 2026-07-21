@@ -19,6 +19,7 @@ from app.model.idioma_model import Idioma
 from app.model.region_model import Region
 from app.model.tienda_model import Tienda
 from app.model.tipo_base_model import TipoBase
+from app.model.tipo_fichero_model import TipoFichero
 from app.utils.datos import db
 from app.utils.config_parser_utils import ConfigParser
 from sqlalchemy import func, or_
@@ -68,8 +69,10 @@ class IgService:
             IgPublicacion.id.label('ig_publicacion_id'),
             IgPublicacion.estado.label('ig_estado'),
             IgPublicacion.texto_publicacion,
-            Coleccion.fecha_ig_publicacion,
+            IgPublicacion.fecha_ig_publicacion.label('ig_pub_fecha'),
+            Coleccion.fecha_ig_publicacion.label('col_fecha_ig'),
             IgPublicacion.ig_post_id,
+            IgPublicacion.fecha_prevista_publicacion,
             Coleccion.codigo,
         ).select_from(Coleccion)\
          .join(Base, Coleccion.base_id == Base.id)\
@@ -95,7 +98,7 @@ class IgService:
             q = q.filter(Coleccion.estado_general_id == request.args.get('estado_gen_id'))
         if request.args.get('ig_estado'):
             estados = request.args.get('ig_estado').split(',')
-            if 'Revisar' in estados:
+            if 'Revisar' in estados or 'Sacar Fotos' in estados:
                 q = q.filter(or_(IgPublicacion.estado.in_(estados), IgPublicacion.id == None))
             else:
                 q = q.filter(IgPublicacion.estado.in_(estados))
@@ -109,7 +112,8 @@ class IgService:
 
         # Conteo de fotos
         foto_count = db.session.query(Fichero.coleccion_id, func.count(Fichero.id).label('total_fotos'))\
-            .filter(Fichero.activado == 1)\
+            .join(TipoFichero, Fichero.tipo_fichero_id == TipoFichero.id)\
+            .filter(Fichero.activado == 1, TipoFichero.descripcion == 'foto')\
             .group_by(Fichero.coleccion_id).subquery()
         q = q.outerjoin(foto_count, Coleccion.id == foto_count.c.coleccion_id)
         q = q.add_columns(func.coalesce(foto_count.c.total_fotos, 0).label('total_fotos'))
@@ -120,10 +124,14 @@ class IgService:
             q = q.order_by(Coleccion.id.asc())
         elif orden == 'id_desc':
             q = q.order_by(Coleccion.id.desc())
+        elif orden == 'fecha_prevista_desc':
+            q = q.order_by(IgPublicacion.fecha_prevista_publicacion.desc(), Coleccion.id.desc())
+        elif orden == 'fecha_prevista_pub_desc':
+            q = q.order_by(IgPublicacion.fecha_prevista_publicacion.desc(), IgPublicacion.fecha_ig_publicacion.desc(), Coleccion.id.desc())
         elif orden == 'fecha_pub_desc':
-            q = q.order_by(Coleccion.fecha_ig_publicacion.desc(), Coleccion.id.desc())
+            q = q.order_by(IgPublicacion.fecha_ig_publicacion.desc(), Coleccion.id.desc())
         elif orden == 'fecha_pub_asc':
-            q = q.order_by(Coleccion.fecha_ig_publicacion.asc(), Coleccion.id.asc())
+            q = q.order_by(IgPublicacion.fecha_ig_publicacion.asc(), Coleccion.id.asc())
         else:  # tipo_asc (default): tipo, plataforma, nombre
             q = q.order_by(TipoBase.descripcion.asc(), Plataforma.nombre.asc(), Base.nombre.asc())
 
@@ -157,8 +165,9 @@ class IgService:
                 'ig_publicacion_id': r.ig_publicacion_id,
                 'ig_estado': r.ig_estado or 'Revisar',
                 'texto_publicacion': r.texto_publicacion,
-                'fecha_ig_publicacion': r.fecha_ig_publicacion.isoformat() if r.fecha_ig_publicacion else None,
+                'fecha_ig_publicacion': r.ig_pub_fecha.isoformat() if r.ig_pub_fecha else (r.col_fecha_ig.isoformat() + 'T00:00' if r.col_fecha_ig else None),
                 'ig_post_id': r.ig_post_id,
+                'fecha_prevista_publicacion': r.fecha_prevista_publicacion.isoformat() if r.fecha_prevista_publicacion else None,
                 'codigo': r.codigo,
                 'total_fotos': r.total_fotos,
             })

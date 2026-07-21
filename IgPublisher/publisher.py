@@ -18,7 +18,7 @@ import time
 import traceback
 import urllib.parse
 import urllib.request
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 import requests
 from instagrapi import Client
@@ -673,9 +673,25 @@ def process_publication(cfg, pub):
 
 
 # ── Main ───────────────────────────────────────────────────────────
+def next_run_at():
+    now = datetime.now()
+    targets = [now.replace(minute=m, second=0, microsecond=0) for m in (5, 35)]
+    future = [t for t in targets if t > now]
+    if future:
+        return min(future)
+    return now.replace(minute=5, second=0, microsecond=0) + timedelta(hours=1)
+
+
+def wait_until_next_slot():
+    target = next_run_at()
+    seconds = (target - datetime.now()).total_seconds()
+    if seconds > 0:
+        log.info(f"Próxima ejecución: {target.strftime('%H:%M')} (en {int(seconds)}s)")
+        time.sleep(seconds)
+
+
 def run():
     cfg = load_cfg()
-    interval = int(cfg.get('config', 'check_interval', fallback='300'))
     dev_mode = cfg.get('config', 'dev_mode', fallback='').lower() in ('1', 'true', 'yes', 'si')
 
     if dev_mode:
@@ -693,18 +709,18 @@ def run():
 
         log.info("=== IG Publisher iniciado ===")
 
-    log.info(f"API: {cfg.get('config', 'api_url')}  |  Intervalo: {interval}s")
+    log.info(f"API: {cfg.get('config', 'api_url')}  |  Slots: minuto 5 y 35 de cada hora")
 
     while True:
         try:
             data = api_get(cfg, '/api/ig/pendientes')
             if not data:
-                time.sleep(interval)
+                wait_until_next_slot()
                 continue
 
             publicaciones = data if isinstance(data, list) else data.get('items', [])
             if not publicaciones:
-                time.sleep(interval)
+                wait_until_next_slot()
                 continue
 
             log.info(f"Pendientes: {len(publicaciones)}")
@@ -761,7 +777,7 @@ def run():
         except Exception as e:
             log.error(f"Ciclo: {traceback.format_exc()}")
 
-        time.sleep(interval)
+        wait_until_next_slot()
 
 
 if __name__ == '__main__':
