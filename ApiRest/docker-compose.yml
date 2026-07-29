@@ -1,0 +1,14 @@
+services:
+  apirest:
+    build: .
+    image: ghcr.io/syndael/coleccion-apirest:latest
+    container_name: apirest
+    restart: unless-stopped
+    ports:
+      - "9501:80"
+    volumes:
+      - /volume1/ProgramacionNas/Coleccion/ApiRest/config.txt:/app/config.txt:ro
+      - /volume1/ProgramacionNas/Coleccion/ApiRest/files:/app/files
+      - /volume1/ProgramacionNas/Coleccion/ApiRest/application.log:/app/application.log
+    environment:
+      - TZ=Europe/Madrid

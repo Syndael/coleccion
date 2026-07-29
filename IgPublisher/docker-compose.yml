@@ -1,5 +1,6 @@
 services:
   igpublisher:
+    build: .
     image: ghcr.io/syndael/coleccion-igpublisher:latest
     container_name: igpublisher
     restart: unless-stopped

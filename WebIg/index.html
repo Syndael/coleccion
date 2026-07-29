@@ -109,6 +109,13 @@ h1 span { color: var(--cyan-strong); }
   font-size: 13px;
   min-width: 120px;
   height: 31px;
+}
+.filter-group select {
+  padding-top: 4px;
+  padding-bottom: 4px;
+  line-height: normal;
+}
+.filter-group input {
   line-height: 15px;
 }
 .filter-group select option {
@@ -129,6 +136,35 @@ h1 span { color: var(--cyan-strong); }
 .filter-group .filter-btn:hover { border-color: var(--cyan); background: var(--cyan-soft); }
 .filter-group input:focus, .filter-group select:focus { border-color: var(--cyan); outline: none; }
 .filter-group input::placeholder { color: #5b8d98; }
+
+.multi-select { position: relative; min-width: 120px; user-select: none; }
+.multi-select-trigger {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 7px 10px; border: 1px solid var(--border); border-radius: 4px;
+  background: var(--surface); color: var(--text); font-size: 13px;
+  height: 31px; cursor: pointer; gap: 6px;
+}
+.multi-select-trigger:hover { border-color: var(--cyan); }
+.multi-select.open .multi-select-trigger { border-color: var(--cyan); }
+.multi-select-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+.multi-select-arrow { font-size: 10px; color: var(--muted); transition: transform .15s; flex-shrink: 0; }
+.multi-select.open .multi-select-arrow { transform: rotate(180deg); }
+.multi-select-dropdown {
+  display: none; position: absolute; top: 100%; left: 0;
+  margin-top: 2px; border: 1px solid var(--border); border-radius: 4px;
+  background: var(--surface-strong); z-index: 100; padding: 4px 0;
+  min-width: max-content; box-shadow: 0 4px 16px rgba(0,0,0,.4);
+}
+.multi-select.open .multi-select-dropdown { display: block; }
+.ms-option {
+  display: flex; align-items: center; gap: 6px; padding: 5px 10px;
+  font-size: 13px; color: var(--text); cursor: pointer; white-space: nowrap;
+}
+.ms-option:hover { background: var(--surface-soft); }
+.ms-option input[type="checkbox"] { width: 14px; height: 14px; margin: 0; accent-color: var(--cyan-strong); cursor: pointer; }
+.ms-separator { height: 1px; background: var(--border); margin: 4px 8px; }
+.ms-exclude { color: var(--muted); font-size: 12px; }
+.ms-exclude:hover { color: var(--text); }
 
 /* Table */
 .table-wrap { overflow-x: auto; min-height: 200px; margin-bottom: 8px; }
@@ -412,16 +448,39 @@ a:hover { text-decoration: underline; }
     </div>
     <div class="filter-group">
       <label>Estado IG</label>
-      <select id="fEstadoIg" onchange="resetAndLoad()">
-        <option value="">Todos</option>
-        <option value="Revisar">Revisar</option>
-        <option value="Sacar Fotos">Sacar Fotos</option>
-        <option value="Publicar">Publicar</option>
-        <option value="Publicado">Publicado</option>
-        <option value="Error">Error</option>
-        <option value="Cancelada">Cancelada</option>
-        <option value="Descartado">Descartado</option>
-      </select>
+      <div class="multi-select" id="fEstadoIgMs">
+        <div class="multi-select-trigger" onclick="toggleMs('fEstadoIgMs')">
+          <span class="multi-select-text">Todos</span>
+          <span class="multi-select-arrow">▾</span>
+        </div>
+        <div class="multi-select-dropdown">
+          <label class="ms-option"><input type="checkbox" value="Revisar" onchange="onMsChange()"> Revisar</label>
+          <label class="ms-option"><input type="checkbox" value="Sacar Fotos" onchange="onMsChange()"> Sacar Fotos</label>
+          <label class="ms-option"><input type="checkbox" value="Publicar" onchange="onMsChange()"> Publicar</label>
+          <label class="ms-option"><input type="checkbox" value="Publicado" onchange="onMsChange()"> Publicado</label>
+          <label class="ms-option"><input type="checkbox" value="Error" onchange="onMsChange()"> Error</label>
+          <label class="ms-option"><input type="checkbox" value="Cancelada" onchange="onMsChange()"> Cancelada</label>
+          <label class="ms-option"><input type="checkbox" value="Descartado" onchange="onMsChange()"> Descartado</label>
+        </div>
+      </div>
+    </div>
+    <div class="filter-group">
+      <label>Excluir Est. IG</label>
+      <div class="multi-select" id="fEstadoIgExMs">
+        <div class="multi-select-trigger" onclick="toggleMs('fEstadoIgExMs')">
+          <span class="multi-select-text">Ninguno</span>
+          <span class="multi-select-arrow">▾</span>
+        </div>
+        <div class="multi-select-dropdown">
+          <label class="ms-option"><input type="checkbox" value="Revisar" onchange="onMsChange()"> Revisar</label>
+          <label class="ms-option"><input type="checkbox" value="Sacar Fotos" onchange="onMsChange()"> Sacar Fotos</label>
+          <label class="ms-option"><input type="checkbox" value="Publicar" onchange="onMsChange()"> Publicar</label>
+          <label class="ms-option"><input type="checkbox" value="Publicado" onchange="onMsChange()"> Publicado</label>
+          <label class="ms-option"><input type="checkbox" value="Error" onchange="onMsChange()"> Error</label>
+          <label class="ms-option"><input type="checkbox" value="Cancelada" onchange="onMsChange()"> Cancelada</label>
+          <label class="ms-option"><input type="checkbox" value="Descartado" onchange="onMsChange()"> Descartado</label>
+        </div>
+      </div>
     </div>
     <div class="filter-group">
       <label>Fotos</label>
@@ -475,7 +534,7 @@ a:hover { text-decoration: underline; }
     <div class="form-row">
       <div class="form-group">
         <label>Estado IG</label>
-        <select id="mpEstado">
+        <select id="mpEstado" onchange="toggleFechaPub()">
           <option value="Revisar">Revisar</option>
           <option value="Sacar Fotos">Sacar Fotos</option>
           <option value="Publicar">Publicar</option>
@@ -486,12 +545,12 @@ a:hover { text-decoration: underline; }
         </select>
       </div>
       <div class="form-group">
-        <label>Fecha Pub. IG</label>
-        <input type="datetime-local" id="mpFecha">
-      </div>
-      <div class="form-group">
         <label>Fecha Prevista</label>
         <input type="datetime-local" id="mpFechaPrevista">
+      </div>
+      <div class="form-group">
+        <label>Fecha Pub. IG</label>
+        <input type="datetime-local" id="mpFecha" disabled>
       </div>
       <div class="form-group">
         <label>IG Post ID</label>
@@ -636,7 +695,7 @@ async function loadFilters() {
       apiGet(API_BASE + '/estados'),
     ]);
     fillSelect('fPlataforma', plats);
-    fillSelect('fTipo', tipos);
+    fillSelect('fTipo', tipos, 'id', 'descripcion');
     fillSelect('fEstadoGen', estados.filter(e => e.descripcion).map(e => ({id:e.id, nombre:e.descripcion})));
   } catch(e) { console.error('Error cargando filtros', e); }
 }
@@ -657,8 +716,40 @@ function debounceSearch() {
   searchTimeout = setTimeout(resetAndLoad, 300);
 }
 
+function toggleMs(id) {
+  const ms = document.getElementById(id);
+  const wasOpen = ms.classList.contains('open');
+  document.querySelectorAll('.multi-select.open').forEach(el => el.classList.remove('open'));
+  if (!wasOpen) ms.classList.add('open');
+}
+
+function onMsChange() {
+  ['fEstadoIgMs', 'fEstadoIgExMs'].forEach(msId => {
+    const ms = document.getElementById(msId);
+    const checked = ms.querySelectorAll('.ms-option input[type=checkbox]:checked');
+    const textEl = ms.querySelector('.multi-select-text');
+    if (checked.length === 0) {
+      textEl.textContent = msId === 'fEstadoIgMs' ? 'Todos' : 'Ninguno';
+    } else {
+      const names = Array.from(checked).map(cb => cb.value);
+      textEl.textContent = names.join(', ');
+    }
+  });
+  resetAndLoad();
+}
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.multi-select')) {
+    document.querySelectorAll('.multi-select.open').forEach(el => el.classList.remove('open'));
+  }
+});
+
 function clearFilters() {
-  ['fNombre','fPlataforma','fTipo','fEstadoGen','fEstadoIg','fConFotos','fUrlIg'].forEach(id => document.getElementById(id).value = '');
+  ['fNombre','fPlataforma','fTipo','fEstadoGen','fConFotos','fUrlIg'].forEach(id => document.getElementById(id).value = '');
+  document.querySelectorAll('#fEstadoIgMs .ms-option input[type=checkbox]').forEach(cb => cb.checked = false);
+  document.getElementById('fEstadoIgMs').querySelector('.multi-select-text').textContent = 'Todos';
+  document.querySelectorAll('#fEstadoIgExMs .ms-option input[type=checkbox]').forEach(cb => cb.checked = false);
+  document.getElementById('fEstadoIgExMs').querySelector('.multi-select-text').textContent = 'Ninguno';
   document.getElementById('fOrden').value = 'fecha_prevista_pub_desc';
   resetAndLoad();
 }
@@ -688,8 +779,14 @@ async function loadMore() {
   if (tipo) params.set('tipo_base_id', tipo);
   const estadoGen = document.getElementById('fEstadoGen').value;
   if (estadoGen) params.set('estado_gen_id', estadoGen);
-  const estadoIg = document.getElementById('fEstadoIg').value;
-  if (estadoIg) params.set('ig_estado', estadoIg);
+  const estadosChecked = Array.from(document.querySelectorAll('#fEstadoIgMs .ms-option input[type=checkbox]:checked')).map(cb => cb.value);
+  if (estadosChecked.length) {
+    params.set('ig_estado', estadosChecked.join(','));
+  }
+  const estadosExcluir = Array.from(document.querySelectorAll('#fEstadoIgExMs .ms-option input[type=checkbox]:checked')).map(cb => cb.value);
+  if (estadosExcluir.length) {
+    params.set('ig_estado_excluir', estadosExcluir.join(','));
+  }
   const orden = document.getElementById('fOrden').value;
   if (orden) params.set('orden', orden);
   if (document.getElementById('fConFotos').value) params.set('con_fotos', '1');
@@ -806,6 +903,11 @@ async function enrichPubTimes(items) {
   });
 }
 
+function toggleFechaPub() {
+  const estado = document.getElementById('mpEstado').value;
+  document.getElementById('mpFecha').disabled = estado !== 'Publicado';
+}
+
 function openModal(id) { document.getElementById(id).classList.add('active'); }
 function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
@@ -816,6 +918,7 @@ async function openPublicacionModal(coleccionId) {
     const c = data.coleccion || {};
     document.getElementById('mpNombre').textContent = c.base ? c.base.nombre : ('ID: ' + coleccionId);
     document.getElementById('mpEstado').value = data.estado || 'Revisar';
+    toggleFechaPub();
     document.getElementById('mpTexto').value = data.texto_publicacion || '';
     document.getElementById('mpFecha').value = data.fecha_ig_publicacion ? data.fecha_ig_publicacion.slice(0,16) : '';
     document.getElementById('mpFechaPrevista').value = data.fecha_prevista_publicacion ? data.fecha_prevista_publicacion.slice(0,16) : '';

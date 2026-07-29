@@ -96,31 +96,85 @@ def get_image_from_api(cfg, fichero_id):
 _ig_client = None
 
 
+def _invalidate_session():
+    """Sobrescribe ig_session.json con {} en lugar de borrarlo,
+    para no romper el bind mount de Docker."""
+    try:
+        with open(SESSION_FILE, 'w') as f:
+            json.dump({}, f)
+    except Exception as e:
+        log.warning(f"No se pudo sobrescribir sesión: {e}")
+
+
+def _new_client():
+    cl = Client()
+    cl.delay_range = [2, 5]
+    return cl
+
+
 def get_ig_client(cfg):
     global _ig_client
     if _ig_client is not None:
         return _ig_client
 
-    cl = Client()
-    cl.delay_range = [2, 5]
+    username = cfg.get('config', 'ig_username')
+    password = cfg.get('config', 'ig_password')
 
+    # Intentar restaurar sesión guardada
     if os.path.exists(SESSION_FILE):
+        cl = _new_client()
         try:
             cl.load_settings(SESSION_FILE)
-            cl.login(cfg.get('config', 'ig_username'),
-                     cfg.get('config', 'ig_password'))
-            cl.get_timeline_feed()
-            log.info("Sesión de IG restaurada")
-            _ig_client = cl
-            return cl
-        except LoginRequired:
-            log.warning("Sesión expirada, re-login...")
+        except (json.JSONDecodeError, ValueError) as e:
+            log.warning(f"Sesión corrupta, reiniciando: {e}")
+            _invalidate_session()
         except Exception as e:
             log.warning(f"Error cargando sesión: {e}")
+            if "Expecting value" in str(e) or "json" in str(type(e).__name__).lower():
+                _invalidate_session()
+        else:
+            try:
+                cl.login(username, password)
+                cl.get_timeline_feed()
+                log.info("Sesión de IG restaurada")
+                _ig_client = cl
+                return cl
+            except LoginRequired:
+                log.warning("Sesión expirada, re-login...")
+                _invalidate_session()
+            except Exception as e:
+                log.warning(f"Error restaurando sesión: {e}")
+                _invalidate_session()
 
-    # Login fresco
-    cl.login(cfg.get('config', 'ig_username'),
-             cfg.get('config', 'ig_password'))
+    # Login fresco: sessionid (si existe) o user/pass normal
+    sessionid = cfg.get('config', 'ig_sessionid', fallback='').strip()
+
+    if sessionid:
+        cl = _new_client()
+        try:
+            cl.login_by_sessionid(sessionid)
+            cl.get_timeline_feed()
+            cl.dump_settings(SESSION_FILE)
+            log.info("Login en IG vía sessionid correcto, sesión guardada")
+            _ig_client = cl
+            return cl
+        except Exception as e:
+            log.warning(f"Login vía sessionid falló: {e}")
+
+    # Fallback a user/pass normal
+    cl = _new_client()
+    try:
+        cl.login(username, password)
+    except Exception as e:
+        msg = str(e)
+        if "facebook" in msg.lower() or "proxy" in msg.lower() or "reject" in msg.lower():
+            raise RuntimeError(
+                f"Instagram rechazó el login (posible bloqueo IP o device fingerprint). "
+                f"Intenta loguearte manualmente desde un navegador en la misma red, "
+                f"o usa el campo ig_sessionid en config.txt. Error: {msg}"
+            ) from e
+        raise
+
     cl.dump_settings(SESSION_FILE)
     log.info("Login en IG correcto, sesión guardada")
     _ig_client = cl
@@ -693,19 +747,28 @@ def wait_until_next_slot():
 def run():
     cfg = load_cfg()
     dev_mode = cfg.get('config', 'dev_mode', fallback='').lower() in ('1', 'true', 'yes', 'si')
+    login_backoff = 60  # segundos iniciales de espera entre reintentos de login
 
     if dev_mode:
         log.info("=== IG Publisher iniciado en MODO DEVELOP ===")
         log.info("Las publicaciones se guardarán en dev_output/ sin subir a IG")
     else:
-        # Verificar login IG al iniciar
-        try:
-            get_ig_client(cfg)
-            log.info("IG login OK")
-        except Exception as e:
-            log.error(f"IG login falló: {e}")
-            notify(cfg, f"<b>❌ IG Publisher: login fallido</b>\n{str(e)[:300]}")
-            sys.exit(1)
+        while True:
+            try:
+                get_ig_client(cfg)
+                log.info("IG login OK")
+                break
+            except RuntimeError as e:
+                log.error(f"IG login falló (definitivo): {e}")
+                notify(cfg, f"<b>❌ IG Publisher: login fallido (definitivo)</b>\n{str(e)[:300]}")
+                sys.exit(1)
+            except Exception as e:
+                log.error(f"IG login falló: {e}. Reintentando en {login_backoff}s...")
+                notify(cfg, f"<b>⚠️ IG Publisher: login temporalmente fallido</b>\n{str(e)[:300]}\n\nReintentando en {login_backoff}s.")
+                time.sleep(login_backoff)
+                login_backoff = min(login_backoff * 2, 1800)  # máximo 30 min
+                global _ig_client
+                _ig_client = None
 
         log.info("=== IG Publisher iniciado ===")
 
@@ -749,8 +812,7 @@ def run():
                         log.warning("Sesión IG expirada, reintentando login...")
                         global _ig_client
                         _ig_client = None
-                        if os.path.exists(SESSION_FILE):
-                            os.remove(SESSION_FILE)
+                        _invalidate_session()
                         try:
                             get_ig_client(cfg)
                         except:

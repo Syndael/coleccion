@@ -22,7 +22,7 @@ from app.model.tipo_base_model import TipoBase
 from app.model.tipo_fichero_model import TipoFichero
 from app.utils.datos import db
 from app.utils.config_parser_utils import ConfigParser
-from sqlalchemy import func, or_
+from sqlalchemy import func, or_, not_
 from sqlalchemy.orm import aliased
 
 
@@ -98,10 +98,16 @@ class IgService:
             q = q.filter(Coleccion.estado_general_id == request.args.get('estado_gen_id'))
         if request.args.get('ig_estado'):
             estados = request.args.get('ig_estado').split(',')
-            if 'Revisar' in estados or 'Sacar Fotos' in estados:
+            if 'Revisar' in estados:
                 q = q.filter(or_(IgPublicacion.estado.in_(estados), IgPublicacion.id == None))
             else:
                 q = q.filter(IgPublicacion.estado.in_(estados))
+        if request.args.get('ig_estado_excluir'):
+            estados_excluir = request.args.get('ig_estado_excluir').split(',')
+            if 'Revisar' in estados_excluir:
+                q = q.filter(not_(or_(IgPublicacion.estado.in_(estados_excluir), IgPublicacion.id == None)))
+            else:
+                q = q.filter(or_(not_(IgPublicacion.estado.in_(estados_excluir)), IgPublicacion.id == None))
         if request.args.get('sin_ig'):
             q = q.filter(Coleccion.ig.is_(None) | (Coleccion.ig == ''))
         if request.args.get('con_ig'):
