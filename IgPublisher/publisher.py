@@ -281,41 +281,72 @@ def _compute_overlay_pos(overlay_path):
     return ox, oy, ow, oh
 
 
-def share_to_story(cfg, image_path, permalink, game_name, platform):
+def share_to_story(cfg, image_path, permalink, game_name, platform,
+                   video_path=None, frame_path=None):
     """Sube la story con frame Pillow + overlay + musica.
+    Si video_path/frame_path no se pasan, los genera con FFmpeg.
     Retorna (True, None) si OK, o (False, video_path) si falla la subida
     (el video_path sobrevive para enviarse por Telegram como fallback)."""
+    global _ig_client
     cl = get_ig_client(cfg)
 
-    video_path, frame_path = _create_story_video(cfg, image_path, game_name, platform)
+    own_video = video_path is None
+    if own_video:
+        video_path, frame_path = _create_story_video(cfg, image_path, game_name, platform)
     if not video_path:
         log.warning("  No se genero el video de story, se omite.")
-        if frame_path:
+        if frame_path and own_video:
             try:
                 os.unlink(frame_path)
             except Exception:
                 pass
         return False, None
 
-    try:
-        links = []
-        if permalink:
-            links = [StoryLink(webUri=permalink)]
-            log.info(f"  Link sticker (default pos): {permalink}")
-        log.info("  Subiendo story con video...")
-        result = cl.video_upload_to_story(video_path, thumbnail=frame_path, links=links)
-        log.info(f"  [OK] Story subida. pk={result.pk if hasattr(result,'pk') else '?'}  links_en_respuesta={bool(result.links)}")
-        os.unlink(video_path)
-        os.unlink(frame_path)
-        return True, None
-    except Exception as e:
-        log.warning(f"  Story video fallo: {e}")
-        if frame_path:
+    links = []
+    if permalink:
+        links = [StoryLink(webUri=permalink)]
+        log.info(f"  Link sticker (default pos): {permalink}")
+
+    for attempt in range(2):
+        try:
+            log.info(f"  Subiendo story con video (intento {attempt+1})...")
+            result = cl.video_upload_to_story(video_path, thumbnail=frame_path, links=links)
+            log.info(f"  [OK] Story subida. pk={result.pk if hasattr(result,'pk') else '?'}  links_en_respuesta={bool(result.links)}")
+            if own_video:
+                os.unlink(video_path)
+                if frame_path:
+                    os.unlink(frame_path)
+            return True, None
+        except LoginRequired:
+            log.warning("  Story: sesión expirada, refrescando...")
+            _ig_client = None
+            _invalidate_session()
             try:
-                os.unlink(frame_path)
-            except Exception:
-                pass
-        return False, video_path
+                cl = get_ig_client(cfg)
+            except Exception as e:
+                log.warning(f"  Story: no se pudo refrescar sesión: {e}")
+                break
+        except Exception as e:
+            msg = str(e)
+            if "login_required" in msg.lower() and attempt == 0:
+                log.warning("  Story: login_required detectado, refrescando...")
+                _ig_client = None
+                _invalidate_session()
+                try:
+                    cl = get_ig_client(cfg)
+                except Exception as e2:
+                    log.warning(f"  Story: no se pudo refrescar sesión: {e2}")
+                    break
+            else:
+                log.warning(f"  Story video fallo: {e}")
+                break
+
+    if own_video and frame_path:
+        try:
+            os.unlink(frame_path)
+        except Exception:
+            pass
+    return False, video_path
 
 
 def _create_story_video(cfg, image_path, game_name, platform, output_path=None):
@@ -682,10 +713,16 @@ def process_publication(cfg, pub):
 
         return 'dev', output_dir
 
+    first_image = tmp_files[0] if tmp_files else None
+
+    # Generar video de story offline ANTES del login a IG
+    story_video_path, story_frame_path = None, None
+    if first_image:
+        story_video_path, story_frame_path = _create_story_video(
+            cfg, first_image, nombre, plataforma)
+
     log.info(f"  Publicando en IG ({len(tmp_files)} fotos)...")
     ig_code, media_pk, error = publish_instagram(cfg, tmp_files, caption)
-
-    first_image = tmp_files[0] if tmp_files else None
 
     if ig_code:
         permalink = f'https://www.instagram.com/p/{ig_code}/'
@@ -693,7 +730,9 @@ def process_publication(cfg, pub):
                  {'ig_post_id': str(ig_code), 'ig_permalink': permalink})
         log.info(f"  [OK] {nombre} — {permalink}")
 
-        story_ok, story_video = share_to_story(cfg, first_image, permalink, nombre, plataforma)
+        story_ok, story_video = share_to_story(
+            cfg, first_image, permalink, nombre, plataforma,
+            video_path=story_video_path, frame_path=story_frame_path)
         story_failed = not story_ok
         if story_failed:
             log.warning("  Publicacion en IG correcta pero la story fallo")
@@ -704,6 +743,17 @@ def process_publication(cfg, pub):
                     os.unlink(story_video)
                 except Exception:
                     pass
+        elif story_video_path:
+            try:
+                os.unlink(story_video_path)
+            except Exception:
+                pass
+
+        if story_frame_path:
+            try:
+                os.unlink(story_frame_path)
+            except Exception:
+                pass
 
         for f in tmp_files:
             try:
@@ -715,6 +765,17 @@ def process_publication(cfg, pub):
             return 'ok', permalink, 'story_fail'
         return 'ok', permalink
     else:
+        if story_video_path:
+            try:
+                os.unlink(story_video_path)
+            except Exception:
+                pass
+        if story_frame_path:
+            try:
+                os.unlink(story_frame_path)
+            except Exception:
+                pass
+
         for f in tmp_files:
             try:
                 os.unlink(f)
@@ -750,28 +811,9 @@ def run():
     dev_mode = cfg.get('config', 'dev_mode', fallback='').lower() in ('1', 'true', 'yes', 'si')
     login_backoff = 60  # segundos iniciales de espera entre reintentos de login
 
+    log.info("=== IG Publisher iniciado%s ===" % (" en MODO DEVELOP" if dev_mode else ""))
     if dev_mode:
-        log.info("=== IG Publisher iniciado en MODO DEVELOP ===")
         log.info("Las publicaciones se guardarán en dev_output/ sin subir a IG")
-    else:
-        while True:
-            try:
-                get_ig_client(cfg)
-                log.info("IG login OK")
-                break
-            except RuntimeError as e:
-                log.error(f"IG login falló (definitivo): {e}")
-                notify(cfg, f"<b>❌ IG Publisher: login fallido (definitivo)</b>\n{str(e)[:300]}")
-                sys.exit(1)
-            except Exception as e:
-                log.error(f"IG login falló: {e}. Reintentando en {login_backoff}s...")
-                notify(cfg, f"<b>⚠️ IG Publisher: login temporalmente fallido</b>\n{str(e)[:300]}\n\nReintentando en {login_backoff}s.")
-                time.sleep(login_backoff)
-                login_backoff = min(login_backoff * 2, 1800)  # máximo 30 min
-                _ig_client = None
-
-        log.info("=== IG Publisher iniciado ===")
-
     log.info(f"API: {cfg.get('config', 'api_url')}  |  Slots: minuto 5 y 35 de cada hora")
 
     while True:
@@ -787,6 +829,24 @@ def run():
                 continue
 
             log.info(f"Pendientes: {len(publicaciones)}")
+
+            # Login solo si hay pendientes y no estamos en dev mode
+            if not dev_mode:
+                try:
+                    get_ig_client(cfg)
+                    login_backoff = 60
+                except RuntimeError as e:
+                    log.error(f"IG login falló (definitivo): {e}")
+                    notify(cfg, f"<b>❌ IG Publisher: login fallido (definitivo)</b>\n{str(e)[:300]}")
+                    wait_until_next_slot()
+                    continue
+                except Exception as e:
+                    log.error(f"IG login falló temporalmente: {e}. Reintentando en {login_backoff}s...")
+                    notify(cfg, f"<b>⚠️ IG Publisher: login temporalmente fallido</b>\n{str(e)[:300]}\n\nReintentando en {login_backoff}s.")
+                    time.sleep(login_backoff)
+                    login_backoff = min(login_backoff * 2, 1800)
+                    _ig_client = None
+                    continue
 
             ok_list, err_list, dev_list = [], [], []
             for pub in publicaciones:
