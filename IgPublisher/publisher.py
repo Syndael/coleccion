@@ -745,6 +745,7 @@ def wait_until_next_slot():
 
 
 def run():
+    global _ig_client
     cfg = load_cfg()
     dev_mode = cfg.get('config', 'dev_mode', fallback='').lower() in ('1', 'true', 'yes', 'si')
     login_backoff = 60  # segundos iniciales de espera entre reintentos de login
@@ -767,7 +768,6 @@ def run():
                 notify(cfg, f"<b>⚠️ IG Publisher: login temporalmente fallido</b>\n{str(e)[:300]}\n\nReintentando en {login_backoff}s.")
                 time.sleep(login_backoff)
                 login_backoff = min(login_backoff * 2, 1800)  # máximo 30 min
-                global _ig_client
                 _ig_client = None
 
         log.info("=== IG Publisher iniciado ===")
@@ -810,7 +810,6 @@ def run():
                         err_list.append(f'{name}: login requerido en dev mode')
                     else:
                         log.warning("Sesión IG expirada, reintentando login...")
-                        global _ig_client
                         _ig_client = None
                         _invalidate_session()
                         try:
