@@ -136,6 +136,7 @@ def get_ig_client(cfg):
             try:
                 cl.login(username, password)
                 cl.get_timeline_feed()
+                cl.dump_settings(SESSION_FILE)
                 log.info("Sesión de IG restaurada")
                 _ig_client = cl
                 return cl
@@ -256,16 +257,39 @@ def _render_story_frame(image_path):
     return frame_path
 
 
-def _compute_overlay_pos(overlay_path):
-    """Calcula posicion y tamano del overlay proporcional a su aspecto real.
+def _compute_overlay_pos(overlay_path, is_flecha=False):
+    """Calcula posicion y tamano del overlay.
+    Regulares: siempre arriba, max 10-15% solapado sobre la imagen.
+    Flechas: esquina superior-izq apunta al centro con margen abajo-derecha.
     Todo en coordenadas 540x960 (se escala a 1080x1920 en FFmpeg)."""
     W, H = 540, 960
     MARGIN = 20
+    FG_W, FG_H = 405, 720
+    FG_X = (W - FG_W) // 2
+    FG_Y = (H - FG_H) // 2
+
     try:
         ovl = Image.open(overlay_path)
         w, h = ovl.size
     except Exception:
         return None, None, None, None
+
+    if is_flecha:
+        target_ratio = 0.09
+        ov_area = W * H * target_ratio
+        aspect = w / h if h > 0 else 1.0
+        ow = int((ov_area * aspect) ** 0.5)
+        oh = max(int(ow / aspect), 1)
+
+        center_x = W // 2
+        center_y = H // 2
+        margin_x = int(FG_W * 0.12)
+        margin_y = int(FG_H * 0.10)
+        ox = center_x + margin_x
+        oy = center_y + margin_y
+        ox = max(MARGIN, min(ox, W - ow - MARGIN))
+        oy = max(MARGIN, min(oy, H - oh - MARGIN))
+        return ox, oy, ow, oh
 
     target_ratio = random.uniform(0.15, 0.20)
     ov_area = W * H * target_ratio
@@ -273,10 +297,13 @@ def _compute_overlay_pos(overlay_path):
     ow = int((ov_area * aspect) ** 0.5)
     oh = max(int(ow / aspect), 1)
 
+    max_overlap_pct = random.uniform(0.10, 0.15)
+    max_overlap_y = int(FG_Y + FG_H * max_overlap_pct)
+    max_oy = max(max_overlap_y - oh, MARGIN)
+
     max_x = max(W - ow - MARGIN, MARGIN)
-    max_y = max(H - oh - MARGIN, MARGIN)
     ox = random.randint(MARGIN, max(max_x, MARGIN))
-    oy = random.randint(MARGIN, max(max_y, MARGIN))
+    oy = random.randint(MARGIN, max(max_oy, MARGIN))
 
     return ox, oy, ow, oh
 
@@ -304,10 +331,11 @@ def share_to_story(cfg, image_path, permalink, game_name, platform,
 
     links = []
     if permalink:
-        links = [StoryLink(webUri=permalink)]
-        log.info(f"  Link sticker (default pos): {permalink}")
+        links = [StoryLink(webUri=permalink, x=0.5, y=0.88, width=0.9, height=0.22)]
+        log.info(f"  Link sticker (grande): {permalink}")
 
-    for attempt in range(2):
+    max_attempts = 3
+    for attempt in range(max_attempts):
         try:
             log.info(f"  Subiendo story con video (intento {attempt+1})...")
             result = cl.video_upload_to_story(video_path, thumbnail=frame_path, links=links)
@@ -318,22 +346,30 @@ def share_to_story(cfg, image_path, permalink, game_name, platform,
                     os.unlink(frame_path)
             return True, None
         except LoginRequired:
+            if attempt == max_attempts - 1:
+                log.warning("  Story video fallo: LoginRequired (sin mas reintentos)")
+                break
             log.warning("  Story: sesión expirada, refrescando...")
             _ig_client = None
             _invalidate_session()
             try:
                 cl = get_ig_client(cfg)
+                time.sleep(3)
             except Exception as e:
                 log.warning(f"  Story: no se pudo refrescar sesión: {e}")
                 break
         except Exception as e:
             msg = str(e)
-            if "login_required" in msg.lower() and attempt == 0:
+            if "login_required" in msg.lower():
+                if attempt == max_attempts - 1:
+                    log.warning(f"  Story video fallo: {e}")
+                    break
                 log.warning("  Story: login_required detectado, refrescando...")
                 _ig_client = None
                 _invalidate_session()
                 try:
                     cl = get_ig_client(cfg)
+                    time.sleep(3)
                 except Exception as e2:
                     log.warning(f"  Story: no se pudo refrescar sesión: {e2}")
                     break
@@ -358,17 +394,26 @@ def _create_story_video(cfg, image_path, game_name, platform, output_path=None):
         return None, None
 
     music_path = _pick_music(cfg, platform)
-    overlay_path = _pick_overlay(cfg)
+    regular_path, flecha_path = _pick_overlays(cfg)
     safe_name = game_name.replace("'", "'\\''")[:40]
 
-    overlay_pos = None
-    if overlay_path:
-        ox, oy, ow, oh = _compute_overlay_pos(overlay_path)
+    regular_pos = None
+    if regular_path:
+        ox, oy, ow, oh = _compute_overlay_pos(regular_path, is_flecha=False)
         if ox is not None:
-            overlay_pos = (ox, oy, ow, oh)
-            log.info(f"  Overlay pos=({ox},{oy}) size=({ow},{oh})")
+            regular_pos = (ox, oy, ow, oh)
+            log.info(f"  Overlay [normal] pos=({ox},{oy}) size=({ow},{oh})")
         else:
-            log.warning("  Overlay no valido, omitiendo")
+            log.warning("  Overlay regular no valido, omitiendo")
+
+    flecha_pos = None
+    if flecha_path:
+        ox, oy, ow, oh = _compute_overlay_pos(flecha_path, is_flecha=True)
+        if ox is not None:
+            flecha_pos = (ox, oy, ow, oh)
+            log.info(f"  Overlay [flecha] pos=({ox},{oy}) size=({ow},{oh})")
+        else:
+            log.warning("  Flecha no valida, omitiendo")
 
     frame_path = None
     try:
@@ -385,23 +430,53 @@ def _create_story_video(cfg, image_path, game_name, platform, output_path=None):
         duration = 15
         cmd = ['ffmpeg', '-y']
 
-        if overlay_path and overlay_pos:
-            ox, oy, ow, oh = overlay_pos
-            overlay_ext = os.path.splitext(overlay_path)[1].lower()
-            if overlay_ext == '.gif':
-                cmd += ['-loop', '1', '-i', frame_path, '-stream_loop', '-1', '-i', overlay_path]
+        has_regular = regular_path is not None and regular_pos is not None
+        has_flecha = flecha_path is not None and flecha_pos is not None
+
+        cmd += ['-loop', '1', '-i', frame_path]
+
+        if has_regular:
+            rext = os.path.splitext(regular_path)[1].lower()
+            if rext == '.gif':
+                cmd += ['-stream_loop', '-1', '-i', regular_path]
             else:
-                cmd += ['-loop', '1', '-i', frame_path, '-loop', '1', '-i', overlay_path]
-        else:
-            cmd += ['-loop', '1', '-i', frame_path]
+                cmd += ['-loop', '1', '-i', regular_path]
+
+        if has_flecha:
+            fext = os.path.splitext(flecha_path)[1].lower()
+            if fext == '.gif':
+                cmd += ['-stream_loop', '-1', '-i', flecha_path]
+            else:
+                cmd += ['-loop', '1', '-i', flecha_path]
 
         if music_path:
             cmd += ['-i', music_path]
 
-        if overlay_path and overlay_pos:
+        overlay_inputs = (1 if has_regular else 0) + (1 if has_flecha else 0)
+        any_overlay = has_regular or has_flecha
+
+        if has_regular and has_flecha:
+            rx, ry, rw, rh = regular_pos
+            fx, fy, fw, fh = flecha_pos
             vf = (
-                f"[1:v]scale={ow}:{oh},setsar=1[ov];"
-                f"[0:v][ov]overlay={ox}:{oy},scale=1080:1920:flags=lanczos[outv]"
+                f"[1:v]scale={rw}:{rh},setsar=1[rv];"
+                f"[2:v]scale={fw}:{fh},setsar=1[fv];"
+                f"[0:v][rv]overlay={rx}:{ry}[tmp];"
+                f"[tmp][fv]overlay={fx}:{fy},scale=1080:1920:flags=lanczos[outv]"
+            )
+            cmd += ['-filter_complex', vf, '-map', '[outv]']
+        elif has_regular:
+            rx, ry, rw, rh = regular_pos
+            vf = (
+                f"[1:v]scale={rw}:{rh},setsar=1[rv];"
+                f"[0:v][rv]overlay={rx}:{ry},scale=1080:1920:flags=lanczos[outv]"
+            )
+            cmd += ['-filter_complex', vf, '-map', '[outv]']
+        elif has_flecha:
+            fx, fy, fw, fh = flecha_pos
+            vf = (
+                f"[1:v]scale={fw}:{fh},setsar=1[fv];"
+                f"[0:v][fv]overlay={fx}:{fy},scale=1080:1920:flags=lanczos[outv]"
             )
             cmd += ['-filter_complex', vf, '-map', '[outv]']
         else:
@@ -424,8 +499,8 @@ def _create_story_video(cfg, image_path, game_name, platform, output_path=None):
                 '-movflags', '+faststart']
 
         if music_path:
-            music_map_idx = 2 if (overlay_path and overlay_pos) else 1
-            cmd += ['-map', f'{music_map_idx}:a', '-shortest', '-c:a', 'aac', '-b:a', '128k']
+            music_idx = 1 + overlay_inputs
+            cmd += ['-map', f'{music_idx}:a', '-shortest', '-c:a', 'aac', '-b:a', '128k']
         else:
             cmd += ['-an']
 
@@ -528,40 +603,65 @@ def _pick_music(cfg, platform):
     return None
 
 
-def _pick_overlay(cfg):
-    """Elige una imagen/gif aleatoria de la carpeta gif/ para superponer en la story."""
+def _validate_gif(path):
+    if not path.lower().endswith('.gif'):
+        return True
+    try:
+        result = subprocess.run(
+            ['ffmpeg', '-v', 'error', '-stream_loop', '-1', '-i', path, '-t', '1', '-f', 'null', '-'],
+            capture_output=True, text=True, timeout=8)
+        return result.returncode == 0
+    except Exception:
+        return False
+
+
+def _pick_overlays(cfg):
+    """Elige un overlay regular de gif/ y una flecha de gif/flechas/.
+    Retorna (regular_path, flecha_path). Ambos pueden ser None."""
     gif_dir = os.path.join(BASE_DIR, 'gif')
     if not os.path.isdir(gif_dir):
-        return None
+        return None, None
 
     img_exts = ('.gif', '.png', '.jpg', '.jpeg', '.webp')
-    candidates = [os.path.join(gif_dir, f) for f in os.listdir(gif_dir)
-                  if f.lower().endswith(img_exts)]
-    if not candidates:
-        return None
 
-    random.shuffle(candidates)
-    for chosen in candidates:
-        if chosen.lower().endswith('.gif'):
-            try:
-                result = subprocess.run(
-                    ['ffmpeg', '-v', 'error', '-stream_loop', '-1', '-i', chosen, '-t', '1', '-f', 'null', '-'],
-                    capture_output=True, text=True, timeout=8)
-                if result.returncode != 0:
-                    log.warning(f"  Overlay descartado (inválido): {os.path.basename(chosen)}")
-                    continue
-            except Exception:
-                log.warning(f"  Overlay descartado (timeout/inválido): {os.path.basename(chosen)}")
+    regular = [os.path.join(gif_dir, f) for f in os.listdir(gif_dir)
+               if f.lower().endswith(img_exts) and os.path.isfile(os.path.join(gif_dir, f))]
+    random.shuffle(regular)
+    regular_path = None
+    for r in regular:
+        if not _validate_gif(r):
+            log.warning(f"  Overlay regular descartado (inválido): {os.path.basename(r)}")
+            continue
+        log.info(f"  Overlay regular: {os.path.basename(r)}")
+        regular_path = r
+        break
+    if not regular_path:
+        log.warning("  Ningun overlay regular valido")
+
+    flechas_dir = os.path.join(gif_dir, 'flechas')
+    flecha_path = None
+    if os.path.isdir(flechas_dir):
+        flechas = [os.path.join(flechas_dir, f) for f in os.listdir(flechas_dir)
+                   if f.lower().endswith(img_exts)]
+        random.shuffle(flechas)
+        for f in flechas:
+            if not _validate_gif(f):
+                log.warning(f"  Flecha descartada (inválida): {os.path.basename(f)}")
                 continue
-        log.info(f"  Overlay seleccionado: {os.path.basename(chosen)}")
-        return chosen
+            log.info(f"  Flecha: {os.path.basename(f)}")
+            flecha_path = f
+            break
+        if not flecha_path:
+            log.warning("  Ninguna flecha valida")
 
-    log.warning("  Ningún overlay válido encontrado")
-    return None
+    return regular_path, flecha_path
 
 
 # ── Notificaciones ─────────────────────────────────────────────────
 def send_telegram(cfg, message):
+    dev_mode = cfg.get('config', 'dev_mode', fallback='').lower() in ('1', 'true', 'yes', 'si')
+    if dev_mode:
+        return
     token = cfg.get('config', 'telegram_token', fallback='')
     chat_id = cfg.get('config', 'telegram_chat_id', fallback='')
     if not token or not chat_id:
@@ -600,6 +700,10 @@ def send_email(cfg, subject, body):
 
 def send_telegram_video(cfg, video_path, caption=""):
     """Envia un video por Telegram como fallback si la story falla."""
+    dev_mode = cfg.get('config', 'dev_mode', fallback='').lower() in ('1', 'true', 'yes', 'si')
+    if dev_mode:
+        log.info(f"  [DEV] Video Telegram suprimido: {caption[:80]}")
+        return
     token = cfg.get('config', 'telegram_token', fallback='')
     chat_id = cfg.get('config', 'telegram_chat_id', fallback='')
     if not token or not chat_id:
@@ -630,6 +734,10 @@ def send_telegram_video(cfg, video_path, caption=""):
 
 
 def notify(cfg, message):
+    dev_mode = cfg.get('config', 'dev_mode', fallback='').lower() in ('1', 'true', 'yes', 'si')
+    if dev_mode:
+        log.info(f"[DEV] Notificacion suprimida: {message[:120]}")
+        return
     send_telegram(cfg, message)
     send_email(cfg, 'IG Publisher', message)
 
@@ -889,7 +997,8 @@ def run():
                     msg.append(f"[DEV] #{item['id']} {item['plataforma']} {item['nombre']}\nGuardado en: {item['dir']}")
                 if err_list:
                     msg.append(f"❌ Errores ({len(err_list)}):\n" + '\n'.join(f'• {n}' for n in err_list))
-                notify(cfg, '\n\n'.join(msg))
+                if not dev_mode:
+                    notify(cfg, '\n\n'.join(msg))
 
             if dev_mode:
                 log.info("Modo DEV: saliendo tras procesar lote.")
