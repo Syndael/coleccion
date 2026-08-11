@@ -406,6 +406,52 @@ class IgService:
             db.session.commit()
         return jsonify({'success': True}), 200
 
+    # ── Calendario ──────────────────────────────────────────────────
+
+    def get_calendario(self):
+        """Devuelve todas las fechas con publicaciones (previstas o realizadas)."""
+        pub_fechas = db.session.query(
+            IgPublicacion.fecha_prevista_publicacion,
+            IgPublicacion.fecha_ig_publicacion,
+            IgPublicacion.estado,
+            Coleccion.id
+        ).join(Coleccion, IgPublicacion.coleccion_id == Coleccion.id)\
+         .filter(Coleccion.activado == 1)\
+         .filter(IgPublicacion.estado != 'Descartado')
+
+        col_fechas = db.session.query(
+            Coleccion.fecha_ig_publicacion,
+            Coleccion.estado_general_id,
+            Coleccion.id
+        ).outerjoin(IgPublicacion, Coleccion.id == IgPublicacion.coleccion_id)\
+         .filter(Coleccion.activado == 1, Coleccion.fecha_ig_publicacion != None)\
+         .filter(db.or_(IgPublicacion.id == None, IgPublicacion.estado != 'Descartado'))
+
+        fechas = {}
+        for prevista, ig_pub, estado, col_id in pub_fechas.all():
+            for f in [prevista, ig_pub]:
+                if not f:
+                    continue
+                dia = f.strftime('%Y-%m-%d') if not isinstance(f, str) else f[:10]
+                if dia not in fechas:
+                    fechas[dia] = {'prevista': 0, 'publicada': 0, 'ids': []}
+                if estado == 'Publicado':
+                    fechas[dia]['publicada'] += 1
+                else:
+                    fechas[dia]['prevista'] += 1
+                if col_id not in fechas[dia]['ids']:
+                    fechas[dia]['ids'].append(col_id)
+
+        for f, _, col_id in col_fechas.all():
+            dia = f.strftime('%Y-%m-%d') if not isinstance(f, str) else f[:10]
+            if dia not in fechas:
+                fechas[dia] = {'prevista': 0, 'publicada': 0, 'ids': []}
+            fechas[dia]['publicada'] += 1
+            if col_id not in fechas[dia]['ids']:
+                fechas[dia]['ids'].append(col_id)
+
+        return jsonify({dia: fechas[dia] for dia in sorted(fechas.keys())}), 200
+
     # ── IA ──────────────────────────────────────────────────────────
 
     def generar_descripcion_ia(self, request):

@@ -331,8 +331,8 @@ def share_to_story(cfg, image_path, permalink, game_name, platform,
 
     links = []
     if permalink:
-        links = [StoryLink(webUri=permalink, x=0.5, y=0.88, width=0.9, height=0.22)]
-        log.info(f"  Link sticker (grande): {permalink}")
+        links = [StoryLink(webUri=permalink, x=0.5, y=0.5, width=0.72, height=0.28)]
+        log.info(f"  Link sticker: {permalink}")
 
     max_attempts = 3
     for attempt in range(max_attempts):

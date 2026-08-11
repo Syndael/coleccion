@@ -458,6 +458,11 @@ def marcar_ig_error(coleccion_id):
     return _ig_service.marcar_error(coleccion_id, data.get('error', 'Error desconocido'))
 
 
+@app.route('/api/ig/calendario', methods=['GET'])
+def get_ig_calendario():
+    return _ig_service.get_calendario()
+
+
 @app.route('/api/ig/generar-descripcion', methods=['POST'])
 def generar_descripcion_ia():
     return _ig_service.generar_descripcion_ia(request)

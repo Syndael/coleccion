@@ -25,7 +25,8 @@
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body {
-  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
   background: var(--bg);
   color: var(--text);
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -35,7 +36,7 @@ button, input, select, textarea { font: inherit; }
 select { color-scheme: auto; }
 select option { background: #12343c !important; color: #d7fbff !important; }
 
-.app-shell { margin: 0 auto; padding: 24px 20px; max-width: calc(100vw - 40px); }
+.app-shell { margin: 0 auto; padding: 24px 20px 0 20px; max-width: calc(100vw - 40px); height: 100vh; display: flex; flex-direction: column; }
 
 .topbar {
   display: flex;
@@ -109,6 +110,13 @@ h1 span { color: var(--cyan-strong); }
   font-size: 13px;
   min-width: 120px;
   height: 31px;
+}
+.filter-group select {
+  padding-top: 4px;
+  padding-bottom: 4px;
+  line-height: normal;
+}
+.filter-group input {
   line-height: 15px;
 }
 .filter-group select option {
@@ -130,8 +138,42 @@ h1 span { color: var(--cyan-strong); }
 .filter-group input:focus, .filter-group select:focus { border-color: var(--cyan); outline: none; }
 .filter-group input::placeholder { color: #5b8d98; }
 
+.multi-select { position: relative; min-width: 120px; user-select: none; }
+.multi-select-trigger {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 7px 10px; border: 1px solid var(--border); border-radius: 4px;
+  background: var(--surface); color: var(--text); font-size: 13px;
+  height: 31px; cursor: pointer; gap: 6px;
+}
+.multi-select-trigger:hover { border-color: var(--cyan); }
+.multi-select.open .multi-select-trigger { border-color: var(--cyan); }
+.multi-select-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+.multi-select-arrow { font-size: 10px; color: var(--muted); transition: transform .15s; flex-shrink: 0; }
+.multi-select.open .multi-select-arrow { transform: rotate(180deg); }
+.multi-select-dropdown {
+  display: none; position: absolute; top: 100%; left: 0;
+  margin-top: 2px; border: 1px solid var(--border); border-radius: 4px;
+  background: var(--surface-strong); z-index: 100; padding: 4px 0;
+  min-width: max-content; box-shadow: 0 4px 16px rgba(0,0,0,.4);
+}
+.multi-select.open .multi-select-dropdown { display: block; }
+.ms-option {
+  display: flex; align-items: center; gap: 6px; padding: 5px 10px;
+  font-size: 13px; color: var(--text); cursor: pointer; white-space: nowrap;
+}
+.ms-option:hover { background: var(--surface-soft); }
+.ms-option input[type="checkbox"] { width: 14px; height: 14px; margin: 0; accent-color: var(--cyan-strong); cursor: pointer; }
+.ms-separator { height: 1px; background: var(--border); margin: 4px 8px; }
+.ms-exclude { color: var(--muted); font-size: 12px; }
+.ms-exclude:hover { color: var(--text); }
+
 /* Table */
-.table-wrap { overflow-x: auto; min-height: 200px; margin-bottom: 8px; }
+.table-wrap {
+  flex: 1;
+  overflow: auto;
+  min-height: 0;
+  margin-bottom: 0;
+}
 table { width: 100%; border-collapse: collapse; background: var(--surface); font-size: 13px; white-space: nowrap; }
 th {
   padding: 10px 12px;
@@ -143,6 +185,9 @@ th {
   text-transform: uppercase;
   letter-spacing: .04em;
   background: var(--surface-soft);
+  position: sticky;
+  top: 0;
+  z-index: 2;
 }
 td {
   padding: 8px 12px;
@@ -373,12 +418,111 @@ a:hover { text-decoration: underline; }
 .toast-success { border-left: 4px solid var(--green); }
 @keyframes toast-in { from { opacity: 0; transform: translateY(-12px); } to { opacity: 1; transform: translateY(0); } }
 
+/* Calendar panel */
+.calendar-panel {
+  display: none;
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  z-index: 1300;
+  background: var(--surface-strong);
+  border: 1px solid var(--cyan-strong);
+  border-radius: 8px;
+  box-shadow: 0 8px 32px rgba(0,0,0,.5);
+  width: 320px;
+  padding: 16px;
+  max-height: calc(100vh - 100px);
+  overflow-y: auto;
+}
+.calendar-panel.visible { display: block; }
+
+.calendar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  gap: 8px;
+}
+.calendar-header button {
+  background: none;
+  border: 1px solid var(--border);
+  color: var(--cyan);
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.calendar-header button:hover { border-color: var(--cyan); background: var(--cyan-soft); }
+.calendar-month { color: var(--cyan); font-weight: 640; font-size: 14px; text-transform: capitalize; flex: 1; text-align: center; }
+
+.calendar-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  margin-bottom: 4px;
+  text-align: center;
+  font-size: 11px;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+.calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+.calendar-day {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  font-size: 13px;
+  cursor: pointer;
+  position: relative;
+  color: var(--text);
+  border: 1px solid transparent;
+}
+.calendar-day:hover { border-color: var(--border); }
+.calendar-day.other-month { color: var(--muted); opacity: .4; }
+.calendar-day.today { border-color: var(--cyan); }
+.calendar-day.has-prevista { background: var(--cyan-soft); }
+.calendar-day.has-publicada { background: rgba(34, 197, 94, .18); border-color: var(--green); }
+.calendar-day.has-both { background: linear-gradient(135deg, var(--cyan-soft) 0%, var(--cyan-soft) 50%, rgba(34,197,94,.18) 50%, rgba(34,197,94,.18) 100%); }
+.calendar-day .dot-indicator {
+  position: absolute;
+  bottom: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 2px;
+}
+.calendar-day .dot { width: 5px; height: 5px; border-radius: 50%; }
+.calendar-day .dot.prevista { background: var(--cyan); }
+.calendar-day .dot.publicada { background: var(--green); }
+.calendar-legend {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+  font-size: 11px;
+  color: var(--muted);
+  justify-content: center;
+}
+.calendar-legend span { display: flex; align-items: center; gap: 4px; }
+.calendar-legend .legend-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.calendar-legend .legend-dot.prevista { background: var(--cyan); }
+.calendar-legend .legend-dot.publicada { background: var(--green); }
+
 @media (max-width: 768px) {
   .filters { flex-direction: column; }
   .filter-group { width: 100%; }
   .filter-group input, .filter-group select { min-width: 0; width: 100%; }
   .form-row { flex-direction: column; }
   .topbar { flex-direction: column; align-items: flex-start; }
+  .calendar-panel { right: 8px; width: calc(100vw - 16px); max-width: 320px; top: 60px; max-height: calc(100vh - 80px); }
 }
 </style>
 </head>
@@ -412,16 +556,39 @@ a:hover { text-decoration: underline; }
     </div>
     <div class="filter-group">
       <label>Estado IG</label>
-      <select id="fEstadoIg" onchange="resetAndLoad()">
-        <option value="">Todos</option>
-        <option value="Revisar">Revisar</option>
-        <option value="Sacar Fotos">Sacar Fotos</option>
-        <option value="Publicar">Publicar</option>
-        <option value="Publicado">Publicado</option>
-        <option value="Error">Error</option>
-        <option value="Cancelada">Cancelada</option>
-        <option value="Descartado">Descartado</option>
-      </select>
+      <div class="multi-select" id="fEstadoIgMs">
+        <div class="multi-select-trigger" onclick="toggleMs('fEstadoIgMs')">
+          <span class="multi-select-text">Todos</span>
+          <span class="multi-select-arrow">▾</span>
+        </div>
+        <div class="multi-select-dropdown">
+          <label class="ms-option"><input type="checkbox" value="Revisar" onchange="onMsChange()"> Revisar</label>
+          <label class="ms-option"><input type="checkbox" value="Sacar Fotos" onchange="onMsChange()"> Sacar Fotos</label>
+          <label class="ms-option"><input type="checkbox" value="Publicar" onchange="onMsChange()"> Publicar</label>
+          <label class="ms-option"><input type="checkbox" value="Publicado" onchange="onMsChange()"> Publicado</label>
+          <label class="ms-option"><input type="checkbox" value="Error" onchange="onMsChange()"> Error</label>
+          <label class="ms-option"><input type="checkbox" value="Cancelada" onchange="onMsChange()"> Cancelada</label>
+          <label class="ms-option"><input type="checkbox" value="Descartado" onchange="onMsChange()"> Descartado</label>
+        </div>
+      </div>
+    </div>
+    <div class="filter-group">
+      <label>Excluir Est. IG</label>
+      <div class="multi-select" id="fEstadoIgExMs">
+        <div class="multi-select-trigger" onclick="toggleMs('fEstadoIgExMs')">
+          <span class="multi-select-text">Ninguno</span>
+          <span class="multi-select-arrow">▾</span>
+        </div>
+        <div class="multi-select-dropdown">
+          <label class="ms-option"><input type="checkbox" value="Revisar" onchange="onMsChange()"> Revisar</label>
+          <label class="ms-option"><input type="checkbox" value="Sacar Fotos" onchange="onMsChange()"> Sacar Fotos</label>
+          <label class="ms-option"><input type="checkbox" value="Publicar" onchange="onMsChange()"> Publicar</label>
+          <label class="ms-option"><input type="checkbox" value="Publicado" onchange="onMsChange()"> Publicado</label>
+          <label class="ms-option"><input type="checkbox" value="Error" onchange="onMsChange()"> Error</label>
+          <label class="ms-option"><input type="checkbox" value="Cancelada" onchange="onMsChange()"> Cancelada</label>
+          <label class="ms-option"><input type="checkbox" value="Descartado" onchange="onMsChange()"> Descartado</label>
+        </div>
+      </div>
     </div>
     <div class="filter-group">
       <label>Fotos</label>
@@ -454,16 +621,37 @@ a:hover { text-decoration: underline; }
       <label>&nbsp;</label>
       <button class="filter-btn" onclick="clearFilters()">Limpiar</button>
     </div>
+    <div class="filter-group" style="margin-left:auto">
+      <label>&nbsp;</label>
+      <button class="filter-btn" onclick="toggleCalendario()" id="btnCalendario" style="font-weight:640">Calendario</button>
+    </div>
   </div>
 
   <div class="table-wrap">
     <div id="tableContent"><div class="loading-state">Cargando...</div></div>
   </div>
-  <div id="scrollSentinel" style="height:1px"></div>
 </div>
 
 <!-- Toast container -->
 <div id="toast-container"></div>
+
+<!-- Calendar panel -->
+<div class="calendar-panel" id="calendarPanel">
+  <div class="calendar-header">
+    <button onclick="navCalendario(-1)">◀</button>
+    <span class="calendar-month" id="calMonth"></span>
+    <button onclick="navCalendario(1)">▶</button>
+    <button onclick="toggleCalendario()" style="margin-left:auto;font-size:16px;width:28px;height:28px;line-height:1">✕</button>
+  </div>
+  <div class="calendar-weekdays">
+    <span>Lun</span><span>Mar</span><span>Mié</span><span>Jue</span><span>Vie</span><span>Sáb</span><span>Dom</span>
+  </div>
+  <div class="calendar-grid" id="calGrid"></div>
+  <div class="calendar-legend">
+    <span><span class="legend-dot prevista"></span> Prevista</span>
+    <span><span class="legend-dot publicada"></span> Publicada</span>
+  </div>
+</div>
 
 <div class="foto-preview" id="fotoPreview"><img src="" alt=""></div>
 
@@ -475,7 +663,7 @@ a:hover { text-decoration: underline; }
     <div class="form-row">
       <div class="form-group">
         <label>Estado IG</label>
-        <select id="mpEstado">
+        <select id="mpEstado" onchange="toggleFechaPub()">
           <option value="Revisar">Revisar</option>
           <option value="Sacar Fotos">Sacar Fotos</option>
           <option value="Publicar">Publicar</option>
@@ -486,12 +674,12 @@ a:hover { text-decoration: underline; }
         </select>
       </div>
       <div class="form-group">
-        <label>Fecha Pub. IG</label>
-        <input type="datetime-local" id="mpFecha">
-      </div>
-      <div class="form-group">
         <label>Fecha Prevista</label>
         <input type="datetime-local" id="mpFechaPrevista">
+      </div>
+      <div class="form-group">
+        <label>Fecha Pub. IG</label>
+        <input type="datetime-local" id="mpFecha" disabled>
       </div>
       <div class="form-group">
         <label>IG Post ID</label>
@@ -599,12 +787,13 @@ document.addEventListener('DOMContentLoaded', () => {
   loadToken();
   loadMore();
 
-  // Infinite scroll: detecta scroll cerca del final
-  window.addEventListener('scroll', () => {
+  // Infinite scroll: detecta scroll cerca del final en el contenedor de tabla
+  const tableWrap = document.querySelector('.table-wrap');
+  tableWrap.addEventListener('scroll', () => {
     if (isLoading || !hasMore) return;
-    const scrollBottom = window.innerHeight + window.scrollY;
-    const docHeight = document.documentElement.offsetHeight;
-    if (docHeight - scrollBottom < 400) {
+    const el = tableWrap;
+    const scrollBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+    if (scrollBottom < 200) {
       loadMore();
     }
   });
@@ -636,7 +825,7 @@ async function loadFilters() {
       apiGet(API_BASE + '/estados'),
     ]);
     fillSelect('fPlataforma', plats);
-    fillSelect('fTipo', tipos);
+    fillSelect('fTipo', tipos, 'id', 'descripcion');
     fillSelect('fEstadoGen', estados.filter(e => e.descripcion).map(e => ({id:e.id, nombre:e.descripcion})));
   } catch(e) { console.error('Error cargando filtros', e); }
 }
@@ -657,8 +846,40 @@ function debounceSearch() {
   searchTimeout = setTimeout(resetAndLoad, 300);
 }
 
+function toggleMs(id) {
+  const ms = document.getElementById(id);
+  const wasOpen = ms.classList.contains('open');
+  document.querySelectorAll('.multi-select.open').forEach(el => el.classList.remove('open'));
+  if (!wasOpen) ms.classList.add('open');
+}
+
+function onMsChange() {
+  ['fEstadoIgMs', 'fEstadoIgExMs'].forEach(msId => {
+    const ms = document.getElementById(msId);
+    const checked = ms.querySelectorAll('.ms-option input[type=checkbox]:checked');
+    const textEl = ms.querySelector('.multi-select-text');
+    if (checked.length === 0) {
+      textEl.textContent = msId === 'fEstadoIgMs' ? 'Todos' : 'Ninguno';
+    } else {
+      const names = Array.from(checked).map(cb => cb.value);
+      textEl.textContent = names.join(', ');
+    }
+  });
+  resetAndLoad();
+}
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.multi-select')) {
+    document.querySelectorAll('.multi-select.open').forEach(el => el.classList.remove('open'));
+  }
+});
+
 function clearFilters() {
-  ['fNombre','fPlataforma','fTipo','fEstadoGen','fEstadoIg','fConFotos','fUrlIg'].forEach(id => document.getElementById(id).value = '');
+  ['fNombre','fPlataforma','fTipo','fEstadoGen','fConFotos','fUrlIg'].forEach(id => document.getElementById(id).value = '');
+  document.querySelectorAll('#fEstadoIgMs .ms-option input[type=checkbox]').forEach(cb => cb.checked = false);
+  document.getElementById('fEstadoIgMs').querySelector('.multi-select-text').textContent = 'Todos';
+  document.querySelectorAll('#fEstadoIgExMs .ms-option input[type=checkbox]').forEach(cb => cb.checked = false);
+  document.getElementById('fEstadoIgExMs').querySelector('.multi-select-text').textContent = 'Ninguno';
   document.getElementById('fOrden').value = 'fecha_prevista_pub_desc';
   resetAndLoad();
 }
@@ -688,8 +909,14 @@ async function loadMore() {
   if (tipo) params.set('tipo_base_id', tipo);
   const estadoGen = document.getElementById('fEstadoGen').value;
   if (estadoGen) params.set('estado_gen_id', estadoGen);
-  const estadoIg = document.getElementById('fEstadoIg').value;
-  if (estadoIg) params.set('ig_estado', estadoIg);
+  const estadosChecked = Array.from(document.querySelectorAll('#fEstadoIgMs .ms-option input[type=checkbox]:checked')).map(cb => cb.value);
+  if (estadosChecked.length) {
+    params.set('ig_estado', estadosChecked.join(','));
+  }
+  const estadosExcluir = Array.from(document.querySelectorAll('#fEstadoIgExMs .ms-option input[type=checkbox]:checked')).map(cb => cb.value);
+  if (estadosExcluir.length) {
+    params.set('ig_estado_excluir', estadosExcluir.join(','));
+  }
   const orden = document.getElementById('fOrden').value;
   if (orden) params.set('orden', orden);
   if (document.getElementById('fConFotos').value) params.set('con_fotos', '1');
@@ -724,7 +951,8 @@ async function loadMore() {
     }
     isLoading = false;
     setTimeout(() => {
-      if (!isLoading && hasMore && document.documentElement.offsetHeight <= window.innerHeight + 100) {
+      const tw = document.querySelector('.table-wrap');
+      if (!isLoading && hasMore && tw && tw.scrollHeight <= tw.clientHeight + 100) {
         loadMore();
       }
     }, 100);
@@ -761,36 +989,41 @@ function renderTable(items) {
     {key:'tienda', label:'Tienda'},
     {key:'url', label:'URL'},
   ];
+  window._tableCols = cols;
 
   let html = '<table><thead><tr>';
   cols.forEach(c => html += `<th>${c.label}</th>`);
   html += '</tr></thead><tbody>';
 
-  items.forEach(item => {
-    html += '<tr style="cursor:pointer" onclick="openPublicacionModal(' + item.id + ')">';
-    cols.forEach(c => {
-      if (c.key === 'ig_estado') {
-        html += `<td><span class="estado-badge estado-${item[c.key].replace(/ /g, '-')}">${item[c.key]}</span></td>`;
-      } else if (c.key === 'url' && item[c.key]) {
-        html += `<td onclick="event.stopPropagation()"><a href="${esc(item[c.key])}" target="_blank">🔗</a></td>`;
-      } else if (c.key === 'ig' && item[c.key]) {
-        html += `<td onclick="event.stopPropagation()"><a href="${esc(item[c.key])}" target="_blank">🔗</a></td>`;
-      } else if (c.key === 'total_fotos') {
-        html += `<td style="text-align:center">${item[c.key] || 0}</td>`;
-      } else if (c.key === 'fecha_prevista_publicacion' || c.key === 'fecha_ig_publicacion') {
-        html += `<td>${formatDate(item[c.key])}</td>`;
-      } else if (c.key === 'fecha_recibo') {
-        html += `<td>${formatDate(item[c.key], true)}</td>`;
-      } else if (c.key === 'coste') {
-        html += `<td>${item[c.key] != null ? parseFloat(item[c.key]).toFixed(2) + '€' : '-'}</td>`;
-      } else {
-        html += `<td>${item[c.key] || '-'}</td>`;
-      }
-    });
-    html += '</tr>';
-  });
+  items.forEach(item => html += renderRow(item));
   html += '</tbody></table>';
   document.getElementById('tableContent').innerHTML = html;
+}
+
+function renderRow(item) {
+  const cols = window._tableCols || [];
+  let html = `<tr id="row_${item.id}" style="cursor:pointer" onclick="openPublicacionModal(${item.id})">`;
+  cols.forEach(c => {
+    if (c.key === 'ig_estado') {
+      html += `<td><span class="estado-badge estado-${item[c.key].replace(/ /g, '-')}">${item[c.key]}</span></td>`;
+    } else if (c.key === 'url' && item[c.key]) {
+      html += `<td onclick="event.stopPropagation()"><a href="${esc(item[c.key])}" target="_blank">🔗</a></td>`;
+    } else if (c.key === 'ig' && item[c.key]) {
+      html += `<td onclick="event.stopPropagation()"><a href="${esc(item[c.key])}" target="_blank">🔗</a></td>`;
+    } else if (c.key === 'total_fotos') {
+      html += `<td style="text-align:center">${item[c.key] || 0}</td>`;
+    } else if (c.key === 'fecha_prevista_publicacion' || c.key === 'fecha_ig_publicacion') {
+      html += `<td>${formatDate(item[c.key])}</td>`;
+    } else if (c.key === 'fecha_recibo') {
+      html += `<td>${formatDate(item[c.key], true)}</td>`;
+    } else if (c.key === 'coste') {
+      html += `<td>${item[c.key] != null ? parseFloat(item[c.key]).toFixed(2) + '€' : '-'}</td>`;
+    } else {
+      html += `<td>${item[c.key] || '-'}</td>`;
+    }
+  });
+  html += '</tr>';
+  return html;
 }
 
 async function enrichPubTimes(items) {
@@ -806,6 +1039,11 @@ async function enrichPubTimes(items) {
   });
 }
 
+function toggleFechaPub() {
+  const estado = document.getElementById('mpEstado').value;
+  document.getElementById('mpFecha').disabled = estado !== 'Publicado';
+}
+
 function openModal(id) { document.getElementById(id).classList.add('active'); }
 function closeModal(id) { document.getElementById(id).classList.remove('active'); }
 
@@ -816,6 +1054,7 @@ async function openPublicacionModal(coleccionId) {
     const c = data.coleccion || {};
     document.getElementById('mpNombre').textContent = c.base ? c.base.nombre : ('ID: ' + coleccionId);
     document.getElementById('mpEstado').value = data.estado || 'Revisar';
+    toggleFechaPub();
     document.getElementById('mpTexto').value = data.texto_publicacion || '';
     document.getElementById('mpFecha').value = data.fecha_ig_publicacion ? data.fecha_ig_publicacion.slice(0,16) : '';
     document.getElementById('mpFechaPrevista').value = data.fecha_prevista_publicacion ? data.fecha_prevista_publicacion.slice(0,16) : '';
@@ -845,7 +1084,23 @@ async function savePublicacion() {
     await apiPut(API + '/publicacion/' + currentColeccionId, data);
     closeModal('modalPublicacion');
     toast('Publicación guardada correctamente', 'success');
-    resetAndLoad();
+
+    const idx = allItems.findIndex(item => item.id === currentColeccionId);
+    if (idx !== -1) {
+      allItems[idx].ig_estado = data.estado;
+      allItems[idx].fecha_ig_publicacion = data.fecha_ig_publicacion;
+      allItems[idx].fecha_prevista_publicacion = data.fecha_prevista_publicacion;
+      allItems[idx].ig = data.ig;
+      const rowEl = document.getElementById('row_' + currentColeccionId);
+      if (rowEl) rowEl.outerHTML = renderRow(allItems[idx]);
+    }
+
+    if (calLoaded) {
+      loadCalendario().then(() => {
+        const panel = document.getElementById('calendarPanel');
+        if (panel.classList.contains('visible')) renderCalendario();
+      });
+    }
   } catch(e) { toast('Error al guardar', 'error'); }
 }
 
@@ -1056,6 +1311,87 @@ function toast(msg, type) {
   el.textContent = msg;
   container.appendChild(el);
   setTimeout(() => el.remove(), 3500);
+}
+
+// ── Calendario ─────────────────────────────────────────────────────
+let calData = {};
+let calYear, calMonth;
+let calLoaded = false;
+
+async function toggleCalendario() {
+  const panel = document.getElementById('calendarPanel');
+  panel.classList.toggle('visible');
+  if (panel.classList.contains('visible')) {
+    if (!calLoaded) await loadCalendario();
+    const now = new Date();
+    calYear = now.getFullYear();
+    calMonth = now.getMonth();
+    renderCalendario();
+  }
+}
+
+async function loadCalendario() {
+  try {
+    calData = await apiGet(API + '/calendario');
+    calLoaded = true;
+  } catch(e) { console.error('Error cargando calendario', e); }
+}
+
+function navCalendario(dir) {
+  calMonth += dir;
+  if (calMonth < 0) { calMonth = 11; calYear--; }
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  renderCalendario();
+}
+
+function renderCalendario() {
+  const todayStr = new Date().toISOString().slice(0, 10);
+  const mes = calMonth;
+  const ano = calYear;
+
+  const meses = ['Enero','Febrero','Marzo','Abril','Mayo','Junio',
+                 'Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  document.getElementById('calMonth').textContent = meses[mes] + ' ' + ano;
+
+  const firstDay = new Date(ano, mes, 1).getDay(); // 0=dom, 1=lun...
+  const dim = new Date(ano, mes + 1, 0).getDate();
+  const prevDim = new Date(ano, mes, 0).getDate();
+
+  const weekStart = firstDay === 0 ? 6 : firstDay - 1; // lun=0, ..., dom=6
+
+  let html = '';
+
+  // Días del mes anterior
+  for (let i = weekStart - 1; i >= 0; i--) {
+    const d = prevDim - i;
+    const ds = `${ano}-${String(mes === 0 ? 12 : mes).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    html += `<div class="calendar-day other-month">${d}</div>`;
+  }
+
+  // Días del mes actual
+  for (let d = 1; d <= dim; d++) {
+    const ds = `${ano}-${String(mes+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    let cls = 'calendar-day';
+    if (ds === todayStr) cls += ' today';
+
+    const info = calData[ds];
+    let dots = '';
+    if (info) {
+      if (info.prevista > 0 && info.publicada > 0) { cls += ' has-both'; dots = '<div class="dot-indicator"><span class="dot prevista"></span><span class="dot publicada"></span></div>'; }
+      else if (info.publicada > 0) { cls += ' has-publicada'; dots = '<div class="dot-indicator"><span class="dot publicada"></span></div>'; }
+      else if (info.prevista > 0) { cls += ' has-prevista'; dots = '<div class="dot-indicator"><span class="dot prevista"></span></div>'; }
+    }
+
+    html += `<div class="${cls}">${d}${dots}</div>`;
+  }
+
+  // Días del mes siguiente para completar la grilla (6 filas máximo)
+  const remaining = (7 - ((weekStart + dim) % 7)) % 7;
+  for (let d = 1; d <= remaining; d++) {
+    html += `<div class="calendar-day other-month">${d}</div>`;
+  }
+
+  document.getElementById('calGrid').innerHTML = html;
 }
 </script>
 </body>
