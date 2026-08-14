@@ -24,7 +24,7 @@ import requests
 from instagrapi import Client
 from instagrapi.exceptions import LoginRequired
 from instagrapi.types import StoryLink
-from PIL import Image, ImageDraw, ImageFilter
+from PIL import Image, ImageDraw, ImageFilter, ImageOps
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CONFIG_FILE = os.path.join(BASE_DIR, 'config.txt')
@@ -45,6 +45,19 @@ def load_cfg():
         sys.exit(1)
     cfg.read(CONFIG_FILE)
     return cfg
+
+
+def _fix_orientation(image_path):
+    """Aplica la rotacion EXIF si existe y reescribe el archivo corregido."""
+    try:
+        img = Image.open(image_path)
+        img = ImageOps.exif_transpose(img)
+        img.save(image_path, quality=95, subsampling=0)
+        log.info(f"  Orientacion EXIF corregida: {os.path.basename(image_path)}")
+        return True
+    except Exception as e:
+        log.warning(f"  No se pudo corregir orientacion EXIF: {e}")
+        return False
 
 
 # ── API helpers ────────────────────────────────────────────────────
@@ -281,6 +294,11 @@ def _compute_overlay_pos(overlay_path, is_flecha=False):
         ow = int((ov_area * aspect) ** 0.5)
         oh = max(int(ow / aspect), 1)
 
+        max_width = int(W * 0.30)
+        if ow > max_width:
+            ow = max_width
+            oh = max(int(ow / aspect), 1)
+
         center_x = W // 2
         center_y = H // 2
         margin_x = int(FG_W * 0.12)
@@ -296,6 +314,11 @@ def _compute_overlay_pos(overlay_path, is_flecha=False):
     aspect = w / h if h > 0 else 1.0
     ow = int((ov_area * aspect) ** 0.5)
     oh = max(int(ow / aspect), 1)
+
+    max_width = int(W * 0.90)
+    if ow > max_width:
+        ow = max_width
+        oh = max(int(ow / aspect), 1)
 
     max_overlap_pct = random.uniform(0.10, 0.15)
     max_overlap_y = int(FG_Y + FG_H * max_overlap_pct)
@@ -331,7 +354,7 @@ def share_to_story(cfg, image_path, permalink, game_name, platform,
 
     links = []
     if permalink:
-        links = [StoryLink(webUri=permalink, x=0.5, y=0.5, width=0.72, height=0.28)]
+        links = [StoryLink(webUri=permalink, x=0.5, y=0.55, width=0.85, height=0.85)]
         log.info(f"  Link sticker: {permalink}")
 
     max_attempts = 3
@@ -771,6 +794,7 @@ def process_publication(cfg, pub):
         tmp = tempfile.NamedTemporaryFile(suffix=ext or '.jpg', delete=False)
         tmp.write(img_data)
         tmp.close()
+        _fix_orientation(tmp.name)
         tmp_files.append(tmp.name)
 
     if not tmp_files:
