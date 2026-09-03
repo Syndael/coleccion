@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 """
-IG Publisher — Publica en Instagram via instagrapi (API privada).
-Sube imágenes directamente, sin necesidad de URLs HTTPS públicas.
+IG Publisher — Publica en Instagram via Graph API oficial.
+Sube imágenes a Cloudflare R2 para obtener URLs públicas.
 Notifica por Telegram solo si hay novedades.
 """
 
 import configparser
-import json
 import logging
 import os
 import random
@@ -18,17 +17,15 @@ import time
 import traceback
 import urllib.parse
 import urllib.request
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 
+import boto3
 import requests
-from instagrapi import Client
-from instagrapi.exceptions import LoginRequired
-from instagrapi.types import StoryLink
+from botocore.exceptions import ClientError
 from PIL import Image, ImageDraw, ImageFilter, ImageOps
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 CONFIG_FILE = os.path.join(BASE_DIR, 'config.txt')
-SESSION_FILE = os.path.join(BASE_DIR, 'ig_session.json')
 FONT_FILE = '/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf'
 
 log = logging.getLogger('ig-publisher')
@@ -105,108 +102,350 @@ def get_image_from_api(cfg, fichero_id):
         return None
 
 
-# ── Instagram (instagrapi) ─────────────────────────────────────────
-_ig_client = None
-
-
-def _invalidate_session():
-    """Sobrescribe ig_session.json con {} en lugar de borrarlo,
-    para no romper el bind mount de Docker."""
-    try:
-        with open(SESSION_FILE, 'w') as f:
-            json.dump({}, f)
-    except Exception as e:
-        log.warning(f"No se pudo sobrescribir sesión: {e}")
-
-
-def _new_client():
-    cl = Client()
-    cl.delay_range = [2, 5]
-    return cl
-
-
-def get_ig_client(cfg):
-    global _ig_client
-    if _ig_client is not None:
-        return _ig_client
-
-    username = cfg.get('config', 'ig_username')
-    password = cfg.get('config', 'ig_password')
-
-    # Intentar restaurar sesión guardada
-    if os.path.exists(SESSION_FILE):
-        cl = _new_client()
+# ── Cloudflare R2 Storage ──────────────────────────────────────────
+class R2Storage:
+    def __init__(self, cfg):
+        self.endpoint = cfg.get('config', 'r2_endpoint')
+        self.bucket_name = cfg.get('config', 'r2_bucket')
+        self.access_key = cfg.get('config', 'r2_access_key')
+        self.secret_key = cfg.get('config', 'r2_secret_key')
+        self.public_url = cfg.get('config', 'r2_public_url').rstrip('/')
+        
+        self.client = boto3.client(
+            's3',
+            endpoint_url=self.endpoint,
+            aws_access_key_id=self.access_key,
+            aws_secret_access_key=self.secret_key,
+            region_name='auto'
+        )
+    
+    def upload_image(self, local_path, content_type='image/jpeg'):
+        """Sube una imagen a R2 y retorna la URL pública."""
+        filename = os.path.basename(local_path)
+        key = f"ig-temp/{int(time.time())}_{filename}"
+        
         try:
-            cl.load_settings(SESSION_FILE)
-        except (json.JSONDecodeError, ValueError) as e:
-            log.warning(f"Sesión corrupta, reiniciando: {e}")
-            _invalidate_session()
+            with open(local_path, 'rb') as f:
+                self.client.put_object(
+                    Bucket=self.bucket_name,
+                    Key=key,
+                    Body=f.read(),
+                    ContentType=content_type
+                )
+            
+            public_url = f"{self.public_url}/{key}"
+            log.info(f"  Imagen subida a R2: {key}")
+            return public_url, key
         except Exception as e:
-            log.warning(f"Error cargando sesión: {e}")
-            if "Expecting value" in str(e) or "json" in str(type(e).__name__).lower():
-                _invalidate_session()
-        else:
+            log.error(f"  Error subiendo a R2: {e}")
+            return None, None
+    
+    def delete_object(self, key):
+        """Elimina un objeto de R2."""
+        try:
+            self.client.delete_object(Bucket=self.bucket_name, Key=key)
+            log.info(f"  Objeto eliminado de R2: {key}")
+            return True
+        except ClientError as e:
+            log.warning(f"  Error eliminando de R2: {e}")
+            return False
+
+
+# ── Instagram Graph API ────────────────────────────────────────────
+class InstagramGraphAPI:
+    GRAPH_URL = "https://graph.facebook.com/v21.0"
+    
+    def __init__(self, cfg):
+        self.access_token = cfg.get('config', 'ig_access_token')
+        self.ig_user_id = cfg.get('config', 'ig_user_id')
+        self.max_retries = 3
+        self._token_valid = None
+    
+    def verify_token(self):
+        """Verifica que el token de acceso es válido."""
+        if self._token_valid is not None:
+            return self._token_valid
+        
+        try:
+            result = self._make_request(
+                'me',
+                params={'fields': 'id,name'},
+                method='GET'
+            )
+            self._token_valid = True
+            log.info(f"  Token IG válido para: {result.get('name', '?')}")
+            return True
+        except Exception as e:
+            self._token_valid = False
+            error_msg = str(e)
+            if 'OAuthException' in error_msg or 'Invalid OAuth' in error_msg:
+                log.error(f"  Token IG expirado o inválido: {error_msg}")
+            else:
+                log.error(f"  Error verificando token IG: {error_msg}")
+            return False
+    
+    def _make_request(self, endpoint, params=None, method='POST'):
+        """Realiza una petición a la Graph API con reintentos limitados."""
+        url = f"{self.GRAPH_URL}/{endpoint}"
+        
+        if params is None:
+            params = {}
+        params['access_token'] = self.access_token
+        
+        for attempt in range(self.max_retries):
             try:
-                cl.login(username, password)
-                cl.get_timeline_feed()
-                cl.dump_settings(SESSION_FILE)
-                log.info("Sesión de IG restaurada")
-                _ig_client = cl
-                return cl
-            except LoginRequired:
-                log.warning("Sesión expirada, re-login...")
-                _invalidate_session()
+                if method == 'POST':
+                    r = requests.post(url, data=params, timeout=60)
+                else:
+                    r = requests.get(url, params=params, timeout=60)
+                
+                r.raise_for_status()
+                return r.json()
+            except requests.exceptions.RequestException as e:
+                log.warning(f"  Request falló (intento {attempt+1}/{self.max_retries}): {e}")
+                if attempt < self.max_retries - 1:
+                    time.sleep(2)
+                else:
+                    raise
+        
+        return None
+    
+    def _wait_for_container(self, container_id, timeout=120):
+        """Espera a que un container esté listo (FINISHED)."""
+        start_time = time.time()
+        
+        while time.time() - start_time < timeout:
+            try:
+                result = self._make_request(
+                    container_id,
+                    params={'fields': 'status_code,status'},
+                    method='GET'
+                )
+                
+                status = result.get('status_code', '')
+                if status == 'FINISHED':
+                    return True
+                elif status == 'ERROR':
+                    log.error(f"  Container error: {result.get('status', 'unknown')}")
+                    return False
+                
+                time.sleep(2)
             except Exception as e:
-                log.warning(f"Error restaurando sesión: {e}")
-                _invalidate_session()
-
-    # Login fresco: sessionid (si existe) o user/pass normal
-    sessionid = cfg.get('config', 'ig_sessionid', fallback='').strip()
-
-    if sessionid:
-        cl = _new_client()
+                log.warning(f"  Error verificando container: {e}")
+                time.sleep(2)
+        
+        log.error(f"  Timeout esperando container {container_id}")
+        return False
+    
+    def _get_media_shortcode(self, media_id):
+        """Obtiene el shortcode de un media publicado."""
         try:
-            cl.login_by_sessionid(sessionid)
-            cl.get_timeline_feed()
-            cl.dump_settings(SESSION_FILE)
-            log.info("Login en IG vía sessionid correcto, sesión guardada")
-            _ig_client = cl
-            return cl
+            result = self._make_request(
+                media_id,
+                params={'fields': 'shortcode,permalink'},
+                method='GET'
+            )
+            shortcode = result.get('shortcode', '')
+            if not shortcode:
+                permalink = result.get('permalink', '')
+                if permalink:
+                    import re
+                    match = re.search(r'/p/([^/]+)/', permalink)
+                    if match:
+                        shortcode = match.group(1)
+            return shortcode
         except Exception as e:
-            log.warning(f"Login vía sessionid falló: {e}")
+            log.warning(f"  Error obteniendo shortcode: {e}")
+            return ''
+    
+    def publish_photo(self, image_url, caption=''):
+        """Publica una foto simple."""
+        try:
+            # Paso 1: Crear container
+            container = self._make_request(
+                f"{self.ig_user_id}/media",
+                params={
+                    'image_url': image_url,
+                    'caption': caption,
+                    'media_type': 'IMAGE'
+                }
+            )
+            
+            container_id = container.get('id')
+            if not container_id:
+                return None, None, "No se recibió container_id"
+            
+            # Paso 2: Esperar a que esté listo
+            if not self._wait_for_container(container_id):
+                return None, None, "Container no finalizó"
+            
+            # Paso 3: Publicar
+            result = self._make_request(
+                f"{self.ig_user_id}/media_publish",
+                params={'creation_id': container_id}
+            )
+            
+            media_id = result.get('id')
+            shortcode = result.get('shortcode', '')
+            
+            if not shortcode and media_id:
+                shortcode = self._get_media_shortcode(media_id)
+            
+            log.info(f"  Foto publicada: media_id={media_id}, shortcode={shortcode}")
+            return shortcode, media_id, None
+            
+        except Exception as e:
+            return None, None, str(e)
+    
+    def publish_album(self, image_urls, caption=''):
+        """Publica un álbum (carousel) con múltiples imágenes."""
+        try:
+            if len(image_urls) < 2:
+                return self.publish_photo(image_urls[0], caption)
+            
+            # Paso 1: Crear containers hijos
+            children_ids = []
+            for image_url in image_urls[:10]:  # Máximo 10 imágenes
+                container = self._make_request(
+                    f"{self.ig_user_id}/media",
+                    params={
+                        'image_url': image_url,
+                        'is_carousel_item': 'true'
+                    }
+                )
+                
+                child_id = container.get('id')
+                if child_id:
+                    children_ids.append(child_id)
+            
+            if not children_ids:
+                return None, None, "No se pudieron crear containers hijos"
+            
+            # Paso 2: Esperar a que todos estén listos
+            for child_id in children_ids:
+                if not self._wait_for_container(child_id):
+                    return None, None, f"Container hijo {child_id} no finalizó"
+            
+            # Paso 3: Crear container padre
+            parent_container = self._make_request(
+                f"{self.ig_user_id}/media",
+                params={
+                    'media_type': 'CAROUSEL',
+                    'children': ','.join(children_ids),
+                    'caption': caption
+                }
+            )
+            
+            parent_id = parent_container.get('id')
+            if not parent_id:
+                return None, None, "No se recibió parent_id"
+            
+            # Paso 4: Esperar a que el padre esté listo
+            if not self._wait_for_container(parent_id):
+                return None, None, "Container padre no finalizó"
+            
+            # Paso 5: Publicar
+            result = self._make_request(
+                f"{self.ig_user_id}/media_publish",
+                params={'creation_id': parent_id}
+            )
+            
+            media_id = result.get('id')
+            shortcode = result.get('shortcode', '')
+            
+            if not shortcode and media_id:
+                shortcode = self._get_media_shortcode(media_id)
+            
+            log.info(f"  Álbum publicado: media_id={media_id}, shortcode={shortcode}")
+            return shortcode, media_id, None
+            
+        except Exception as e:
+            return None, None, str(e)
+    
+    def publish_story(self, image_url=None, video_url=None, link=None):
+        """Publica una story (imagen o video)."""
+        try:
+            params = {'media_type': 'STORIES'}
+            
+            if video_url:
+                params['video_url'] = video_url
+                if image_url:
+                    params['thumb_offset'] = 0
+            elif image_url:
+                params['image_url'] = image_url
+            else:
+                return None, None, "Se requiere image_url o video_url"
+            
+            # Paso 1: Crear container
+            container = self._make_request(
+                f"{self.ig_user_id}/media",
+                params=params
+            )
+            
+            container_id = container.get('id')
+            if not container_id:
+                return None, None, "No se recibió container_id para story"
+            
+            # Paso 2: Esperar a que esté listo
+            if not self._wait_for_container(container_id, timeout=180):
+                return None, None, "Container de story no finalizó"
+            
+            # Paso 3: Publicar
+            result = self._make_request(
+                f"{self.ig_user_id}/media_publish",
+                params={'creation_id': container_id}
+            )
+            
+            media_id = result.get('id')
+            shortcode = result.get('shortcode', '')
+            
+            if not shortcode and media_id:
+                shortcode = self._get_media_shortcode(media_id)
+            
+            log.info(f"  Story publicada: media_id={media_id}, shortcode={shortcode}")
+            return shortcode, media_id, None
+            
+        except Exception as e:
+            return None, None, str(e)
 
-    # Fallback a user/pass normal
-    cl = _new_client()
-    try:
-        cl.login(username, password)
-    except Exception as e:
-        msg = str(e)
-        if "facebook" in msg.lower() or "proxy" in msg.lower() or "reject" in msg.lower():
-            raise RuntimeError(
-                f"Instagram rechazó el login (posible bloqueo IP o device fingerprint). "
-                f"Intenta loguearte manualmente desde un navegador en la misma red, "
-                f"o usa el campo ig_sessionid en config.txt. Error: {msg}"
-            ) from e
-        raise
 
-    cl.dump_settings(SESSION_FILE)
-    log.info("Login en IG correcto, sesión guardada")
-    _ig_client = cl
-    return cl
-
-
-def publish_instagram(cfg, image_paths, caption):
+# ── Instagram publishing functions ─────────────────────────────────
+def publish_instagram(cfg, r2, image_paths, caption):
     """Publica foto(s) en Instagram. Retorna (code, media_pk, None) o (None, None, error)."""
-    cl = get_ig_client(cfg)
+    ig = InstagramGraphAPI(cfg)
+    
+    # Verificar token antes de publicar
+    if not ig.verify_token():
+        return None, None, "Token de Instagram expirado o inválido. Regenera el token en Facebook Developers."
+    
+    # Subir imágenes a R2
+    image_urls = []
+    r2_keys = []
+    
     try:
-        if len(image_paths) == 1:
-            media = cl.photo_upload(image_paths[0], caption=caption)
+        for image_path in image_paths:
+            url, key = r2.upload_image(image_path)
+            if url:
+                image_urls.append(url)
+                r2_keys.append(key)
+            else:
+                # Limpiar archivos subidos si falla alguno
+                for k in r2_keys:
+                    r2.delete_object(k)
+                return None, None, "Error subiendo imágenes a R2"
+        
+        if len(image_urls) == 1:
+            code, media_id, error = ig.publish_photo(image_urls[0], caption)
         else:
-            media = cl.album_upload(image_paths[:10], caption=caption)
-        code = media.code if hasattr(media, 'code') else str(media.pk)
-        return code, str(media.pk), None
+            code, media_id, error = ig.publish_album(image_urls, caption)
+        
+        return code, media_id, error
     except Exception as e:
         return None, None, str(e)
+    finally:
+        # Limpiar archivos de R2
+        for key in r2_keys:
+            r2.delete_object(key)
 
 
 # ── Stories ────────────────────────────────────────────────────────
@@ -331,15 +570,21 @@ def _compute_overlay_pos(overlay_path, is_flecha=False):
     return ox, oy, ow, oh
 
 
-def share_to_story(cfg, image_path, permalink, game_name, platform,
+def share_to_story(cfg, r2, image_path, permalink, game_name, platform,
                    video_path=None, frame_path=None):
     """Sube la story con frame Pillow + overlay + musica.
     Si video_path/frame_path no se pasan, los genera con FFmpeg.
     Retorna (True, None) si OK, o (False, video_path) si falla la subida
     (el video_path sobrevive para enviarse por Telegram como fallback)."""
-    global _ig_client
-    cl = get_ig_client(cfg)
-
+    ig = InstagramGraphAPI(cfg)
+    
+    # Verificar token antes de publicar story
+    if not ig.verify_token():
+        log.error("  Token IG expirado, no se puede publicar story")
+        if video_path:
+            return False, video_path
+        return False, None
+    
     own_video = video_path is None
     if own_video:
         video_path, frame_path = _create_story_video(cfg, image_path, game_name, platform)
@@ -352,60 +597,39 @@ def share_to_story(cfg, image_path, permalink, game_name, platform,
                 pass
         return False, None
 
-    links = []
-    if permalink:
-        links = [StoryLink(webUri=permalink, x=0.5, y=0.55, width=0.85, height=0.85)]
-        log.info(f"  Link sticker: {permalink}")
+    # Subir video a R2
+    video_url, video_key = r2.upload_image(video_path, content_type='video/mp4')
+    if not video_url:
+        log.error("  Error subiendo video de story a R2")
+        if own_video:
+            os.unlink(video_path)
+            if frame_path:
+                os.unlink(frame_path)
+        return False, video_path
 
-    max_attempts = 3
-    for attempt in range(max_attempts):
-        try:
-            log.info(f"  Subiendo story con video (intento {attempt+1})...")
-            result = cl.video_upload_to_story(video_path, thumbnail=frame_path, links=links)
-            log.info(f"  [OK] Story subida. pk={result.pk if hasattr(result,'pk') else '?'}  links_en_respuesta={bool(result.links)}")
+    try:
+        log.info("  Publicando story via Graph API...")
+        code, media_id, error = ig.publish_story(video_url=video_url)
+        
+        if code:
+            log.info(f"  [OK] Story publicada. shortcode={code}")
             if own_video:
                 os.unlink(video_path)
                 if frame_path:
                     os.unlink(frame_path)
             return True, None
-        except LoginRequired:
-            if attempt == max_attempts - 1:
-                log.warning("  Story video fallo: LoginRequired (sin mas reintentos)")
-                break
-            log.warning("  Story: sesión expirada, refrescando...")
-            _ig_client = None
-            _invalidate_session()
-            try:
-                cl = get_ig_client(cfg)
-                time.sleep(3)
-            except Exception as e:
-                log.warning(f"  Story: no se pudo refrescar sesión: {e}")
-                break
-        except Exception as e:
-            msg = str(e)
-            if "login_required" in msg.lower():
-                if attempt == max_attempts - 1:
-                    log.warning(f"  Story video fallo: {e}")
-                    break
-                log.warning("  Story: login_required detectado, refrescando...")
-                _ig_client = None
-                _invalidate_session()
+        else:
+            log.error(f"  Error publicando story: {error}")
+            if own_video and frame_path:
                 try:
-                    cl = get_ig_client(cfg)
-                    time.sleep(3)
-                except Exception as e2:
-                    log.warning(f"  Story: no se pudo refrescar sesión: {e2}")
-                    break
-            else:
-                log.warning(f"  Story video fallo: {e}")
-                break
-
-    if own_video and frame_path:
-        try:
-            os.unlink(frame_path)
-        except Exception:
-            pass
-    return False, video_path
+                    os.unlink(frame_path)
+                except Exception:
+                    pass
+            return False, video_path
+    finally:
+        # Limpiar archivo de R2
+        if video_key:
+            r2.delete_object(video_key)
 
 
 def _create_story_video(cfg, image_path, game_name, platform, output_path=None):
@@ -766,7 +990,7 @@ def notify(cfg, message):
 
 
 # ── Publicación ────────────────────────────────────────────────────
-def process_publication(cfg, pub):
+def process_publication(cfg, r2, pub):
     coleccion_id = pub.get('coleccion_id')
     coleccion = pub.get('coleccion', {})
     base = coleccion.get('base', {})
@@ -847,14 +1071,14 @@ def process_publication(cfg, pub):
 
     first_image = tmp_files[0] if tmp_files else None
 
-    # Generar video de story offline ANTES del login a IG
+    # Generar video de story offline ANTES de subir a R2
     story_video_path, story_frame_path = None, None
     if first_image:
         story_video_path, story_frame_path = _create_story_video(
             cfg, first_image, nombre, plataforma)
 
     log.info(f"  Publicando en IG ({len(tmp_files)} fotos)...")
-    ig_code, media_pk, error = publish_instagram(cfg, tmp_files, caption)
+    ig_code, media_pk, error = publish_instagram(cfg, r2, tmp_files, caption)
 
     if ig_code:
         permalink = f'https://www.instagram.com/p/{ig_code}/'
@@ -863,7 +1087,7 @@ def process_publication(cfg, pub):
         log.info(f"  [OK] {nombre} — {permalink}")
 
         story_ok, story_video = share_to_story(
-            cfg, first_image, permalink, nombre, plataforma,
+            cfg, r2, first_image, permalink, nombre, plataforma,
             video_path=story_video_path, frame_path=story_frame_path)
         story_failed = not story_ok
         if story_failed:
@@ -938,47 +1162,41 @@ def wait_until_next_slot():
 
 
 def run():
-    global _ig_client
     cfg = load_cfg()
     dev_mode = cfg.get('config', 'dev_mode', fallback='').lower() in ('1', 'true', 'yes', 'si')
-    login_backoff = 60  # segundos iniciales de espera entre reintentos de login
-
+    
     log.info("=== IG Publisher iniciado%s ===" % (" en MODO DEVELOP" if dev_mode else ""))
     if dev_mode:
         log.info("Las publicaciones se guardarán en dev_output/ sin subir a IG")
     log.info(f"API: {cfg.get('config', 'api_url')}  |  Slots: minuto 5 y 35 de cada hora")
 
+    # Inicializar R2
+    r2 = None
+    if not dev_mode:
+        try:
+            r2 = R2Storage(cfg)
+            log.info("R2 inicializado correctamente")
+        except Exception as e:
+            log.error(f"Error inicializando R2: {e}")
+            notify(cfg, f"<b>❌ IG Publisher: Error inicializando R2</b>\n{str(e)[:300]}")
+            return
+
     while True:
         try:
+            log.info("Verificando publicaciones pendientes...")
             data = api_get(cfg, '/api/ig/pendientes')
             if not data:
+                log.info("No se pudo obtener la lista de pendientes, esperando siguiente slot")
                 wait_until_next_slot()
                 continue
 
             publicaciones = data if isinstance(data, list) else data.get('items', [])
             if not publicaciones:
+                log.info("No hay publicaciones pendientes, esperando siguiente slot")
                 wait_until_next_slot()
                 continue
 
-            log.info(f"Pendientes: {len(publicaciones)}")
-
-            # Login solo si hay pendientes y no estamos en dev mode
-            if not dev_mode:
-                try:
-                    get_ig_client(cfg)
-                    login_backoff = 60
-                except RuntimeError as e:
-                    log.error(f"IG login falló (definitivo): {e}")
-                    notify(cfg, f"<b>❌ IG Publisher: login fallido (definitivo)</b>\n{str(e)[:300]}")
-                    wait_until_next_slot()
-                    continue
-                except Exception as e:
-                    log.error(f"IG login falló temporalmente: {e}. Reintentando en {login_backoff}s...")
-                    notify(cfg, f"<b>⚠️ IG Publisher: login temporalmente fallido</b>\n{str(e)[:300]}\n\nReintentando en {login_backoff}s.")
-                    time.sleep(login_backoff)
-                    login_backoff = min(login_backoff * 2, 1800)
-                    _ig_client = None
-                    continue
+            log.info(f"✓ Hay {len(publicaciones)} publicación(es) pendiente(s), procesando...")
 
             ok_list, err_list, dev_list = [], [], []
             for pub in publicaciones:
@@ -988,7 +1206,7 @@ def run():
                 coleccion_id = pub.get('coleccion_id', '?')
                 plataforma = c.get('plataforma', {}).get('nombre', '')
                 try:
-                    res = process_publication(cfg, pub)
+                    res = process_publication(cfg, r2, pub)
                     if isinstance(res, tuple) and res[0] == 'ok':
                         story_note = ' (sin story)' if len(res) > 2 and res[2] == 'story_fail' else ''
                         ok_list.append({'id': coleccion_id, 'nombre': name, 'plataforma': plataforma, 'url': res[1],
@@ -997,17 +1215,6 @@ def run():
                         dev_list.append({'id': coleccion_id, 'nombre': name, 'plataforma': plataforma, 'dir': res[1]})
                     elif res in ('error', 'sin_imgs') or (isinstance(res, tuple) and res[0] == 'error'):
                         err_list.append(name)
-                except LoginRequired:
-                    if dev_mode:
-                        err_list.append(f'{name}: login requerido en dev mode')
-                    else:
-                        log.warning("Sesión IG expirada, reintentando login...")
-                        _ig_client = None
-                        _invalidate_session()
-                        try:
-                            get_ig_client(cfg)
-                        except:
-                            err_list.append(f'{name}: login IG fallido')
                 except Exception as e:
                     err_list.append(f'{name}: {str(e)[:200]}')
                     log.error(f"Excepción: {traceback.format_exc()}")
@@ -1021,8 +1228,13 @@ def run():
                     msg.append(f"[DEV] #{item['id']} {item['plataforma']} {item['nombre']}\nGuardado en: {item['dir']}")
                 if err_list:
                     msg.append(f"❌ Errores ({len(err_list)}):\n" + '\n'.join(f'• {n}' for n in err_list))
+                
+                log.info(f"Enviando notificaciones (Telegram + Email)...")
                 if not dev_mode:
                     notify(cfg, '\n\n'.join(msg))
+                    log.info("✓ Notificaciones enviadas")
+                else:
+                    log.info("[DEV] Notificaciones suprimidas")
 
             if dev_mode:
                 log.info("Modo DEV: saliendo tras procesar lote.")
