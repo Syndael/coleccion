@@ -362,7 +362,7 @@ class InstagramGraphAPI:
         except Exception as e:
             return None, None, str(e)
     
-    def publish_story(self, image_url=None, video_url=None, link=None):
+    def publish_story(self, image_url=None, video_url=None):
         """Publica una story (imagen o video)."""
         try:
             params = {'media_type': 'STORIES'}
@@ -407,6 +407,87 @@ class InstagramGraphAPI:
             
         except Exception as e:
             return None, None, str(e)
+
+
+# ── Token refresh ──────────────────────────────────────────────────
+def refresh_ig_token(cfg):
+    """Refresca el token de acceso de Instagram. Retorna (nuevo_token, expires_in) o (None, None)."""
+    current_token = cfg.get('config', 'ig_access_token')
+    
+    try:
+        url = "https://graph.instagram.com/refresh_access_token"
+        params = {
+            'grant_type': 'ig_refresh_token',
+            'access_token': current_token
+        }
+        
+        r = requests.get(url, params=params, timeout=30)
+        r.raise_for_status()
+        data = r.json()
+        
+        new_token = data.get('access_token')
+        expires_in = data.get('expires_in', 5184000)
+        
+        if new_token:
+            log.info(f"  Token refrescado correctamente (válido {expires_in // 86400} días)")
+            return new_token, expires_in
+        else:
+            log.error(f"  No se recibió nuevo token: {data}")
+            return None, None
+            
+    except requests.exceptions.RequestException as e:
+        log.error(f"  Error refrescando token: {e}")
+        return None, None
+
+
+def update_token_in_config(new_token):
+    """Actualiza el token en config.txt."""
+    try:
+        with open(CONFIG_FILE, 'r') as f:
+            content = f.read()
+        
+        import re
+        content = re.sub(
+            r'ig_access_token\s*=\s*[^\n]+',
+            f'ig_access_token = {new_token}',
+            content
+        )
+        
+        with open(CONFIG_FILE, 'w') as f:
+            f.write(content)
+        
+        log.info("  Token actualizado en config.txt")
+        return True
+    except Exception as e:
+        log.error(f"  Error actualizando config.txt: {e}")
+        return False
+
+
+def try_refresh_token(cfg):
+    """Intenta refrescar el token. Retorna True si tuvo éxito o no era necesario."""
+    log.info("Verificando token de Instagram...")
+    
+    ig = InstagramGraphAPI(cfg)
+    
+    if ig.verify_token():
+        log.info("  Token válido, no es necesario refrescar")
+        return True
+    
+    log.warning("  Token inválido o expirado, intentando refrescar...")
+    new_token, expires_in = refresh_ig_token(cfg)
+    
+    if new_token:
+        if update_token_in_config(new_token):
+            log.info("✓ Token refrescado y guardado")
+            return True
+        else:
+            log.error("  Token refrescado pero no se pudo guardar en config.txt")
+            return False
+    else:
+        log.error("  No se pudo refrescar el token")
+        notify(cfg, "❌ Token de Instagram expirado y no se pudo refrescar.\n"
+                    "Necesitas generar un nuevo token en Facebook Developers.")
+        return False
 
 
 # ── Instagram publishing functions ─────────────────────────────────
@@ -570,7 +651,7 @@ def _compute_overlay_pos(overlay_path, is_flecha=False):
     return ox, oy, ow, oh
 
 
-def share_to_story(cfg, r2, image_path, permalink, game_name, platform,
+def share_to_story(cfg, r2, image_path, game_name, platform,
                    video_path=None, frame_path=None):
     """Sube la story con frame Pillow + overlay + musica.
     Si video_path/frame_path no se pasan, los genera con FFmpeg.
@@ -641,7 +722,7 @@ def _create_story_video(cfg, image_path, game_name, platform, output_path=None):
         return None, None
 
     music_path = _pick_music(cfg, platform)
-    regular_path, flecha_path = _pick_overlays(cfg)
+    regular_path, _ = _pick_overlays(cfg)
     safe_name = game_name.replace("'", "'\\''")[:40]
 
     regular_pos = None
@@ -652,15 +733,6 @@ def _create_story_video(cfg, image_path, game_name, platform, output_path=None):
             log.info(f"  Overlay [normal] pos=({ox},{oy}) size=({ow},{oh})")
         else:
             log.warning("  Overlay regular no valido, omitiendo")
-
-    flecha_pos = None
-    if flecha_path:
-        ox, oy, ow, oh = _compute_overlay_pos(flecha_path, is_flecha=True)
-        if ox is not None:
-            flecha_pos = (ox, oy, ow, oh)
-            log.info(f"  Overlay [flecha] pos=({ox},{oy}) size=({ow},{oh})")
-        else:
-            log.warning("  Flecha no valida, omitiendo")
 
     frame_path = None
     try:
@@ -678,7 +750,6 @@ def _create_story_video(cfg, image_path, game_name, platform, output_path=None):
         cmd = ['ffmpeg', '-y']
 
         has_regular = regular_path is not None and regular_pos is not None
-        has_flecha = flecha_path is not None and flecha_pos is not None
 
         cmd += ['-loop', '1', '-i', frame_path]
 
@@ -689,41 +760,17 @@ def _create_story_video(cfg, image_path, game_name, platform, output_path=None):
             else:
                 cmd += ['-loop', '1', '-i', regular_path]
 
-        if has_flecha:
-            fext = os.path.splitext(flecha_path)[1].lower()
-            if fext == '.gif':
-                cmd += ['-stream_loop', '-1', '-i', flecha_path]
-            else:
-                cmd += ['-loop', '1', '-i', flecha_path]
-
         if music_path:
             cmd += ['-i', music_path]
 
-        overlay_inputs = (1 if has_regular else 0) + (1 if has_flecha else 0)
-        any_overlay = has_regular or has_flecha
+        overlay_inputs = 1 if has_regular else 0
+        any_overlay = has_regular
 
-        if has_regular and has_flecha:
-            rx, ry, rw, rh = regular_pos
-            fx, fy, fw, fh = flecha_pos
-            vf = (
-                f"[1:v]scale={rw}:{rh},setsar=1[rv];"
-                f"[2:v]scale={fw}:{fh},setsar=1[fv];"
-                f"[0:v][rv]overlay={rx}:{ry}[tmp];"
-                f"[tmp][fv]overlay={fx}:{fy},scale=1080:1920:flags=lanczos[outv]"
-            )
-            cmd += ['-filter_complex', vf, '-map', '[outv]']
-        elif has_regular:
+        if has_regular:
             rx, ry, rw, rh = regular_pos
             vf = (
                 f"[1:v]scale={rw}:{rh},setsar=1[rv];"
                 f"[0:v][rv]overlay={rx}:{ry},scale=1080:1920:flags=lanczos[outv]"
-            )
-            cmd += ['-filter_complex', vf, '-map', '[outv]']
-        elif has_flecha:
-            fx, fy, fw, fh = flecha_pos
-            vf = (
-                f"[1:v]scale={fw}:{fh},setsar=1[fv];"
-                f"[0:v][fv]overlay={fx}:{fy},scale=1080:1920:flags=lanczos[outv]"
             )
             cmd += ['-filter_complex', vf, '-map', '[outv]']
         else:
@@ -863,8 +910,8 @@ def _validate_gif(path):
 
 
 def _pick_overlays(cfg):
-    """Elige un overlay regular de gif/ y una flecha de gif/flechas/.
-    Retorna (regular_path, flecha_path). Ambos pueden ser None."""
+    """Elige un overlay regular de gif/.
+    Retorna (regular_path, None)."""
     gif_dir = os.path.join(BASE_DIR, 'gif')
     if not os.path.isdir(gif_dir):
         return None, None
@@ -885,23 +932,7 @@ def _pick_overlays(cfg):
     if not regular_path:
         log.warning("  Ningun overlay regular valido")
 
-    flechas_dir = os.path.join(gif_dir, 'flechas')
-    flecha_path = None
-    if os.path.isdir(flechas_dir):
-        flechas = [os.path.join(flechas_dir, f) for f in os.listdir(flechas_dir)
-                   if f.lower().endswith(img_exts)]
-        random.shuffle(flechas)
-        for f in flechas:
-            if not _validate_gif(f):
-                log.warning(f"  Flecha descartada (inválida): {os.path.basename(f)}")
-                continue
-            log.info(f"  Flecha: {os.path.basename(f)}")
-            flecha_path = f
-            break
-        if not flecha_path:
-            log.warning("  Ninguna flecha valida")
-
-    return regular_path, flecha_path
+    return regular_path, None
 
 
 # ── Notificaciones ─────────────────────────────────────────────────
@@ -1087,7 +1118,7 @@ def process_publication(cfg, r2, pub):
         log.info(f"  [OK] {nombre} — {permalink}")
 
         story_ok, story_video = share_to_story(
-            cfg, r2, first_image, permalink, nombre, plataforma,
+            cfg, r2, first_image, nombre, plataforma,
             video_path=story_video_path, frame_path=story_frame_path)
         story_failed = not story_ok
         if story_failed:
@@ -1180,6 +1211,14 @@ def run():
             log.error(f"Error inicializando R2: {e}")
             notify(cfg, f"<b>❌ IG Publisher: Error inicializando R2</b>\n{str(e)[:300]}")
             return
+        
+        # Verificar/refrescar token al inicio
+        if not try_refresh_token(cfg):
+            log.error("No se pudo verificar/refrescar el token de Instagram")
+            # No salimos, seguimos intentando en cada ciclo
+        
+        # Recargar config por si el token fue actualizado
+        cfg = load_cfg()
 
     while True:
         try:
